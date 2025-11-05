@@ -2,6 +2,7 @@ export interface VehicleImage {
   url: string;
   label: 'exterior' | 'interior' | 'front' | 'back' | 'additional';
 }
+
 export interface Vehicle {
   id: string;
   name: string;
@@ -16,7 +17,24 @@ export interface Vehicle {
   mileage?: string;
   transmission?: string;
   fuelType?: string;
+  // New field to distinguish between sale and hire
+  type: 'sale' | 'hire';
+  // For hire vehicles, we might want to show daily rate
+  dailyRate?: string;
+  
+  // Additional important details for buyers
+  engineSize?: string;        // e.g., "2.0L", "3.5L V6"
+  doors?: number;             // Number of doors
+  seats?: number;             // Seating capacity
+  color?: string;             // Vehicle color
+  condition?: 'Excellent' | 'Good' | 'Fair' | 'Poor';  // Vehicle condition
+  serviceHistory?: string;    // Service history details
+  accidentHistory?: string;   // Accident history information
+  warranty?: string;          // Warranty information
+  registrationStatus?: string; // Registration status
+  insuranceStatus?: string;   // Insurance status (for hire vehicles)
 }
+
 const STORAGE_KEY = 'zamto_vehicles';
 const defaultVehicles: Vehicle[] = [{
   id: '1',
@@ -34,11 +52,21 @@ const defaultVehicles: Vehicle[] = [{
   year: 2018,
   mileage: '85,000 km',
   transmission: 'Automatic',
-  fuelType: 'Diesel'
+  fuelType: 'Diesel',
+  type: 'sale',
+  engineSize: '4.0L V6',
+  doors: 5,
+  seats: 7,
+  color: 'White',
+  condition: 'Good',
+  serviceHistory: 'Full service history with Toyota dealership',
+  accidentHistory: 'No accident history',
+  warranty: '6 months',
+  registrationStatus: 'Valid until 2026'
 }, {
   id: '2',
   name: 'Toyota Hilux Double Cab',
-  category: 'SUV',
+  category: 'PICKUP TRUCKS',
   price: 'ZMW 320,000',
   image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800',
   images: [{
@@ -51,7 +79,17 @@ const defaultVehicles: Vehicle[] = [{
   year: 2019,
   mileage: '120,000 km',
   transmission: 'Manual',
-  fuelType: 'Diesel'
+  fuelType: 'Diesel',
+  type: 'sale',
+  engineSize: '2.8L Turbo Diesel',
+  doors: 4,
+  seats: 5,
+  color: 'Silver',
+  condition: 'Good',
+  serviceHistory: 'Regular maintenance records',
+  accidentHistory: 'Minor front bumper repair',
+  warranty: '3 months',
+  registrationStatus: 'Valid until 2025'
 }, {
   id: '3',
   name: 'Toyota Vitz',
@@ -68,7 +106,17 @@ const defaultVehicles: Vehicle[] = [{
   year: 2015,
   mileage: '95,000 km',
   transmission: 'Automatic',
-  fuelType: 'Petrol'
+  fuelType: 'Petrol',
+  type: 'sale',
+  engineSize: '1.0L',
+  doors: 5,
+  seats: 5,
+  color: 'Red',
+  condition: 'Fair',
+  serviceHistory: 'Partial service history',
+  accidentHistory: 'No major accidents',
+  warranty: '1 month',
+  registrationStatus: 'Valid until 2024'
 }, {
   id: '4',
   name: 'Toyota Noah',
@@ -85,7 +133,17 @@ const defaultVehicles: Vehicle[] = [{
   year: 2016,
   mileage: '110,000 km',
   transmission: 'Automatic',
-  fuelType: 'Petrol'
+  fuelType: 'Petrol',
+  type: 'sale',
+  engineSize: '2.0L',
+  doors: 5,
+  seats: 8,
+  color: 'White',
+  condition: 'Good',
+  serviceHistory: 'Complete service history',
+  accidentHistory: 'No accident history',
+  warranty: '3 months',
+  registrationStatus: 'Valid until 2025'
 }, {
   id: '5',
   name: 'Nissan X-Trail',
@@ -102,7 +160,17 @@ const defaultVehicles: Vehicle[] = [{
   year: 2017,
   mileage: '90,000 km',
   transmission: 'CVT',
-  fuelType: 'Petrol'
+  fuelType: 'Petrol',
+  type: 'sale',
+  engineSize: '2.0L Turbo',
+  doors: 5,
+  seats: 5,
+  color: 'Blue',
+  condition: 'Good',
+  serviceHistory: 'Regular maintenance',
+  accidentHistory: 'No accident history',
+  warranty: '6 months',
+  registrationStatus: 'Valid until 2026'
 }, {
   id: '6',
   name: 'Honda Fit',
@@ -119,7 +187,17 @@ const defaultVehicles: Vehicle[] = [{
   year: 2014,
   mileage: '105,000 km',
   transmission: 'Automatic',
-  fuelType: 'Petrol'
+  fuelType: 'Petrol',
+  type: 'sale',
+  engineSize: '1.3L',
+  doors: 5,
+  seats: 5,
+  color: 'Silver',
+  condition: 'Fair',
+  serviceHistory: 'Partial service history',
+  accidentHistory: 'Minor rear bumper repair',
+  warranty: '1 month',
+  registrationStatus: 'Valid until 2024'
 }, {
   id: '7',
   name: 'Toyota Fortuner',
@@ -136,7 +214,17 @@ const defaultVehicles: Vehicle[] = [{
   year: 2018,
   mileage: '75,000 km',
   transmission: 'Automatic',
-  fuelType: 'Diesel'
+  fuelType: 'Diesel',
+  type: 'sale',
+  engineSize: '2.8L Turbo Diesel',
+  doors: 5,
+  seats: 7,
+  color: 'Black',
+  condition: 'Excellent',
+  serviceHistory: 'Full service history',
+  accidentHistory: 'No accident history',
+  warranty: '12 months',
+  registrationStatus: 'Valid until 2027'
 }, {
   id: '8',
   name: 'Mazda Demio',
@@ -153,7 +241,17 @@ const defaultVehicles: Vehicle[] = [{
   year: 2013,
   mileage: '115,000 km',
   transmission: 'Automatic',
-  fuelType: 'Petrol'
+  fuelType: 'Petrol',
+  type: 'sale',
+  engineSize: '1.3L',
+  doors: 5,
+  seats: 5,
+  color: 'White',
+  condition: 'Fair',
+  serviceHistory: 'Partial service history',
+  accidentHistory: 'No major accidents',
+  warranty: '1 month',
+  registrationStatus: 'Valid until 2024'
 }, {
   id: '9',
   name: 'Toyota Alphard',
@@ -170,7 +268,17 @@ const defaultVehicles: Vehicle[] = [{
   year: 2017,
   mileage: '65,000 km',
   transmission: 'Automatic',
-  fuelType: 'Petrol'
+  fuelType: 'Petrol',
+  type: 'sale',
+  engineSize: '3.5L V6',
+  doors: 5,
+  seats: 7,
+  color: 'Silver',
+  condition: 'Excellent',
+  serviceHistory: 'Full service history',
+  accidentHistory: 'No accident history',
+  warranty: '12 months',
+  registrationStatus: 'Valid until 2026'
 }, {
   id: '10',
   name: 'Subaru Forester',
@@ -187,8 +295,106 @@ const defaultVehicles: Vehicle[] = [{
   year: 2016,
   mileage: '100,000 km',
   transmission: 'Automatic',
-  fuelType: 'Petrol'
+  fuelType: 'Petrol',
+  type: 'sale',
+  engineSize: '2.0L Boxer',
+  doors: 5,
+  seats: 5,
+  color: 'Green',
+  condition: 'Good',
+  serviceHistory: 'Regular maintenance',
+  accidentHistory: 'No accident history',
+  warranty: '6 months',
+  registrationStatus: 'Valid until 2025'
 }];
+
+// Let's add some vehicles for hire as examples
+defaultVehicles.push({
+  id: '11',
+  name: 'Toyota Camry',
+  category: 'GROUPS & FAMILY CARS',
+  price: 'ZMW 250,000',
+  dailyRate: 'ZMW 500/day',
+  image: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=800',
+  images: [{
+    url: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=800',
+    label: 'exterior'
+  }],
+  description: 'Comfortable sedan perfect for business trips or family outings. Well-maintained and reliable.',
+  features: ['Air conditioning', 'Bluetooth', 'GPS', 'Automatic transmission'],
+  popular: true,
+  year: 2020,
+  mileage: '45,000 km',
+  transmission: 'Automatic',
+  fuelType: 'Petrol',
+  type: 'hire',
+  engineSize: '2.0L',
+  doors: 4,
+  seats: 5,
+  color: 'White',
+  condition: 'Excellent',
+  serviceHistory: 'Full service history',
+  accidentHistory: 'No accident history',
+  registrationStatus: 'Valid until 2027',
+  insuranceStatus: 'Comprehensive, Valid until 2025'
+}, {
+  id: '12',
+  name: 'Nissan Patrol',
+  category: 'SUV',
+  price: 'ZMW 400,000',
+  dailyRate: 'ZMW 800/day',
+  image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800',
+  images: [{
+    url: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800',
+    label: 'exterior'
+  }],
+  description: 'Spacious SUV ideal for group travel or off-road adventures. Perfect for exploring Zambia.',
+  features: ['4WD', '7-seater', 'Roof rack', 'Refrigerator'],
+  popular: true,
+  year: 2019,
+  mileage: '60,000 km',
+  transmission: 'Automatic',
+  fuelType: 'Diesel',
+  type: 'hire',
+  engineSize: '4.8L V8',
+  doors: 5,
+  seats: 7,
+  color: 'Black',
+  condition: 'Excellent',
+  serviceHistory: 'Full service history',
+  accidentHistory: 'No accident history',
+  registrationStatus: 'Valid until 2026',
+  insuranceStatus: 'Comprehensive, Valid until 2025'
+}, {
+  id: '13',
+  name: 'Toyota Hilux Single Cab',
+  category: 'PICKUP TRUCKS',
+  price: 'ZMW 280,000',
+  dailyRate: 'ZMW 700/day',
+  image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800',
+  images: [{
+    url: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800',
+    label: 'exterior'
+  }],
+  description: 'Durable pickup truck perfect for cargo transport and commercial use. Reliable and fuel-efficient.',
+  features: ['4x4', 'Payload capacity', 'Durable build', 'Low maintenance'],
+  popular: true,
+  year: 2021,
+  mileage: '35,000 km',
+  transmission: 'Manual',
+  fuelType: 'Diesel',
+  type: 'hire',
+  engineSize: '2.8L Turbo Diesel',
+  doors: 2,
+  seats: 3,
+  color: 'White',
+  condition: 'Excellent',
+  serviceHistory: 'Full service history',
+  accidentHistory: 'No accident history',
+  registrationStatus: 'Valid until 2028',
+  insuranceStatus: 'Commercial, Valid until 2026'
+});
+
 export function getVehicles(): Vehicle[] {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (!stored) {

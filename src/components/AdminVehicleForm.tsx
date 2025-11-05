@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { XIcon, UploadIcon, TrashIcon } from 'lucide-react';
 import { addVehicle, updateVehicle, Vehicle, VehicleImage } from '../utils/vehicleStorage';
+
 interface AdminVehicleFormProps {
   vehicle: Vehicle | null;
   onClose: () => void;
 }
+
 export function AdminVehicleForm({
   vehicle,
   onClose
@@ -13,16 +15,30 @@ export function AdminVehicleForm({
     name: vehicle?.name || '',
     category: vehicle?.category || 'SUV',
     price: vehicle?.price || '',
+    dailyRate: vehicle?.dailyRate || '',
     description: vehicle?.description || '',
     features: vehicle?.features?.join(', ') || '',
     popular: vehicle?.popular || false,
     year: vehicle?.year || new Date().getFullYear(),
     mileage: vehicle?.mileage || '',
     transmission: vehicle?.transmission || 'Automatic',
-    fuelType: vehicle?.fuelType || 'Petrol'
+    fuelType: vehicle?.fuelType || 'Petrol',
+    type: vehicle?.type || 'sale',
+    engineSize: vehicle?.engineSize || '',
+    doors: vehicle?.doors || 4,
+    seats: vehicle?.seats || 5,
+    color: vehicle?.color || '',
+    condition: vehicle?.condition || 'Good',
+    serviceHistory: vehicle?.serviceHistory || '',
+    accidentHistory: vehicle?.accidentHistory || '',
+    warranty: vehicle?.warranty || '',
+    registrationStatus: vehicle?.registrationStatus || '',
+    insuranceStatus: vehicle?.insuranceStatus || ''
   });
+  
   const [images, setImages] = useState<VehicleImage[]>(vehicle?.images && vehicle.images.length > 0 ? vehicle.images : []);
   const imageLabels: Array<'exterior' | 'interior' | 'front' | 'back' | 'additional'> = ['exterior', 'interior', 'front', 'back', 'additional'];
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, label: (typeof imageLabels)[number]) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -43,24 +59,29 @@ export function AdminVehicleForm({
     };
     reader.readAsDataURL(file);
   };
+
   const removeImage = (label: (typeof imageLabels)[number]) => {
     setImages(images.filter(img => img.label !== label));
   };
+
   const getImageForLabel = (label: (typeof imageLabels)[number]) => {
     return images.find(img => img.label === label);
   };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (images.length === 0) {
       alert('Please upload at least one image');
       return;
     }
+    
     const vehicleData = {
       ...formData,
       features: formData.features.split(',').map(f => f.trim()),
       images: images,
       image: images[0]?.url || '' // Set main image as first image for backward compatibility
     };
+    
     if (vehicle) {
       updateVehicle(vehicle.id, vehicleData);
     } else {
@@ -68,6 +89,7 @@ export function AdminVehicleForm({
     }
     onClose();
   };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const {
       name,
@@ -79,6 +101,7 @@ export function AdminVehicleForm({
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
     });
   };
+
   return <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
@@ -121,6 +144,7 @@ export function AdminVehicleForm({
               and an additional angle. Maximum 2MB per image.
             </p>
           </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -128,6 +152,17 @@ export function AdminVehicleForm({
               </label>
               <input type="text" name="name" required value={formData.name} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., Toyota Land Cruiser" />
             </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Vehicle Type *
+              </label>
+              <select name="type" required value={formData.type} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent">
+                <option value="sale">For Sale</option>
+                <option value="hire">For Hire</option>
+              </select>
+            </div>
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Category *
@@ -138,26 +173,38 @@ export function AdminVehicleForm({
                 <option value="GROUPS & FAMILY CARS">
                   Groups & Family Cars
                 </option>
+                <option value="PICKUP TRUCKS">Pickup Trucks</option>
               </select>
             </div>
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price *
+                {formData.type === 'sale' ? 'Price *' : 'Price'}
               </label>
-              <input type="text" name="price" required value={formData.price} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., ZMW 450,000" />
+              <input type="text" name="price" required={formData.type === 'sale'} value={formData.price} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., ZMW 450,000" />
             </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {formData.type === 'hire' ? 'Daily Rate *' : 'Daily Rate'}
+              </label>
+              <input type="text" name="dailyRate" required={formData.type === 'hire'} value={formData.dailyRate} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., ZMW 500/day" />
+            </div>
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Year
               </label>
               <input type="number" name="year" value={formData.year} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., 2018" />
             </div>
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Mileage
               </label>
               <input type="text" name="mileage" value={formData.mileage} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., 85,000 km" />
             </div>
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Transmission
@@ -168,6 +215,7 @@ export function AdminVehicleForm({
                 <option value="CVT">CVT</option>
               </select>
             </div>
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Fuel Type
@@ -178,6 +226,47 @@ export function AdminVehicleForm({
                 <option value="Hybrid">Hybrid</option>
               </select>
             </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Engine Size
+              </label>
+              <input type="text" name="engineSize" value={formData.engineSize} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., 2.0L, 3.5L V6" />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Number of Doors
+              </label>
+              <input type="number" name="doors" value={formData.doors} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., 4" min="2" max="5" />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Seating Capacity
+              </label>
+              <input type="number" name="seats" value={formData.seats} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., 5" min="2" max="8" />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Color
+              </label>
+              <input type="text" name="color" value={formData.color} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., White, Silver" />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Condition
+              </label>
+              <select name="condition" value={formData.condition} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent">
+                <option value="Excellent">Excellent</option>
+                <option value="Good">Good</option>
+                <option value="Fair">Fair</option>
+                <option value="Poor">Poor</option>
+              </select>
+            </div>
+            
             <div>
               <label className="flex items-center space-x-2">
                 <input type="checkbox" name="popular" checked={formData.popular} onChange={handleChange} className="rounded border-gray-300 text-[#FF6600] focus:ring-[#FF6600]" />
@@ -187,18 +276,60 @@ export function AdminVehicleForm({
               </label>
             </div>
           </div>
+          
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Description *
             </label>
             <textarea name="description" required rows={3} value={formData.description} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="Brief description of the vehicle" />
           </div>
+          
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Features (comma-separated) *
             </label>
             <input type="text" name="features" required value={formData.features} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., 4WD, 7-seater, Leather interior, Sunroof" />
           </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Service History
+              </label>
+              <textarea name="serviceHistory" rows={3} value={formData.serviceHistory} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="Details about service history" />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Accident History
+              </label>
+              <textarea name="accidentHistory" rows={3} value={formData.accidentHistory} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="Details about accident history (if any)" />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Warranty Information
+              </label>
+              <input type="text" name="warranty" value={formData.warranty} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., 12 months, 20,000 km" />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Registration Status
+              </label>
+              <input type="text" name="registrationStatus" value={formData.registrationStatus} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., Valid until 2026" />
+            </div>
+            
+            {formData.type === 'hire' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Insurance Status
+                </label>
+                <input type="text" name="insuranceStatus" value={formData.insuranceStatus} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., Comprehensive, Valid until 2025" />
+              </div>
+            )}
+          </div>
+          
           <div className="flex justify-end space-x-4 pt-4 border-t">
             <button type="button" onClick={onClose} className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
               Cancel

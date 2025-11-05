@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Contact Form Submission</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; margin: 20px auto; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <!-- Header with Logo -->
+        <tr>
+            <td align="center" bgcolor="#003366" style="padding: 20px;">
+                <!-- Company Logo -->
+                <img src="https://your-domain.com/logo.png" alt="Zamto Africa Logo" width="150" style="display: block; margin: 0 auto 15px auto;" />
+                <h1 style="color: #ffffff; font-size: 28px; margin: 0; font-weight: bold;">Zamto Africa</h1>
+                <p style="color: #ffffff; font-size: 18px; margin: 10px 0 0; opacity: 0.9;">New Contact Form Submission</p>
+            </td>
+        </tr>
+        
+        <!-- Content -->
+        <tr>
+            <td style="padding: 30px;">
+                <p style="font-size: 16px; color: #333333; margin: 0 0 20px;">
+                    You have received a new message from your website contact form:
+                </p>
+                
+                <!-- Contact Information -->
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8f9fa; border-radius: 6px; overflow: hidden; border: 1px solid #e9ecef;">
+                    <tr>
+                        <td style="padding: 20px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td width="30%" style="padding: 8px 0; border-bottom: 1px solid #e9ecef; font-weight: bold; color: #003366;">Full Name:</td>
+                                    <td width="70%" style="padding: 8px 0; border-bottom: 1px solid #e9ecef; color: #333333;">{{from_name}}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; font-weight: bold; color: #003366;">Email Address:</td>
+                                    <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; color: #333333;">{{from_email}}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; font-weight: bold; color: #003366;">Phone Number:</td>
+                                    <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; color: #333333;">{{phone}}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; font-weight: bold; color: #003366;">Service Type:</td>
+                                    <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; color: #333333;">{{service_type}}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: bold; color: #003366;">Vehicle Preference:</td>
+                                    <td style="padding: 8px 0; color: #333333;">{{vehicle_preference}}</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                
+                <!-- Message Section -->
+                <div style="margin: 25px 0;">
+                    <h3 style="color: #003366; font-size: 18px; margin: 0 0 15px; font-weight: bold;">Message:</h3>
+                    <div style="background-color: #f8f9fa; border-radius: 6px; padding: 20px; border: 1px solid #e9ecef;">
+                        <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0; white-space: pre-wrap;">{{message}}</p>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+                    <p style="color: #666666; font-size: 14px; margin: 0 0 10px;">
+                        This message was sent from your website contact form.
+                    </p>
+                    <p style="color: #666666; font-size: 14px; margin: 0;">
+                        Please respond to <strong>{{from_name}}</strong> at 
+                        <a href="mailto:{{from_email}}" style="color: #FF6600; text-decoration: none;">{{from_email}}</a> 
+                        or call them at {{phone}}.
+                    </p>
+                </div>
+            </td>
+        </tr>
+        
+        <!-- Footer -->
+        <tr>
+            <td align="center" bgcolor="#f8f9fa" style="padding: 20px; border-top: 1px solid #e9ecef;">
+                <p style="color: #666666; font-size: 12px; margin: 0;">
+                    &copy; 2025 Zamto Africa. All rights reserved.
+                </p>
+                <p style="color: #666666; font-size: 12px; margin: 5px 0 0;">
+                    Handyman's Great East Road, Plot 1222, Roma Park, Lusaka, Zambia
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

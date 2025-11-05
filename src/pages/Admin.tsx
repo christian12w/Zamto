@@ -72,7 +72,7 @@ export function Admin() {
   return <div className="w-full min-h-screen bg-gray-50">
       <div className="bg-[#003366] text-white py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Vehicle Inventory Management</h1>
+          <h1 className="text-3xl font-bold">Zamto Africa Admin</h1>
           <button onClick={handleLogout} className="flex items-center bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md transition-colors">
             <LogOutIcon className="h-5 w-5 mr-2" />
             Logout
