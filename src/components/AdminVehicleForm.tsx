@@ -42,11 +42,8 @@ export function AdminVehicleForm({
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, label: (typeof imageLabels)[number]) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Check file size (max 2MB per image to avoid localStorage limits)
-    if (file.size > 2 * 1024 * 1024) {
-      alert('Image size should be less than 2MB');
-      return;
-    }
+    
+    // Convert image to base64
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64String = reader.result as string;
@@ -141,7 +138,7 @@ export function AdminVehicleForm({
             </div>
             <p className="text-xs text-gray-500 mt-2">
               Upload photos showing exterior, interior, front view, back view,
-              and an additional angle. Maximum 2MB per image.
+              and an additional angle. Images of any size are now accepted.
             </p>
           </div>
           
