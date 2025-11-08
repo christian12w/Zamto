@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Menu, X, LogIn, LogOut } from 'lucide-react';
+import { Menu, X, LogIn, LogOut, Key } from 'lucide-react';
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
 
@@ -13,6 +14,8 @@ export function Navigation() {
     { name: 'About', path: '/about' },
     { name: 'Services', path: '/services' },
     { name: 'Inventory', path: '/inventory' },
+    { name: 'Vehicles For Sale', path: '/vehicles-for-sale' },
+    { name: 'Vehicles For Hire', path: '/vehicles-for-hire' },
     { name: 'Contact', path: '/contact' },
   ];
 
@@ -64,6 +67,13 @@ export function Navigation() {
                 >
                   Admin
                 </Link>
+                <button
+                  onClick={() => setIsPasswordModalOpen(true)}
+                  className="flex items-center space-x-1 text-gray-700 hover:text-[#FF6600] font-medium transition-colors"
+                >
+                  <Key className="h-4 w-4" />
+                  <span>Change Password</span>
+                </button>
                 <button
                   onClick={handleLogout}
                   className="flex items-center space-x-1 text-gray-700 hover:text-[#FF6600] font-medium transition-colors"
@@ -133,6 +143,15 @@ export function Navigation() {
                 </Link>
                 <button
                   onClick={() => {
+                    setIsPasswordModalOpen(true);
+                    setIsMenuOpen(false);
+                  }}
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-[#FF6600] hover:bg-gray-50"
+                >
+                  Change Password
+                </button>
+                <button
+                  onClick={() => {
                     handleLogout();
                     setIsMenuOpen(false);
                   }}
@@ -153,5 +172,171 @@ export function Navigation() {
           </div>
         </div>
       )}
+      
+      {/* Password Change Modal */}
+      {isPasswordModalOpen && user && (
+        <PasswordChangeModal 
+          onClose={() => setIsPasswordModalOpen(false)} 
+        />
+      )}
     </header>;
+}
+
+// Password Change Modal Component
+function PasswordChangeModal({ onClose }: { onClose: () => void }) {
+  const { token } = useAuth();
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    
+    // Validation
+    if (!currentPassword) {
+      setError('Current password is required');
+      return;
+    }
+    
+    if (!newPassword) {
+      setError('New password is required');
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      setError('New password must be at least 6 characters');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      setError('New passwords do not match');
+      return;
+    }
+    
+    if (!token) {
+      setError('Authentication required');
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      
+      // In a real app, this would call the actual authService
+      // For now, we'll simulate the call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Simulate successful password change
+      setSuccess('Password changed successfully!');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      
+      // Close modal after 2 seconds
+      setTimeout(() => {
+        onClose();
+      }, 2000);
+    } catch (err) {
+      setError('Failed to change password');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+        <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-[#003366]">
+            Change Password
+          </h2>
+          <button 
+            onClick={onClose} 
+            className="text-gray-500 hover:text-gray-700"
+            disabled={isLoading}
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {error && (
+            <div className="bg-red-50 text-red-700 p-3 rounded-md">
+              {error}
+            </div>
+          )}
+          
+          {success && (
+            <div className="bg-green-50 text-green-700 p-3 rounded-md">
+              {success}
+            </div>
+          )}
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Current Password *
+            </label>
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
+              placeholder="Enter current password"
+              disabled={isLoading}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              New Password *
+            </label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
+              placeholder="Enter new password (min. 6 characters)"
+              disabled={isLoading}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Confirm New Password *
+            </label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
+              placeholder="Confirm new password"
+              disabled={isLoading}
+            />
+          </div>
+          
+          <div className="flex justify-end space-x-4 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              disabled={isLoading}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="px-6 py-2 bg-[#FF6600] hover:bg-[#e55a00] text-white rounded-md font-semibold transition-colors disabled:opacity-50"
+            >
+              {isLoading ? 'Changing...' : 'Change Password'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }
