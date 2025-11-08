@@ -39,6 +39,11 @@ let mockUsers: User[] = [
   }
 ];
 
+// Store user passwords separately (in a real app, these would be hashed)
+let userPasswords: Record<string, string> = {
+  'admin': 'admin123' // username: password
+};
+
 // Mock tokens - in a real app this would be handled by the backend
 const mockTokens: Record<string, string> = {
   '1': 'mock-jwt-token-admin-123'
@@ -58,8 +63,8 @@ class AuthService {
       u => u.username === credentials.username
     );
     
-    // In a real app, you would hash and compare passwords securely
-    if (user && credentials.password === 'admin123') {
+    // Check if user exists and password matches
+    if (user && userPasswords[user.username] === credentials.password) {
       // Update last login
       user.lastLogin = new Date().toISOString();
       
@@ -107,6 +112,9 @@ class AuthService {
     };
     
     mockUsers.push(newUser);
+    
+    // Store password
+    userPasswords[data.username] = data.password;
     
     // Generate token
     const token = `mock-jwt-token-${newUser.id}-${Date.now()}`;
@@ -183,6 +191,9 @@ class AuthService {
     }
     
     // Delete user
+    if (userToDelete) {
+      delete userPasswords[userToDelete.username];
+    }
     mockUsers = mockUsers.filter(u => u.id !== userId);
     delete mockTokens[userId];
     
@@ -221,8 +232,25 @@ class AuthService {
       };
     }
     
-    // In a real app, you would verify the current password
-    // For this demo, we'll just proceed with the change
+    // Find user
+    const user = mockUsers.find(u => u.id === userId);
+    if (!user) {
+      return {
+        success: false,
+        message: 'User not found'
+      };
+    }
+    
+    // Verify current password
+    if (userPasswords[user.username] !== currentPassword) {
+      return {
+        success: false,
+        message: 'Current password is incorrect'
+      };
+    }
+    
+    // Update password
+    userPasswords[user.username] = newPassword;
     
     return {
       success: true,
