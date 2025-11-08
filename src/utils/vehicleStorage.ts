@@ -467,10 +467,39 @@ export function updateVehicle(id: string, updates: Partial<Vehicle>): void {
   const vehicles = getVehicles();
   const index = vehicles.findIndex(v => v.id === id);
   if (index !== -1) {
+    // Create a more robust merge that preserves existing data
+    const existingVehicle = vehicles[index];
+    
+    // Merge features array properly
+    let mergedFeatures = existingVehicle.features;
+    if (updates.features && Array.isArray(updates.features)) {
+      mergedFeatures = updates.features;
+    }
+    
+    // Merge images properly
+    let mergedImages = existingVehicle.images;
+    if (updates.images && Array.isArray(updates.images)) {
+      mergedImages = updates.images;
+    }
+    
+    // Ensure main image is set correctly
+    let mainImage = existingVehicle.image;
+    if (updates.image) {
+      mainImage = updates.image;
+    } else if (mergedImages && mergedImages.length > 0) {
+      mainImage = mergedImages[0].url;
+    }
+    
+    // Create the updated vehicle with proper merging
     vehicles[index] = {
-      ...vehicles[index],
-      ...updates
+      ...existingVehicle,      // Start with all existing properties
+      ...updates,              // Apply all updates
+      features: mergedFeatures, // Use properly merged features
+      images: mergedImages,    // Use properly merged images
+      image: mainImage,        // Ensure main image is correctly set
+      id: existingVehicle.id   // Always preserve the original ID
     };
+    
     saveVehicles(vehicles);
   }
 }
