@@ -80,9 +80,14 @@ export function AdminVehicleForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Allow submission even if no images are uploaded
+    // But show a warning if no images
     if (images.length === 0) {
-      alert('Please upload at least one image');
-      return;
+      const confirmSubmit = window.confirm('You have not uploaded any images. Are you sure you want to submit without images?');
+      if (!confirmSubmit) {
+        return;
+      }
     }
     
     const vehicleData = {
@@ -125,7 +130,7 @@ export function AdminVehicleForm({
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Vehicle Photos * (Upload 5 photos)
+              Vehicle Photos (Upload at least one photo)
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {imageLabels.map(label => {
@@ -158,9 +163,9 @@ export function AdminVehicleForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Vehicle Name *
+                Vehicle Name
               </label>
-              <input type="text" name="name" required value={formData.name} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., Toyota Land Cruiser" />
+              <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., Toyota Land Cruiser" />
             </div>
             
             <div>
@@ -175,9 +180,9 @@ export function AdminVehicleForm({
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category *
+                Category
               </label>
-              <select name="category" required value={formData.category} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent">
+              <select name="category" value={formData.category} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent">
                 <option value="SUV">SUV</option>
                 <option value="SMALL CARS">Small Cars</option>
                 <option value="GROUPS & FAMILY CARS">
@@ -189,16 +194,16 @@ export function AdminVehicleForm({
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {formData.type === 'sale' ? 'Price *' : 'Price'}
+                {formData.type === 'sale' ? 'Price' : 'Price'}
               </label>
-              <input type="text" name="price" required={formData.type === 'sale'} value={formData.price} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., ZMW 450,000" />
+              <input type="text" name="price" value={formData.price} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., ZMW 450,000" />
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {formData.type === 'hire' ? 'Daily Rate *' : 'Daily Rate'}
+                {formData.type === 'hire' ? 'Daily Rate' : 'Daily Rate'}
               </label>
-              <input type="text" name="dailyRate" required={formData.type === 'hire'} value={formData.dailyRate} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., ZMW 500/day" />
+              <input type="text" name="dailyRate" value={formData.dailyRate} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., ZMW 500/day" />
             </div>
             
             <div>
@@ -289,16 +294,16 @@ export function AdminVehicleForm({
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description *
+              Description
             </label>
-            <textarea name="description" required rows={3} value={formData.description} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="Brief description of the vehicle" />
+            <textarea name="description" rows={3} value={formData.description} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="Brief description of the vehicle" />
           </div>
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Features (comma-separated) *
+              Features (comma-separated)
             </label>
-            <input type="text" name="features" required value={formData.features} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., 4WD, 7-seater, Leather interior, Sunroof" />
+            <input type="text" name="features" value={formData.features} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., 4WD, 7-seater, Leather interior, Sunroof" />
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
