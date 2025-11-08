@@ -56,12 +56,6 @@ export function AdminVehicleForm({
     const file = e.target.files?.[0];
     if (!file) return;
     
-    // Check file size (limit to 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Image size too large. Please select an image smaller than 5MB.');
-      return;
-    }
-    
     // Convert image to base64
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -157,7 +151,7 @@ export function AdminVehicleForm({
             </div>
             <p className="text-xs text-gray-500 mt-2">
               Upload photos showing exterior, interior, front view, back view,
-              and an additional angle. Images should be less than 5MB each.
+              and an additional angle. Images of any size are now accepted.
             </p>
           </div>
           

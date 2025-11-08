@@ -25,6 +25,15 @@ export function VehicleCard({
     setCurrentImageIndex(prev => (prev - 1 + images.length) % images.length);
   };
 
+  // Optimize image loading by preloading next image
+  React.useEffect(() => {
+    if (images.length > 1) {
+      const nextIndex = (currentImageIndex + 1) % images.length;
+      const img = new Image();
+      img.src = images[nextIndex].url;
+    }
+  }, [currentImageIndex, images]);
+
   return <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-transparent hover:border-[#FF6600]">
       {vehicle.popular && <div className="bg-gradient-to-r from-[#FF6600] to-[#e55a00] text-white text-sm font-bold px-4 py-2 flex items-center">
           <SparklesIcon className="h-4 w-4 mr-2" />
@@ -47,7 +56,12 @@ export function VehicleCard({
       </div>
       
       <div className="h-48 sm:h-56 overflow-hidden relative group">
-        <img src={images[currentImageIndex].url} alt={`${vehicle.name} - ${images[currentImageIndex].label}`} className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110" />
+        <img 
+          src={images[currentImageIndex].url} 
+          alt={`${vehicle.name} - ${images[currentImageIndex].label}`} 
+          className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110" 
+          loading="lazy"
+        />
         {images.length > 1 && <>
             <button 
               onClick={prevImage} 

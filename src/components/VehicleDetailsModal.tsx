@@ -15,6 +15,15 @@ export function VehicleDetailsModal({ vehicle, onClose }: VehicleDetailsModalPro
     label: 'exterior'
   }];
   
+  // Preload next image for smoother experience
+  React.useEffect(() => {
+    if (images.length > 1) {
+      const nextIndex = (currentImageIndex + 1) % images.length;
+      const img = new Image();
+      img.src = images[nextIndex].url;
+    }
+  }, [currentImageIndex, images]);
+  
   const nextImage = () => {
     setCurrentImageIndex(prev => (prev + 1) % images.length);
   };
@@ -46,6 +55,7 @@ export function VehicleDetailsModal({ vehicle, onClose }: VehicleDetailsModalPro
               src={images[currentImageIndex].url} 
               alt={`${vehicle.name} - ${images[currentImageIndex].label}`} 
               className="w-full h-full object-cover"
+              loading="lazy"
             />
             {images.length > 1 && (
               <>

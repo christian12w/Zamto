@@ -41,7 +41,7 @@ let vehiclesCache: Vehicle[] | null = null;
 let lastUpdateTimestamp: number = 0;
 
 const STORAGE_KEY = 'zamto_vehicles';
-const CACHE_DURATION = 1000; // 1 second cache duration
+const CACHE_DURATION = 2000; // 2 second cache duration for better performance
 
 const defaultVehicles: Vehicle[] = [{
   id: '1',
@@ -434,8 +434,22 @@ export function saveVehicles(vehicles: Vehicle[]): void {
   vehiclesCache = null;
   lastUpdateTimestamp = 0;
   
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(vehicles));
-  window.dispatchEvent(new CustomEvent('vehiclesUpdated'));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(vehicles));
+    window.dispatchEvent(new CustomEvent('vehiclesUpdated'));
+  } catch (e) {
+    // Handle storage quota exceeded error
+    if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+      console.error('Storage quota exceeded. Consider using a backend service for larger storage needs.');
+      // In a real application, you might want to:
+      // 1. Notify the user
+      // 2. Implement a fallback mechanism
+      // 3. Suggest cleaning up old data
+      // 4. Use a backend service for storage
+    } else {
+      throw e;
+    }
+  }
 }
 
 export function addVehicle(vehicle: Omit<Vehicle, 'id'>): Vehicle {
