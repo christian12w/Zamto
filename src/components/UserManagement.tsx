@@ -1,25 +1,87 @@
 import React, { useState, useEffect } from 'react';
-import { AdminUser, getAdminUsers, addAdminUser, deleteAdminUser } from '../utils/userManagement';
+import { useAuth } from '../contexts/AuthContext';
 import { PlusIcon, TrashIcon, UserIcon } from 'lucide-react';
+
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  role: 'admin' | 'user';
+  createdAt: string;
+  lastLogin?: string;
+}
 
 interface UserManagementProps {
   onClose: () => void;
 }
 
+// Mock service for user management
+const userManagementService = {
+  async getUsers(token: string): Promise<User[]> {
+    // In a real app, this would be an API call
+    // For demo purposes, we'll return mock data
+    return [
+      {
+        id: '1',
+        username: 'admin',
+        email: 'admin@example.com',
+        role: 'admin',
+        createdAt: '2023-01-01T00:00:00Z',
+        lastLogin: '2023-12-01T10:30:00Z'
+      }
+    ];
+  },
+  
+  async addUser(token: string, userData: { username: string; email: string; password: string }): Promise<User> {
+    // In a real app, this would be an API call
+    return {
+      id: '2',
+      username: userData.username,
+      email: userData.email,
+      role: 'admin',
+      createdAt: new Date().toISOString()
+    };
+  },
+  
+  async deleteUser(token: string, userId: string): Promise<boolean> {
+    // In a real app, this would be an API call
+    return true;
+  }
+};
+
 export function UserManagement({ onClose }: UserManagementProps) {
-  const [users, setUsers] = useState<AdminUser[]>([]);
+  const { token } = useAuth();
+  const [users, setUsers] = useState<User[]>([]);
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   // Load users on component mount
   useEffect(() => {
-    setUsers(getAdminUsers());
-  }, []);
+    if (token) {
+      loadUsers();
+    }
+  }, [token]);
 
-  const handleAddUser = (e: React.FormEvent) => {
+  const loadUsers = async () => {
+    if (!token) return;
+    
+    try {
+      setIsLoading(true);
+      const userData = await userManagementService.getUsers(token);
+      setUsers(userData);
+    } catch (err) {
+      setError('Failed to load users');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -30,8 +92,8 @@ export function UserManagement({ onClose }: UserManagementProps) {
       return;
     }
 
-    if (users.some(user => user.username === username)) {
-      setError('Username already exists');
+    if (!email.trim()) {
+      setError('Email is required');
       return;
     }
 
@@ -50,43 +112,65 @@ export function UserManagement({ onClose }: UserManagementProps) {
       return;
     }
 
+    if (!token) {
+      setError('Authentication required');
+      return;
+    }
+
     try {
+      setIsLoading(true);
       // Add new user
-      addAdminUser(username, password);
-      
-      // Update local state
-      setUsers(getAdminUsers());
+      await userManagementService.addUser(token, { username, email, password });
       
       // Reset form
       setUsername('');
+      setEmail('');
       setPassword('');
       setConfirmPassword('');
       
       setSuccess('User added successfully');
       
+      // Reload users
+      await loadUsers();
+      
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError('Failed to add user');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleDeleteUser = (username: string) => {
+  const handleDeleteUser = async (userId: string, username: string) => {
     if (users.length <= 1) {
       setError('Cannot delete the last user');
       return;
     }
     
+    if (!token) {
+      setError('Authentication required');
+      return;
+    }
+    
     if (window.confirm(`Are you sure you want to delete user "${username}"?`)) {
       try {
-        deleteAdminUser(username);
-        setUsers(getAdminUsers());
-        setSuccess('User deleted successfully');
+        setIsLoading(true);
+        const success = await userManagementService.deleteUser(token, userId);
+        
+        if (success) {
+          setSuccess('User deleted successfully');
+          await loadUsers();
+        } else {
+          setError('Failed to delete user');
+        }
         
         // Clear success message after 3 seconds
         setTimeout(() => setSuccess(''), 3000);
       } catch (err) {
         setError('Failed to delete user');
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -137,6 +221,21 @@ export function UserManagement({ onClose }: UserManagementProps) {
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
                   placeholder="Enter username"
+                  disabled={isLoading}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
+                  placeholder="Enter email"
+                  disabled={isLoading}
                 />
               </div>
               
@@ -150,6 +249,7 @@ export function UserManagement({ onClose }: UserManagementProps) {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
                   placeholder="Enter password (min. 6 characters)"
+                  disabled={isLoading}
                 />
               </div>
               
@@ -163,16 +263,30 @@ export function UserManagement({ onClose }: UserManagementProps) {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
                   placeholder="Confirm password"
+                  disabled={isLoading}
                 />
               </div>
               
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="flex items-center bg-[#FF6600] hover:bg-[#e55a00] text-white px-4 py-2 rounded-md font-semibold transition-colors"
+                  disabled={isLoading}
+                  className="flex items-center bg-[#FF6600] hover:bg-[#e55a00] text-white px-4 py-2 rounded-md font-semibold transition-colors disabled:opacity-50"
                 >
-                  <PlusIcon className="h-5 w-5 mr-2" />
-                  Add User
+                  {isLoading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Adding...
+                    </>
+                  ) : (
+                    <>
+                      <PlusIcon className="h-5 w-5 mr-2" />
+                      Add User
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -184,7 +298,14 @@ export function UserManagement({ onClose }: UserManagementProps) {
               Admin Users ({users.length})
             </h3>
             
-            {users.length === 0 ? (
+            {isLoading ? (
+              <div className="flex justify-center py-8">
+                <svg className="animate-spin h-8 w-8 text-[#FF6600]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+            ) : users.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <UserIcon className="h-12 w-12 mx-auto text-gray-300 mb-2" />
                 <p>No admin users found</p>
@@ -196,6 +317,9 @@ export function UserManagement({ onClose }: UserManagementProps) {
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Username
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Email
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Created
@@ -220,6 +344,9 @@ export function UserManagement({ onClose }: UserManagementProps) {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {user.email}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(user.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -228,15 +355,15 @@ export function UserManagement({ onClose }: UserManagementProps) {
                             : 'Never'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button
-                            onClick={() => handleDeleteUser(user.username)}
-                            className="text-red-600 hover:text-red-900 flex items-center"
-                            disabled={users.length <= 1}
-                          >
-                            <TrashIcon className="h-4 w-4 mr-1" />
-                            Delete
-                          </button>
-                        </td>
+                  <button
+                    onClick={() => handleDeleteUser(user.id, user.username)}
+                    className="text-red-600 hover:text-red-900 flex items-center"
+                    disabled={users.length <= 1 || isLoading}
+                  >
+                    <TrashIcon className="h-4 w-4 mr-1" />
+                    Delete
+                  </button>
+                </td>
                       </tr>
                     ))}
                   </tbody>

@@ -3,24 +3,16 @@ import { AdminVehicleForm } from '../components/AdminVehicleForm';
 import { VehicleCard } from '../components/VehicleCard';
 import { UserManagement } from '../components/UserManagement';
 import { getVehicles, deleteVehicle, Vehicle } from '../utils/vehicleStorage';
-import { initializeDefaultUser, getCurrentUser, logoutUser } from '../utils/userManagement';
+import { useAuth } from '../contexts/AuthContext';
 import { PlusIcon, EyeIcon, EditIcon, TrashIcon, UserIcon, LogOutIcon } from 'lucide-react';
 
 export function Admin() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
+  const { user, logout } = useAuth();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showUserManagement, setShowUserManagement] = useState(false);
-  const [currentUser, setCurrentUser] = useState<string | null>(null);
-
-  // Initialize default user
-  useEffect(() => {
-    initializeDefaultUser();
-  }, []);
 
   // Load vehicles with useCallback for performance
   const loadVehicles = useCallback(() => {
@@ -45,35 +37,10 @@ export function Admin() {
     };
   }, [loadVehicles]);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // For demo purposes, we're using a simple authentication
-    // In a real application, this should be properly secured
-    const userCredentials = JSON.parse(localStorage.getItem('admin_credentials') || '{}');
-    const hashedPassword = btoa(password);
-    
-    if (userCredentials[username] === hashedPassword) {
-      setIsAuthenticated(true);
-      setCurrentUser(username);
-      // Update last login
-      const users = JSON.parse(localStorage.getItem('zamto_admin_users') || '[]');
-      const userIndex = users.findIndex((user: any) => user.username === username);
-      if (userIndex !== -1) {
-        users[userIndex].lastLogin = new Date().toISOString();
-        localStorage.setItem('zamto_admin_users', JSON.stringify(users));
-      }
-    } else {
-      alert('Incorrect username or password');
-    }
-  };
-
   const handleLogout = () => {
-    logoutUser();
-    setIsAuthenticated(false);
-    setCurrentUser(null);
-    setUsername('');
-    setPassword('');
+    if (window.confirm('Are you sure you want to logout?')) {
+      logout();
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -108,50 +75,9 @@ export function Admin() {
     vehicle.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (!isAuthenticated) {
-    return <div className="w-full min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-          <h1 className="text-3xl font-bold text-[#003366] mb-6 text-center">
-            Admin Login
-          </h1>
-          <form onSubmit={handleLogin}>
-            <div className="mb-4">
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                Username
-              </label>
-              <input 
-                type="text" 
-                id="username" 
-                value={username} 
-                onChange={e => setUsername(e.target.value)} 
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" 
-                placeholder="Enter username" 
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <input 
-                type="password" 
-                id="password" 
-                value={password} 
-                onChange={e => setPassword(e.target.value)} 
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" 
-                placeholder="Enter password" 
-                required
-              />
-            </div>
-            <button 
-              type="submit" 
-              className="w-full bg-[#FF6600] hover:bg-[#e55a00] text-white px-6 py-3 rounded-md font-semibold transition-colors"
-            >
-              Login
-            </button>
-          </form>
-        </div>
-      </div>;
+  // If user is not authenticated, redirect to login (handled by route protection)
+  if (!user) {
+    return null; // This should never happen as the route should protect this
   }
 
   return <div className="w-full min-h-screen bg-gray-50">
@@ -160,7 +86,7 @@ export function Admin() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-[#003366]">Admin Dashboard</h1>
-            <p className="text-gray-600 mt-2">Welcome, {currentUser}!</p>
+            <p className="text-gray-600 mt-2">Welcome, {user.username}!</p>
           </div>
           <div className="flex gap-2">
             <button 
