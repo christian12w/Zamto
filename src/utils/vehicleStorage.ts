@@ -35,7 +35,14 @@ export interface Vehicle {
   insuranceStatus?: string;   // Insurance status (for hire vehicles)
 }
 
+// Cache for vehicles to avoid repeated localStorage reads
+let vehiclesCache: Vehicle[] | null = null;
+// Cache for the last time localStorage was updated
+let lastUpdateTimestamp: number = 0;
+
 const STORAGE_KEY = 'zamto_vehicles';
+const CACHE_DURATION = 1000; // 1 second cache duration
+
 const defaultVehicles: Vehicle[] = [{
   id: '1',
   name: 'Toyota Land Cruiser Prado',
@@ -395,18 +402,42 @@ defaultVehicles.push({
   insuranceStatus: 'Commercial, Valid until 2026'
 });
 
+// Function to get vehicles with caching
 export function getVehicles(): Vehicle[] {
+  const now = Date.now();
+  
+  // Check if cache is valid
+  if (vehiclesCache && (now - lastUpdateTimestamp) < CACHE_DURATION) {
+    return vehiclesCache;
+  }
+  
   const stored = localStorage.getItem(STORAGE_KEY);
+  let vehicles: Vehicle[];
+  
   if (!stored) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultVehicles));
-    return defaultVehicles;
+    vehicles = defaultVehicles;
+  } else {
+    vehicles = JSON.parse(stored);
   }
-  return JSON.parse(stored);
+  
+  // Update cache
+  vehiclesCache = vehicles;
+  lastUpdateTimestamp = now;
+  
+  return vehicles;
 }
+
+// Function to save vehicles and invalidate cache
 export function saveVehicles(vehicles: Vehicle[]): void {
+  // Invalidate cache
+  vehiclesCache = null;
+  lastUpdateTimestamp = 0;
+  
   localStorage.setItem(STORAGE_KEY, JSON.stringify(vehicles));
   window.dispatchEvent(new CustomEvent('vehiclesUpdated'));
 }
+
 export function addVehicle(vehicle: Omit<Vehicle, 'id'>): Vehicle {
   const vehicles = getVehicles();
   const newVehicle = {
@@ -417,6 +448,7 @@ export function addVehicle(vehicle: Omit<Vehicle, 'id'>): Vehicle {
   saveVehicles(vehicles);
   return newVehicle;
 }
+
 export function updateVehicle(id: string, updates: Partial<Vehicle>): void {
   const vehicles = getVehicles();
   const index = vehicles.findIndex(v => v.id === id);
@@ -428,6 +460,7 @@ export function updateVehicle(id: string, updates: Partial<Vehicle>): void {
     saveVehicles(vehicles);
   }
 }
+
 export function deleteVehicle(id: string): void {
   const vehicles = getVehicles();
   const filtered = vehicles.filter(v => v.id !== id);

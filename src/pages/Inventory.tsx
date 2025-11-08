@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { VehicleCard } from '../components/VehicleCard';
 import { VehicleDetailsModal } from '../components/VehicleDetailsModal';
 import { getVehicles, Vehicle } from '../utils/vehicleStorage';
@@ -55,24 +55,35 @@ export function Inventory() {
     label: 'For Hire'
   }];
 
-  const loadVehicles = () => {
+  // Memoized function to load vehicles
+  const loadVehicles = useCallback(() => {
     setVehicles(getVehicles());
-  };
+  }, []);
 
   useEffect(() => {
     loadVehicles();
+    
     // Listen for vehicle updates from admin panel
     const handleVehiclesUpdate = () => {
-      loadVehicles();
+      // Use setTimeout to debounce the update
+      setTimeout(loadVehicles, 100);
     };
-    window.addEventListener('vehiclesUpdated', handleVehiclesUpdate);
+    
     // Also listen for storage events (when localStorage changes in another tab)
-    window.addEventListener('storage', handleVehiclesUpdate);
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'zamto_vehicles') {
+        loadVehicles();
+      }
+    };
+    
+    window.addEventListener('vehiclesUpdated', handleVehiclesUpdate);
+    window.addEventListener('storage', handleStorageChange);
+    
     return () => {
       window.removeEventListener('vehiclesUpdated', handleVehiclesUpdate);
-      window.removeEventListener('storage', handleVehiclesUpdate);
+      window.removeEventListener('storage', handleStorageChange);
     };
-  }, []);
+  }, [loadVehicles]);
 
   const filteredVehicles = vehicles.filter(vehicle => {
     // Filter by type first

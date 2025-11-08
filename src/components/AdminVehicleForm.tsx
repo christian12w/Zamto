@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { XIcon, UploadIcon, TrashIcon } from 'lucide-react';
 import { addVehicle, updateVehicle, Vehicle, VehicleImage } from '../utils/vehicleStorage';
 
@@ -38,10 +38,29 @@ export function AdminVehicleForm({
   
   const [images, setImages] = useState<VehicleImage[]>(vehicle?.images && vehicle.images.length > 0 ? vehicle.images : []);
   const imageLabels: Array<'exterior' | 'interior' | 'front' | 'back' | 'additional'> = ['exterior', 'interior', 'front', 'back', 'additional'];
+  
+  // Initialize images from vehicle prop when it changes
+  useEffect(() => {
+    if (vehicle?.images && vehicle.images.length > 0) {
+      setImages(vehicle.images);
+    } else if (vehicle?.image) {
+      // For backward compatibility with old vehicles that only have a single image
+      setImages([{
+        url: vehicle.image,
+        label: 'exterior'
+      }]);
+    }
+  }, [vehicle]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, label: (typeof imageLabels)[number]) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    // Check file size (limit to 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size too large. Please select an image smaller than 5MB.');
+      return;
+    }
     
     // Convert image to base64
     const reader = new FileReader();
@@ -74,7 +93,7 @@ export function AdminVehicleForm({
     
     const vehicleData = {
       ...formData,
-      features: formData.features.split(',').map(f => f.trim()),
+      features: formData.features.split(',').map(f => f.trim()).filter(f => f.length > 0),
       images: images,
       image: images[0]?.url || '' // Set main image as first image for backward compatibility
     };
@@ -138,7 +157,7 @@ export function AdminVehicleForm({
             </div>
             <p className="text-xs text-gray-500 mt-2">
               Upload photos showing exterior, interior, front view, back view,
-              and an additional angle. Images of any size are now accepted.
+              and an additional angle. Images should be less than 5MB each.
             </p>
           </div>
           
