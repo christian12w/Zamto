@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Menu, X, Car, LogIn, LogOut } from 'lucide-react';
+import { Menu, X, LogIn, LogOut } from 'lucide-react';
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -27,7 +27,11 @@ export function Navigation() {
         <div className="flex justify-between h-20 items-center">
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <Car className="h-8 w-8 text-[#FF6600]" />
+              <img 
+                src="/logo.png" 
+                alt="Zamto Africa Logo" 
+                className="h-12 w-auto"
+              />
               <span className="text-2xl font-bold text-[#003366]">Zamto Africa</span>
             </Link>
           </div>
