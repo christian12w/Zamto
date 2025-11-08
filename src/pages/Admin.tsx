@@ -1,16 +1,26 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AdminVehicleForm } from '../components/AdminVehicleForm';
 import { VehicleCard } from '../components/VehicleCard';
+import { UserManagement } from '../components/UserManagement';
 import { getVehicles, deleteVehicle, Vehicle } from '../utils/vehicleStorage';
-import { PlusIcon, EyeIcon, EditIcon, TrashIcon } from 'lucide-react';
+import { initializeDefaultUser, getCurrentUser, logoutUser } from '../utils/userManagement';
+import { PlusIcon, EyeIcon, EditIcon, TrashIcon, UserIcon, LogOutIcon } from 'lucide-react';
 
 export function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showUserManagement, setShowUserManagement] = useState(false);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
+
+  // Initialize default user
+  useEffect(() => {
+    initializeDefaultUser();
+  }, []);
 
   // Load vehicles with useCallback for performance
   const loadVehicles = useCallback(() => {
@@ -37,13 +47,33 @@ export function Admin() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real application, this would be properly secured
-    // For now, we're using a simple check
-    if (password === 'admin123') {
+    
+    // For demo purposes, we're using a simple authentication
+    // In a real application, this should be properly secured
+    const userCredentials = JSON.parse(localStorage.getItem('admin_credentials') || '{}');
+    const hashedPassword = btoa(password);
+    
+    if (userCredentials[username] === hashedPassword) {
       setIsAuthenticated(true);
+      setCurrentUser(username);
+      // Update last login
+      const users = JSON.parse(localStorage.getItem('zamto_admin_users') || '[]');
+      const userIndex = users.findIndex((user: any) => user.username === username);
+      if (userIndex !== -1) {
+        users[userIndex].lastLogin = new Date().toISOString();
+        localStorage.setItem('zamto_admin_users', JSON.stringify(users));
+      }
     } else {
-      alert('Incorrect password');
+      alert('Incorrect username or password');
     }
+  };
+
+  const handleLogout = () => {
+    logoutUser();
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    setUsername('');
+    setPassword('');
   };
 
   const handleDelete = (id: string) => {
@@ -65,6 +95,12 @@ export function Admin() {
     loadVehicles();
   };
 
+  const handleUserManagementClose = () => {
+    setShowUserManagement(false);
+    // Refresh users list
+    loadVehicles();
+  };
+
   // Filter vehicles based on search term
   const filteredVehicles = vehicles.filter(vehicle => 
     vehicle.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -80,12 +116,37 @@ export function Admin() {
           </h1>
           <form onSubmit={handleLogin}>
             <div className="mb-4">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                Username
+              </label>
+              <input 
+                type="text" 
+                id="username" 
+                value={username} 
+                onChange={e => setUsername(e.target.value)} 
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" 
+                placeholder="Enter username" 
+                required
+              />
+            </div>
+            <div className="mb-4">
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
-              <input type="password" id="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="Enter admin password" />
+              <input 
+                type="password" 
+                id="password" 
+                value={password} 
+                onChange={e => setPassword(e.target.value)} 
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" 
+                placeholder="Enter password" 
+                required
+              />
             </div>
-            <button type="submit" className="w-full bg-[#FF6600] hover:bg-[#e55a00] text-white px-6 py-3 rounded-md font-semibold transition-colors">
+            <button 
+              type="submit" 
+              className="w-full bg-[#FF6600] hover:bg-[#e55a00] text-white px-6 py-3 rounded-md font-semibold transition-colors"
+            >
               Login
             </button>
           </form>
@@ -95,10 +156,33 @@ export function Admin() {
 
   return <div className="w-full min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        {/* Header with user info and logout */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-[#003366]">Admin Dashboard</h1>
-            <p className="text-gray-600 mt-2">Manage your vehicle inventory</p>
+            <p className="text-gray-600 mt-2">Welcome, {currentUser}!</p>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setShowUserManagement(true)}
+              className="flex items-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition-colors"
+            >
+              <UserIcon className="h-5 w-5 mr-2" />
+              Users
+            </button>
+            <button 
+              onClick={handleLogout}
+              className="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+            >
+              <LogOutIcon className="h-5 w-5 mr-2" />
+              Logout
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <div>
+            <p className="text-gray-600">Manage your vehicle inventory</p>
           </div>
           <button 
             onClick={() => setShowForm(true)} 
@@ -234,6 +318,13 @@ export function Admin() {
         <AdminVehicleForm 
           vehicle={editingVehicle} 
           onClose={handleFormClose} 
+        />
+      )}
+      
+      {/* User Management Modal */}
+      {showUserManagement && (
+        <UserManagement 
+          onClose={handleUserManagementClose} 
         />
       )}
     </div>;

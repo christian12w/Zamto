@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Home } from './pages/Home';
 import { About } from './pages/About';
@@ -10,8 +10,14 @@ import { VehiclesForSale } from './pages/VehiclesForSale';
 import { VehiclesForHire } from './pages/VehiclesForHire';
 import { Navigation } from './components/Navigation';
 import { Footer } from './components/Footer';
+import { initializeDefaultUser } from './utils/userManagement';
 
 export function App() {
+  useEffect(() => {
+    // Initialize default admin user when app starts
+    initializeDefaultUser();
+  }, []);
+
   return <BrowserRouter>
       <div className="flex flex-col min-h-screen w-full bg-white">
         <Navigation />
