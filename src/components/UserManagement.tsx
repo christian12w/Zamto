@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { authService } from '../services/authService';
 import { PlusIcon, TrashIcon, UserIcon } from 'lucide-react';
 
 interface User {
@@ -14,40 +15,6 @@ interface User {
 interface UserManagementProps {
   onClose: () => void;
 }
-
-// Mock service for user management
-const userManagementService = {
-  async getUsers(token: string): Promise<User[]> {
-    // In a real app, this would be an API call
-    // For demo purposes, we'll return mock data
-    return [
-      {
-        id: '1',
-        username: 'admin',
-        email: 'admin@example.com',
-        role: 'admin',
-        createdAt: '2023-01-01T00:00:00Z',
-        lastLogin: '2023-12-01T10:30:00Z'
-      }
-    ];
-  },
-  
-  async addUser(token: string, userData: { username: string; email: string; password: string }): Promise<User> {
-    // In a real app, this would be an API call
-    return {
-      id: '2',
-      username: userData.username,
-      email: userData.email,
-      role: 'admin',
-      createdAt: new Date().toISOString()
-    };
-  },
-  
-  async deleteUser(token: string, userId: string): Promise<boolean> {
-    // In a real app, this would be an API call
-    return true;
-  }
-};
 
 export function UserManagement({ onClose }: UserManagementProps) {
   const { token } = useAuth();
@@ -72,8 +39,12 @@ export function UserManagement({ onClose }: UserManagementProps) {
     
     try {
       setIsLoading(true);
-      const userData = await userManagementService.getUsers(token);
-      setUsers(userData);
+      const response = await authService.getUsers(token);
+      if (response.success && response.users) {
+        setUsers(response.users);
+      } else {
+        setError(response.message || 'Failed to load users');
+      }
     } catch (err) {
       setError('Failed to load users');
     } finally {
@@ -120,21 +91,25 @@ export function UserManagement({ onClose }: UserManagementProps) {
     try {
       setIsLoading(true);
       // Add new user
-      await userManagementService.addUser(token, { username, email, password });
+      const response = await authService.register({ username, email, password });
       
-      // Reset form
-      setUsername('');
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
-      
-      setSuccess('User added successfully');
-      
-      // Reload users
-      await loadUsers();
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccess(''), 3000);
+      if (response.success) {
+        // Reset form
+        setUsername('');
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        
+        setSuccess('User added successfully');
+        
+        // Reload users
+        await loadUsers();
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError(response.message || 'Failed to add user');
+      }
     } catch (err) {
       setError('Failed to add user');
     } finally {
@@ -156,13 +131,13 @@ export function UserManagement({ onClose }: UserManagementProps) {
     if (window.confirm(`Are you sure you want to delete user "${username}"?`)) {
       try {
         setIsLoading(true);
-        const success = await userManagementService.deleteUser(token, userId);
+        const response = await authService.deleteUser(token, userId);
         
-        if (success) {
+        if (response.success) {
           setSuccess('User deleted successfully');
           await loadUsers();
         } else {
-          setError('Failed to delete user');
+          setError(response.message || 'Failed to delete user');
         }
         
         // Clear success message after 3 seconds

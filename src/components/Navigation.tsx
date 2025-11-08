@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { authService } from '../services/authService';
 import { Menu, X, LogIn, LogOut, Key } from 'lucide-react';
 
 export function Navigation() {
@@ -226,20 +227,22 @@ function PasswordChangeModal({ onClose }: { onClose: () => void }) {
     try {
       setIsLoading(true);
       
-      // In a real app, this would call the actual authService
-      // For now, we'll simulate the call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call the actual authService to change password
+      const response = await authService.changePassword(token, currentPassword, newPassword);
       
-      // Simulate successful password change
-      setSuccess('Password changed successfully!');
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      
-      // Close modal after 2 seconds
-      setTimeout(() => {
-        onClose();
-      }, 2000);
+      if (response.success) {
+        setSuccess('Password changed successfully!');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        
+        // Close modal after 2 seconds
+        setTimeout(() => {
+          onClose();
+        }, 2000);
+      } else {
+        setError(response.message || 'Failed to change password');
+      }
     } catch (err) {
       setError('Failed to change password');
     } finally {
