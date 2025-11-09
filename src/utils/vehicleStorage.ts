@@ -1,3 +1,5 @@
+import { sanitizeInput } from './security';
+
 export interface VehicleImage {
   url: string;
   label: 'exterior' | 'interior' | 'front' | 'back' | 'additional';
@@ -42,6 +44,46 @@ let lastUpdateTimestamp: number = 0;
 
 const STORAGE_KEY = 'zamto_vehicles';
 const CACHE_DURATION = 2000; // 2 second cache duration for better performance
+
+// Save vehicles to localStorage with security enhancements
+function saveVehicles(vehicles: Vehicle[]): void {
+  try {
+    // Sanitize all vehicle data before saving
+    const sanitizedVehicles = vehicles.map(vehicle => ({
+      ...vehicle,
+      name: sanitizeInput(vehicle.name),
+      category: sanitizeInput(vehicle.category),
+      price: sanitizeInput(vehicle.price),
+      description: sanitizeInput(vehicle.description),
+      features: vehicle.features.map((feature: string) => sanitizeInput(feature)),
+      image: sanitizeInput(vehicle.image),
+      images: vehicle.images.map((img: VehicleImage) => ({
+        url: sanitizeInput(img.url),
+        label: img.label
+      })),
+      // Sanitize optional fields if they exist
+      ...(vehicle.year && { year: vehicle.year }),
+      ...(vehicle.mileage && { mileage: sanitizeInput(vehicle.mileage) }),
+      ...(vehicle.transmission && { transmission: sanitizeInput(vehicle.transmission) }),
+      ...(vehicle.fuelType && { fuelType: sanitizeInput(vehicle.fuelType) }),
+      ...(vehicle.dailyRate && { dailyRate: sanitizeInput(vehicle.dailyRate) }),
+      ...(vehicle.engineSize && { engineSize: sanitizeInput(vehicle.engineSize) }),
+      ...(vehicle.color && { color: sanitizeInput(vehicle.color) }),
+      ...(vehicle.condition && { condition: vehicle.condition as 'Excellent' | 'Good' | 'Fair' | 'Poor' | undefined }),
+      ...(vehicle.serviceHistory && { serviceHistory: sanitizeInput(vehicle.serviceHistory) }),
+      ...(vehicle.accidentHistory && { accidentHistory: sanitizeInput(vehicle.accidentHistory) }),
+      ...(vehicle.warranty && { warranty: sanitizeInput(vehicle.warranty) }),
+      ...(vehicle.registrationStatus && { registrationStatus: sanitizeInput(vehicle.registrationStatus) }),
+      ...(vehicle.insuranceStatus && { insuranceStatus: sanitizeInput(vehicle.insuranceStatus) })
+    }));
+    
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitizedVehicles));
+    vehiclesCache = sanitizedVehicles as Vehicle[];
+    lastUpdateTimestamp = Date.now();
+  } catch (error) {
+    console.error('Failed to save vehicles:', error);
+  }
+}
 
 const defaultVehicles: Vehicle[] = [{
   id: '1',
@@ -428,36 +470,43 @@ export function getVehicles(): Vehicle[] {
   return vehicles;
 }
 
-// Function to save vehicles and invalidate cache
-export function saveVehicles(vehicles: Vehicle[]): void {
-  // Invalidate cache
-  vehiclesCache = null;
-  lastUpdateTimestamp = 0;
-  
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(vehicles));
-    window.dispatchEvent(new CustomEvent('vehiclesUpdated'));
-  } catch (e) {
-    // Handle storage quota exceeded error
-    if (e instanceof DOMException && e.name === 'QuotaExceededError') {
-      console.error('Storage quota exceeded. Consider using a backend service for larger storage needs.');
-      // In a real application, you might want to:
-      // 1. Notify the user
-      // 2. Implement a fallback mechanism
-      // 3. Suggest cleaning up old data
-      // 4. Use a backend service for storage
-    } else {
-      throw e;
-    }
-  }
-}
-
-export function addVehicle(vehicle: Omit<Vehicle, 'id'>): Vehicle {
+export function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Vehicle {
   const vehicles = getVehicles();
-  const newVehicle = {
-    ...vehicle,
-    id: Date.now().toString()
+  
+  // Sanitize input data
+  const sanitizedData: any = {
+    ...vehicleData,
+    name: sanitizeInput(vehicleData.name),
+    category: sanitizeInput(vehicleData.category),
+    price: sanitizeInput(vehicleData.price),
+    description: sanitizeInput(vehicleData.description),
+    features: vehicleData.features.map((feature: string) => sanitizeInput(feature)),
+    image: sanitizeInput(vehicleData.image),
+    images: vehicleData.images.map((img: VehicleImage) => ({
+      url: sanitizeInput(img.url),
+      label: img.label
+    })),
+    // Sanitize optional fields
+    ...(vehicleData.year && { year: vehicleData.year }),
+    ...(vehicleData.mileage && { mileage: sanitizeInput(vehicleData.mileage) }),
+    ...(vehicleData.transmission && { transmission: sanitizeInput(vehicleData.transmission) }),
+    ...(vehicleData.fuelType && { fuelType: sanitizeInput(vehicleData.fuelType) }),
+    ...(vehicleData.dailyRate && { dailyRate: sanitizeInput(vehicleData.dailyRate) }),
+    ...(vehicleData.engineSize && { engineSize: sanitizeInput(vehicleData.engineSize) }),
+    ...(vehicleData.color && { color: sanitizeInput(vehicleData.color) }),
+    ...(vehicleData.condition && { condition: vehicleData.condition as 'Excellent' | 'Good' | 'Fair' | 'Poor' | undefined }),
+    ...(vehicleData.serviceHistory && { serviceHistory: sanitizeInput(vehicleData.serviceHistory) }),
+    ...(vehicleData.accidentHistory && { accidentHistory: sanitizeInput(vehicleData.accidentHistory) }),
+    ...(vehicleData.warranty && { warranty: sanitizeInput(vehicleData.warranty) }),
+    ...(vehicleData.registrationStatus && { registrationStatus: sanitizeInput(vehicleData.registrationStatus) }),
+    ...(vehicleData.insuranceStatus && { insuranceStatus: sanitizeInput(vehicleData.insuranceStatus) })
   };
+  
+  const newVehicle: Vehicle = {
+    ...sanitizedData,
+    id: Date.now().toString()
+  } as Vehicle;
+  
   vehicles.push(newVehicle);
   saveVehicles(vehicles);
   return newVehicle;
@@ -470,22 +519,47 @@ export function updateVehicle(id: string, updates: Partial<Vehicle>): void {
     // Create a more robust merge that preserves existing data
     const existingVehicle = vehicles[index];
     
+    // Sanitize updates
+    const sanitizedUpdates: Partial<Vehicle> = {};
+    Object.keys(updates).forEach(key => {
+      const value = updates[key as keyof Vehicle];
+      if (typeof value === 'string') {
+        sanitizedUpdates[key as keyof Vehicle] = sanitizeInput(value) as any;
+      } else if (Array.isArray(value)) {
+        // Handle arrays (features, images)
+        if (key === 'features') {
+          sanitizedUpdates[key as keyof Vehicle] = value.map((item: any) => 
+            typeof item === 'string' ? sanitizeInput(item) : item
+          ) as any;
+        } else if (key === 'images') {
+          sanitizedUpdates[key as keyof Vehicle] = value.map((img: any) => ({
+            url: sanitizeInput(img.url),
+            label: img.label
+          })) as any;
+        } else {
+          sanitizedUpdates[key as keyof Vehicle] = value as any;
+        }
+      } else {
+        sanitizedUpdates[key as keyof Vehicle] = value as any;
+      }
+    });
+    
     // Merge features array properly
     let mergedFeatures = existingVehicle.features;
-    if (updates.features && Array.isArray(updates.features)) {
-      mergedFeatures = updates.features;
+    if (sanitizedUpdates.features && Array.isArray(sanitizedUpdates.features)) {
+      mergedFeatures = sanitizedUpdates.features;
     }
     
     // Merge images properly
     let mergedImages = existingVehicle.images;
-    if (updates.images && Array.isArray(updates.images)) {
-      mergedImages = updates.images;
+    if (sanitizedUpdates.images && Array.isArray(sanitizedUpdates.images)) {
+      mergedImages = sanitizedUpdates.images;
     }
     
     // Ensure main image is set correctly
     let mainImage = existingVehicle.image;
-    if (updates.image) {
-      mainImage = updates.image;
+    if (sanitizedUpdates.image) {
+      mainImage = sanitizedUpdates.image;
     } else if (mergedImages && mergedImages.length > 0) {
       mainImage = mergedImages[0].url;
     }
@@ -493,7 +567,7 @@ export function updateVehicle(id: string, updates: Partial<Vehicle>): void {
     // Create the updated vehicle with proper merging
     vehicles[index] = {
       ...existingVehicle,      // Start with all existing properties
-      ...updates,              // Apply all updates
+      ...sanitizedUpdates,     // Apply all sanitized updates
       features: mergedFeatures, // Use properly merged features
       images: mergedImages,    // Use properly merged images
       image: mainImage,        // Ensure main image is correctly set

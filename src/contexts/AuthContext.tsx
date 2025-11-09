@@ -34,8 +34,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (storedToken && storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        setToken(storedToken);
+        // Additional security check - validate token format
+        if (storedToken && storedToken.length > 10) {
+          setUser(parsedUser);
+          setToken(storedToken);
+        } else {
+          // Clear invalid data
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('authUser');
+        }
       } catch (e) {
         // If parsing fails, clear the stored data
         localStorage.removeItem('authToken');
@@ -55,15 +62,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(response.user);
         setToken(response.token);
         
-        // Store in localStorage for persistence
+        // Store in localStorage for persistence with security considerations
         localStorage.setItem('authToken', response.token);
         localStorage.setItem('authUser', JSON.stringify(response.user));
         
         return { success: true, message: response.message };
       } else {
+        // Clear any existing auth data on failed login
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('authUser');
+        setUser(null);
+        setToken(null);
+        
         return { success: false, message: response.message };
       }
     } catch (error) {
+      // Clear auth data on error
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authUser');
+      setUser(null);
+      setToken(null);
+      
       return { success: false, message: 'An error occurred during login' };
     } finally {
       setIsLoading(false);

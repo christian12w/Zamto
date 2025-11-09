@@ -1,6 +1,8 @@
 // Mock authentication service that simulates backend API calls
 // In a real application, this would connect to an actual backend server
 
+import { hashPassword, validateEmail, validatePassword, checkRateLimit } from '../utils/security';
+
 interface User {
   id: string;
   username: string;
@@ -39,9 +41,9 @@ let mockUsers: User[] = [
   }
 ];
 
-// Store user passwords separately (in a real app, these would be hashed)
+// Store user passwords separately (in a real app, these would be properly hashed)
 let userPasswords: Record<string, string> = {
-  'admin': 'admin123' // username: password
+  'admin': hashPassword('admin123') // username: hashed password
 };
 
 // Mock tokens - in a real app this would be handled by the backend
@@ -55,16 +57,33 @@ class AuthService {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  // Login user
+  // Login user with security enhancements
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     await this.delay();
+    
+    // Rate limiting
+    const ipIdentifier = 'login_' + credentials.username;
+    if (!checkRateLimit(ipIdentifier)) {
+      return {
+        success: false,
+        message: 'Too many login attempts. Please try again later.'
+      };
+    }
+    
+    // Input validation
+    if (!credentials.username || !credentials.password) {
+      return {
+        success: false,
+        message: 'Username and password are required'
+      };
+    }
     
     const user = mockUsers.find(
       u => u.username === credentials.username
     );
     
     // Check if user exists and password matches
-    if (user && userPasswords[user.username] === credentials.password) {
+    if (user && userPasswords[user.username] === hashPassword(credentials.password)) {
       // Update last login
       user.lastLogin = new Date().toISOString();
       
@@ -82,9 +101,43 @@ class AuthService {
     };
   }
 
-  // Register new user
+  // Register new user with security enhancements
   async register(data: RegisterData): Promise<AuthResponse> {
     await this.delay();
+    
+    // Rate limiting
+    const ipIdentifier = 'register_' + data.username;
+    if (!checkRateLimit(ipIdentifier)) {
+      return {
+        success: false,
+        message: 'Too many registration attempts. Please try again later.'
+      };
+    }
+    
+    // Input validation
+    if (!data.username || !data.email || !data.password) {
+      return {
+        success: false,
+        message: 'Username, email, and password are required'
+      };
+    }
+    
+    // Email validation
+    if (!validateEmail(data.email)) {
+      return {
+        success: false,
+        message: 'Invalid email format'
+      };
+    }
+    
+    // Password validation
+    const passwordValidation = validatePassword(data.password);
+    if (!passwordValidation.valid) {
+      return {
+        success: false,
+        message: passwordValidation.message
+      };
+    }
     
     // Check if username already exists
     if (mockUsers.some(u => u.username === data.username)) {
@@ -113,8 +166,8 @@ class AuthService {
     
     mockUsers.push(newUser);
     
-    // Store password
-    userPasswords[data.username] = data.password;
+    // Store hashed password
+    userPasswords[data.username] = hashPassword(data.password);
     
     // Generate token
     const token = `mock-jwt-token-${newUser.id}-${Date.now()}`;
@@ -128,9 +181,17 @@ class AuthService {
     };
   }
 
-  // Get all users (admin only)
+  // Get all users (admin only) with security enhancements
   async getUsers(token: string): Promise<{ success: boolean; users?: User[]; message?: string }> {
     await this.delay();
+    
+    // Validate token format
+    if (!token) {
+      return {
+        success: false,
+        message: 'Authentication required'
+      };
+    }
     
     // Validate token (simplified for demo)
     const userId = Object.keys(mockTokens).find(id => mockTokens[id] === token);
@@ -157,9 +218,17 @@ class AuthService {
     };
   }
 
-  // Delete user (admin only)
+  // Delete user (admin only) with security enhancements
   async deleteUser(token: string, userId: string): Promise<{ success: boolean; message?: string }> {
     await this.delay();
+    
+    // Validate inputs
+    if (!token || !userId) {
+      return {
+        success: false,
+        message: 'Token and user ID are required'
+      };
+    }
     
     // Validate token (simplified for demo)
     const requesterId = Object.keys(mockTokens).find(id => mockTokens[id] === token);
@@ -215,13 +284,30 @@ class AuthService {
     };
   }
 
-  // Change password
+  // Change password with security enhancements
   async changePassword(
     token: string, 
     currentPassword: string, 
     newPassword: string
   ): Promise<{ success: boolean; message?: string }> {
     await this.delay();
+    
+    // Validate inputs
+    if (!token || !currentPassword || !newPassword) {
+      return {
+        success: false,
+        message: 'All fields are required'
+      };
+    }
+    
+    // Password validation for new password
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.valid) {
+      return {
+        success: false,
+        message: passwordValidation.message
+      };
+    }
     
     // Validate token (simplified for demo)
     const userId = Object.keys(mockTokens).find(id => mockTokens[id] === token);
@@ -242,15 +328,23 @@ class AuthService {
     }
     
     // Verify current password
-    if (userPasswords[user.username] !== currentPassword) {
+    if (userPasswords[user.username] !== hashPassword(currentPassword)) {
       return {
         success: false,
         message: 'Current password is incorrect'
       };
     }
     
+    // Check if new password is different from current password
+    if (currentPassword === newPassword) {
+      return {
+        success: false,
+        message: 'New password must be different from current password'
+      };
+    }
+    
     // Update password
-    userPasswords[user.username] = newPassword;
+    userPasswords[user.username] = hashPassword(newPassword);
     
     return {
       success: true,
