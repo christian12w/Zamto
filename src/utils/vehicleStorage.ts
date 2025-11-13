@@ -1,4 +1,8 @@
 import { sanitizeInput } from './security';
+import { fixVehicleStorage } from './fixVehicleStorage';
+
+// Run the fix function when the module loads
+fixVehicleStorage();
 
 export interface VehicleImage {
   url: string;
@@ -80,6 +84,9 @@ function saveVehicles(vehicles: Vehicle[]): void {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitizedVehicles));
     vehiclesCache = sanitizedVehicles as Vehicle[];
     lastUpdateTimestamp = Date.now();
+    
+    // Dispatch event to notify other parts of the app that vehicles have been updated
+    window.dispatchEvent(new Event('vehiclesUpdated'));
   } catch (error) {
     console.error('Failed to save vehicles:', error);
   }
@@ -470,6 +477,16 @@ export function getVehicles(): Vehicle[] {
   return vehicles;
 }
 
+// Function to force refresh vehicles (bypass cache)
+export function refreshVehicles(): Vehicle[] {
+  // Clear cache
+  vehiclesCache = null;
+  lastUpdateTimestamp = 0;
+  
+  // Get fresh data
+  return getVehicles();
+}
+
 export function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Vehicle {
   const vehicles = getVehicles();
   
@@ -509,6 +526,11 @@ export function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Vehicle {
   
   vehicles.push(newVehicle);
   saveVehicles(vehicles);
+  
+  // Clear cache immediately to ensure fresh data on next getVehicles call
+  vehiclesCache = null;
+  lastUpdateTimestamp = 0;
+  
   return newVehicle;
 }
 
@@ -575,6 +597,10 @@ export function updateVehicle(id: string, updates: Partial<Vehicle>): void {
     };
     
     saveVehicles(vehicles);
+    
+    // Clear cache immediately to ensure fresh data on next getVehicles call
+    vehiclesCache = null;
+    lastUpdateTimestamp = 0;
   }
 }
 
@@ -582,4 +608,30 @@ export function deleteVehicle(id: string): void {
   const vehicles = getVehicles();
   const filtered = vehicles.filter(v => v.id !== id);
   saveVehicles(filtered);
+  
+  // Clear cache immediately to ensure fresh data on next getVehicles call
+  vehiclesCache = null;
+  lastUpdateTimestamp = 0;
+}
+
+export function clearVehicleCache(): void {
+  vehiclesCache = null;
+  lastUpdateTimestamp = 0;
+  console.log('Vehicle cache cleared');
+}
+
+export function getVehicleCacheInfo(): { 
+  isCached: boolean; 
+  cacheAge: number; 
+  cacheSize: number;
+  cacheDuration: number;
+} {
+  const now = Date.now();
+  const cacheAge = vehiclesCache ? now - lastUpdateTimestamp : 0;
+  return {
+    isCached: vehiclesCache !== null,
+    cacheAge,
+    cacheSize: vehiclesCache ? vehiclesCache.length : 0,
+    cacheDuration: CACHE_DURATION
+  };
 }

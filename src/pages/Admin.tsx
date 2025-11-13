@@ -2,9 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { AdminVehicleForm } from '../components/AdminVehicleForm';
 import { VehicleCard } from '../components/VehicleCard';
 import { UserManagement } from '../components/UserManagement';
-import { getVehicles, deleteVehicle, Vehicle } from '../utils/vehicleStorage';
+import { getVehicles, refreshVehicles, deleteVehicle, Vehicle, clearVehicleCache } from '../utils/vehicleStorage';
 import { useAuth } from '../contexts/AuthContext';
 import { PlusIcon, EyeIcon, EditIcon, TrashIcon, UserIcon, LogOutIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function Admin() {
   const { user, logout } = useAuth();
@@ -16,7 +17,9 @@ export function Admin() {
 
   // Load vehicles with useCallback for performance
   const loadVehicles = useCallback(() => {
-    setVehicles(getVehicles());
+    // Use refreshVehicles to bypass cache and get fresh data
+    const freshVehicles = refreshVehicles();
+    setVehicles(freshVehicles);
   }, []);
 
   useEffect(() => {
@@ -58,7 +61,8 @@ export function Admin() {
   const handleFormClose = () => {
     setShowForm(false);
     setEditingVehicle(null);
-    // Reload vehicles to reflect any changes
+    // Clear vehicle cache and reload vehicles to reflect any changes
+    clearVehicleCache();
     loadVehicles();
   };
 
@@ -89,6 +93,20 @@ export function Admin() {
             <p className="text-gray-600 mt-2">Welcome, {user.username}!</p>
           </div>
           <div className="flex gap-2">
+            <Link 
+              to="/debug" 
+              className="flex items-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition-colors"
+            >
+              <EyeIcon className="h-5 w-5 mr-2" />
+              Debug
+            </Link>
+            <Link 
+              to="/test" 
+              className="flex items-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition-colors"
+            >
+              <EyeIcon className="h-5 w-5 mr-2" />
+              Test
+            </Link>
             <button 
               onClick={() => setShowUserManagement(true)}
               className="flex items-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition-colors"
