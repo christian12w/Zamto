@@ -23,9 +23,9 @@ export function About() {
               </h2>
               <div className="mb-6">
                 <img 
-                  src="/logo.png" 
-                  alt="Zamto Africa Logo" 
-                  className="h-24 w-auto mx-auto"
+                  src="/E5799C1F-7C18-46C0-A5BF-15DE2B697EB9_L0_001-30_10_2025%2C_12_59_14.png" 
+                  alt="Zamto Africa Vehicle" 
+                  className="rounded-lg shadow-xl w-full max-w-2xl mx-auto"
                 />
               </div>
               <p className="text-gray-700 mb-4">
