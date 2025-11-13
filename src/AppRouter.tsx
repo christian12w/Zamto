@@ -7,8 +7,11 @@ import { Services } from './pages/Services';
 import { Inventory } from './pages/Inventory';
 import { Contact } from './pages/Contact';
 import { Admin } from './pages/Admin';
+import { Debug } from './pages/Debug';
+import { Test } from './pages/Test';
 import { VehiclesForSale } from './pages/VehiclesForSale';
 import { VehiclesForHire } from './pages/VehiclesForHire';
+import { TestCategories } from './pages/TestCategories';
 import { Login } from './pages/Login';
 
 // Protected route component
@@ -46,6 +49,30 @@ export function AppRouter() {
         element={
           <ProtectedRoute>
             <Admin />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/debug" 
+        element={
+          <ProtectedRoute>
+            <Debug />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/test" 
+        element={
+          <ProtectedRoute>
+            <Test />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/test-categories" 
+        element={
+          <ProtectedRoute>
+            <TestCategories />
           </ProtectedRoute>
         } 
       />

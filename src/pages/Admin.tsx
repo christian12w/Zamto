@@ -16,12 +16,20 @@ export function Admin() {
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showUserManagement, setShowUserManagement] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Load vehicles with useCallback for performance
-  const loadVehicles = useCallback(() => {
-    // Use refreshVehicles to bypass cache and get fresh data
-    const freshVehicles = refreshVehicles();
-    setVehicles(freshVehicles);
+  const loadVehicles = useCallback(async () => {
+    try {
+      setLoading(true);
+      // Use refreshVehicles to bypass cache and get fresh data
+      const freshVehicles = await refreshVehicles();
+      setVehicles(freshVehicles);
+    } catch (error) {
+      console.error('Failed to load vehicles:', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -30,7 +38,9 @@ export function Admin() {
     // Listen for vehicle updates
     const handleVehiclesUpdate = () => {
       // Debounce the update to prevent excessive re-renders
-      setTimeout(loadVehicles, 100);
+      setTimeout(() => {
+        loadVehicles();
+      }, 100);
     };
     
     window.addEventListener('vehiclesUpdated', handleVehiclesUpdate);
@@ -48,9 +58,9 @@ export function Admin() {
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this vehicle?')) {
-      deleteVehicle(id);
+      await deleteVehicle(id);
       loadVehicles();
     }
   };
@@ -143,6 +153,7 @@ export function Admin() {
             <button 
               onClick={() => setShowCSVImport(true)} 
               className="flex items-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold transition-colors"
+              disabled={loading}
             >
               <UploadIcon className="h-5 w-5 mr-2" />
               Import CSV
@@ -150,6 +161,7 @@ export function Admin() {
             <button 
               onClick={() => setShowForm(true)} 
               className="flex items-center bg-[#FF6600] hover:bg-[#e55a00] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold transition-colors"
+              disabled={loading}
             >
               <PlusIcon className="h-5 w-5 mr-2" />
               Add New Vehicle
@@ -165,6 +177,7 @@ export function Admin() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
+            disabled={loading}
           />
         </div>
 
@@ -172,107 +185,125 @@ export function Admin() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <div className="bg-white p-4 rounded-lg shadow">
             <h3 className="text-lg font-semibold text-gray-700">Total Vehicles</h3>
-            <p className="text-3xl font-bold text-[#003366]">{vehicles.length}</p>
+            {loading ? (
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#003366]"></div>
+            ) : (
+              <p className="text-3xl font-bold text-[#003366]">{vehicles.length}</p>
+            )}
           </div>
           <div className="bg-white p-4 rounded-lg shadow">
             <h3 className="text-lg font-semibold text-gray-700">For Sale</h3>
-            <p className="text-3xl font-bold text-[#003366]">{vehicles.filter(v => v.type === 'sale').length}</p>
+            {loading ? (
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#003366]"></div>
+            ) : (
+              <p className="text-3xl font-bold text-[#003366]">{vehicles.filter(v => v.type === 'sale').length}</p>
+            )}
           </div>
           <div className="bg-white p-4 rounded-lg shadow">
             <h3 className="text-lg font-semibold text-gray-700">For Hire</h3>
-            <p className="text-3xl font-bold text-[#003366]">{vehicles.filter(v => v.type === 'hire').length}</p>
+            {loading ? (
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#003366]"></div>
+            ) : (
+              <p className="text-3xl font-bold text-[#003366]">{vehicles.filter(v => v.type === 'hire').length}</p>
+            )}
           </div>
         </div>
 
         {/* Vehicle List */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Image
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Price
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Year
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Popular
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredVehicles.length > 0 ? (
-                  filteredVehicles.map(vehicle => (
-                    <tr key={vehicle.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <img 
-                          src={vehicle.images[0]?.url || vehicle.image} 
-                          alt={vehicle.name} 
-                          className="h-12 w-12 object-cover rounded"
-                        />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{vehicle.name}</div>
-                        <div className="text-sm text-gray-500 capitalize">{vehicle.type}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {vehicle.category}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {vehicle.type === 'sale' ? vehicle.price : vehicle.dailyRate}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {vehicle.year || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {vehicle.popular ? (
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            Yes
-                          </span>
-                        ) : (
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                            No
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button
-                          onClick={() => handleEdit(vehicle)}
-                          className="text-indigo-600 hover:text-indigo-900 mr-3"
-                        >
-                          <EditIcon className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(vehicle.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <TrashIcon className="h-5 w-5" />
-                        </button>
+            {loading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6600]"></div>
+              </div>
+            ) : (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Image
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Category
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Price
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Year
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Popular
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredVehicles.length > 0 ? (
+                    filteredVehicles.map(vehicle => (
+                      <tr key={vehicle.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <img 
+                            src={vehicle.images[0]?.url || vehicle.image} 
+                            alt={vehicle.name} 
+                            className="h-12 w-12 object-cover rounded"
+                          />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{vehicle.name}</div>
+                          <div className="text-sm text-gray-500 capitalize">{vehicle.type}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {vehicle.category}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {vehicle.type === 'sale' ? vehicle.price : vehicle.dailyRate}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {vehicle.year || 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {vehicle.popular ? (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                              Yes
+                            </span>
+                          ) : (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                              No
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <button
+                            onClick={() => handleEdit(vehicle)}
+                            className="text-indigo-600 hover:text-indigo-900 mr-3"
+                          >
+                            <EditIcon className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(vehicle.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <TrashIcon className="h-5 w-5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                        {searchTerm ? 'No vehicles match your search criteria.' : 'No vehicles found.'}
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
-                      {searchTerm ? 'No vehicles match your search criteria.' : 'No vehicles found.'}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </div>

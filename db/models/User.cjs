@@ -1,5 +1,5 @@
 // User model
-const { mongoose } = require('../db/config.cjs');
+const { mongoose } = require('../config.cjs');
 
 const userSchema = new mongoose.Schema({
   username: {

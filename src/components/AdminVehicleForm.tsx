@@ -38,6 +38,7 @@ export function AdminVehicleForm({
   
   const [images, setImages] = useState<VehicleImage[]>(vehicle?.images && vehicle.images.length > 0 ? vehicle.images : []);
   const imageLabels: Array<'exterior' | 'interior' | 'front' | 'back' | 'additional'> = ['exterior', 'interior', 'front', 'back', 'additional'];
+  const [uploadErrors, setUploadErrors] = useState<Record<string, string>>({});
   
   // Initialize images from vehicle prop when it changes
   useEffect(() => {
@@ -50,14 +51,62 @@ export function AdminVehicleForm({
         label: 'exterior'
       }]);
     }
+    
+    // Initialize form data when vehicle prop changes
+    if (vehicle) {
+      setFormData({
+        name: vehicle.name || '',
+        category: vehicle.category || 'SUV',
+        price: vehicle.price || '',
+        dailyRate: vehicle.dailyRate || '',
+        description: vehicle.description || '',
+        features: vehicle.features?.join(', ') || '',
+        popular: vehicle.popular || false,
+        year: vehicle.year || new Date().getFullYear(),
+        mileage: vehicle.mileage || '',
+        transmission: vehicle.transmission || 'Automatic',
+        fuelType: vehicle.fuelType || 'Petrol',
+        type: vehicle.type || 'sale',
+        engineSize: vehicle.engineSize || '',
+        doors: vehicle.doors || 4,
+        seats: vehicle.seats || 5,
+        color: vehicle.color || '',
+        condition: vehicle.condition || 'Good',
+        serviceHistory: vehicle.serviceHistory || '',
+        accidentHistory: vehicle.accidentHistory || '',
+        warranty: vehicle.warranty || '',
+        registrationStatus: vehicle.registrationStatus || '',
+        insuranceStatus: vehicle.insuranceStatus || ''
+      });
+    }
   }, [vehicle]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, label: (typeof imageLabels)[number]) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
+    // Clear previous error for this label
+    setUploadErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[label];
+      return newErrors;
+    });
+    
+    // Check file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadErrors(prev => ({
+        ...prev,
+        [label]: 'File size exceeds 10MB limit'
+      }));
+      return;
+    }
+    
     // Convert image to base64
     const reader = new FileReader();
+    reader.onloadstart = () => {
+      // Show loading state if needed
+    };
+    
     reader.onloadend = () => {
       const base64String = reader.result as string;
       // Remove existing image with same label if any
@@ -67,11 +116,25 @@ export function AdminVehicleForm({
         label
       }]);
     };
+    
+    reader.onerror = () => {
+      setUploadErrors(prev => ({
+        ...prev,
+        [label]: 'Failed to read file'
+      }));
+    };
+    
     reader.readAsDataURL(file);
   };
 
   const removeImage = (label: (typeof imageLabels)[number]) => {
     setImages(images.filter(img => img.label !== label));
+    // Clear error for this label if it exists
+    setUploadErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[label];
+      return newErrors;
+    });
   };
 
   const getImageForLabel = (label: (typeof imageLabels)[number]) => {
@@ -135,10 +198,14 @@ export function AdminVehicleForm({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {imageLabels.map(label => {
               const existingImage = getImageForLabel(label);
+              const error = uploadErrors[label];
               return <div key={label} className="border-2 border-dashed border-gray-300 rounded-lg p-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
                       {label} View
                     </label>
+                    {error && (
+                      <div className="text-red-500 text-xs mb-2">{error}</div>
+                    )}
                     {existingImage ? <div className="relative">
                         <img src={existingImage.url} alt={label} className="w-full h-32 object-cover rounded" />
                         <button type="button" onClick={() => removeImage(label)} className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full hover:bg-red-700">
@@ -156,7 +223,7 @@ export function AdminVehicleForm({
             </div>
             <p className="text-xs text-gray-500 mt-2">
               Upload photos showing exterior, interior, front view, back view,
-              and an additional angle. Images of any size are now accepted.
+              and an additional angle. Images up to 10MB are accepted.
             </p>
           </div>
           

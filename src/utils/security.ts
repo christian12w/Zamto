@@ -51,11 +51,20 @@ export function validatePassword(password: string): { valid: boolean; message: s
   return { valid: true, message: 'Password is strong' };
 }
 
-// Sanitize input to prevent XSS
+// Sanitize input to prevent XSS while avoiding double encoding
 export function sanitizeInput(input: string): string {
   if (!input) return '';
   
-  return input
+  // First, decode any existing HTML entities to prevent double encoding
+  let decoded = input
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/g, "'");
+  
+  // Then encode special characters
+  return decoded
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')

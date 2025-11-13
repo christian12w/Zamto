@@ -9,6 +9,7 @@ export function VehiclesForSale() {
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const categories = [{
     name: 'ALL',
@@ -36,8 +37,16 @@ export function VehiclesForSale() {
     label: 'Pickup Trucks'
   }];
 
-  const loadVehicles = () => {
-    setVehicles(getVehicles());
+  const loadVehicles = async () => {
+    try {
+      setLoading(true);
+      const vehicleData = await getVehicles();
+      setVehicles(vehicleData);
+    } catch (error) {
+      console.error('Failed to load vehicles:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -62,7 +71,13 @@ export function VehiclesForSale() {
     // Then filter by category
     if (selectedCategory === 'ALL') return true;
     if (selectedCategory === 'POPULAR') return vehicle.popular;
-    return vehicle.category === selectedCategory;
+    
+    // For category matching, we'll do a more robust comparison
+    // Trim whitespace and normalize the strings for comparison
+    const vehicleCategory = vehicle.category.trim();
+    const selectedCategoryNormalized = selectedCategory.trim();
+    
+    return vehicleCategory === selectedCategoryNormalized;
   });
 
   const handleShowDetails = (vehicle: Vehicle) => {
@@ -84,8 +99,14 @@ export function VehiclesForSale() {
           </p>
           <div className="mt-8 flex items-center space-x-4">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-3">
-              <span className="text-3xl font-bold">{filteredVehicles.length}</span>
-              <span className="text-sm ml-2">Vehicles Available</span>
+              {loading ? (
+                <span className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-white"></span>
+              ) : (
+                <>
+                  <span className="text-3xl font-bold">{filteredVehicles.length}</span>
+                  <span className="text-sm ml-2">Vehicles Available</span>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -96,7 +117,12 @@ export function VehiclesForSale() {
           <div className="flex flex-wrap gap-3 justify-center">
             {categories.map(category => {
             const Icon = category.icon;
-            return <button key={category.name} onClick={() => setSelectedCategory(category.name)} className={`px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 flex items-center space-x-2 ${selectedCategory === category.name ? 'bg-gradient-to-r from-[#FF6600] to-[#e55a00] text-white shadow-lg' : 'bg-gray-100 text-[#003366] hover:bg-gray-200'}`}>
+            return <button 
+              key={category.name} 
+              onClick={() => setSelectedCategory(category.name)} 
+              className={`px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 flex items-center space-x-2 ${selectedCategory === category.name ? 'bg-gradient-to-r from-[#FF6600] to-[#e55a00] text-white shadow-lg' : 'bg-gray-100 text-[#003366] hover:bg-gray-200'}`}
+              disabled={loading}
+            >
                   <Icon className="h-5 w-5" />
                   <span>{category.label}</span>
                 </button>;
@@ -107,22 +133,30 @@ export function VehiclesForSale() {
 
       <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredVehicles.map(vehicle => (
-              <VehicleCard 
-                key={vehicle.id} 
-                vehicle={vehicle} 
-                onShowDetails={handleShowDetails} 
-              />
-            ))}
-          </div>
-          {filteredVehicles.length === 0 && <div className="text-center py-16">
-              <div className="text-6xl mb-4">🚗</div>
-              <p className="text-gray-600 text-xl font-medium">
-                No vehicles found matching your criteria.
-              </p>
-              <p className="text-gray-500 mt-2">Try selecting different filters or check back soon!</p>
-            </div>}
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#003366]"></div>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredVehicles.map(vehicle => (
+                  <VehicleCard 
+                    key={vehicle.id} 
+                    vehicle={vehicle} 
+                    onShowDetails={handleShowDetails} 
+                  />
+                ))}
+              </div>
+              {filteredVehicles.length === 0 && <div className="text-center py-16">
+                  <div className="text-6xl mb-4">🚗</div>
+                  <p className="text-gray-600 text-xl font-medium">
+                    No vehicles found matching your criteria.
+                  </p>
+                  <p className="text-gray-500 mt-2">Try selecting different filters or check back soon!</p>
+                </div>}
+            </>
+          )}
         </div>
       </section>
       

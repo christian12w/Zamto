@@ -59,7 +59,7 @@ export function VehicleCard({
         <img 
           src={images[currentImageIndex].url} 
           alt={`${vehicle.name} - ${images[currentImageIndex].label}`} 
-          className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110" 
+          className="w-full h-full object-contain transform transition-transform duration-500 group-hover:scale-110" 
           loading="lazy"
         />
         {images.length > 1 && <>

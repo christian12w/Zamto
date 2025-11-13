@@ -1,75 +1,96 @@
-/**
- * Fix vehicle storage issues in localStorage
- */
-export function fixVehicleStorage(): { success: boolean; message: string } {
+// Utility to fix double-encoded data in vehicle storage
+const STORAGE_KEY = 'zamto_vehicles';
+
+export function fixDoubleEncodedAmpersands(text: string): string {
+  if (!text || typeof text !== 'string') return text;
+  
+  // Fix the repeated ampersand encoding issue
+  let fixed = text;
+  // Replace multiple &amp; sequences iteratively until no more changes
+  let previousLength;
+  do {
+    previousLength = fixed.length;
+    fixed = fixed
+      .replace(/&amp;amp;/g, '&amp;')
+      .replace(/&amp;quot;/g, '&quot;')
+      .replace(/&amp;lt;/g, '&lt;')
+      .replace(/&amp;gt;/g, '&gt;')
+      .replace(/&amp;#x27;/g, '&#x27;');
+  } while (fixed.length < previousLength);
+  
+  return fixed;
+}
+
+export function fixVehicleStorage(): void {
   try {
-    const STORAGE_KEY = 'zamto_vehicles';
-    
-    // Get current data
     const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return;
     
-    if (!stored) {
-      return { success: true, message: 'No vehicle data found - nothing to fix' };
+    // Parse the stored data
+    const vehicles = JSON.parse(stored);
+    
+    // Check if this is an array of vehicles
+    if (!Array.isArray(vehicles)) return;
+    
+    // Check if any vehicles have double-encoded data
+    let needsFixing = false;
+    for (const vehicle of vehicles) {
+      // Check common fields for double-encoded ampersands
+      if (typeof vehicle.name === 'string' && vehicle.name.includes('&amp;amp;')) {
+        needsFixing = true;
+        break;
+      }
+      if (typeof vehicle.category === 'string' && vehicle.category.includes('&amp;amp;')) {
+        needsFixing = true;
+        break;
+      }
+      if (typeof vehicle.description === 'string' && vehicle.description.includes('&amp;amp;')) {
+        needsFixing = true;
+        break;
+      }
     }
     
-    // Try to parse the data
-    let vehicles: any[];
-    try {
-      vehicles = JSON.parse(stored);
-    } catch (parseError) {
-      console.error('Error parsing vehicle data:', parseError);
-      // If we can't parse it, remove the corrupted data
-      localStorage.removeItem(STORAGE_KEY);
-      return { success: true, message: 'Removed corrupted vehicle data' };
-    }
+    // If no fixing needed, return early
+    if (!needsFixing) return;
     
-    // Validate that it's an array
-    if (!Array.isArray(vehicles)) {
-      console.error('Vehicle data is not an array:', typeof vehicles);
-      localStorage.removeItem(STORAGE_KEY);
-      return { success: true, message: 'Removed invalid vehicle data structure' };
-    }
+    console.log('Fixing double-encoded data in vehicle storage...');
     
-    // Fix any vehicles that might have issues
-    const fixedVehicles = vehicles.map(vehicle => {
-      // Ensure all required fields are present
+    // Fix all vehicles
+    const fixedVehicles = vehicles.map((vehicle: any) => {
       return {
-        id: vehicle.id || Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        name: vehicle.name || 'Unknown Vehicle',
-        category: vehicle.category || 'SUV',
-        price: vehicle.price || 'Price not set',
-        image: vehicle.image || '',
-        images: Array.isArray(vehicle.images) ? vehicle.images : 
-                vehicle.image ? [{ url: vehicle.image, label: 'exterior' }] : [],
-        description: vehicle.description || '',
-        features: Array.isArray(vehicle.features) ? vehicle.features : [],
-        popular: Boolean(vehicle.popular),
-        type: vehicle.type === 'hire' ? 'hire' : 'sale',
-        ...vehicle // Keep all other properties
+        ...vehicle,
+        name: fixDoubleEncodedAmpersands(vehicle.name),
+        category: fixDoubleEncodedAmpersands(vehicle.category),
+        price: fixDoubleEncodedAmpersands(vehicle.price),
+        description: fixDoubleEncodedAmpersands(vehicle.description),
+        features: Array.isArray(vehicle.features) 
+          ? vehicle.features.map((feature: string) => fixDoubleEncodedAmpersands(feature))
+          : vehicle.features,
+        image: fixDoubleEncodedAmpersands(vehicle.image),
+        images: Array.isArray(vehicle.images)
+          ? vehicle.images.map((img: any) => ({
+              ...img,
+              url: fixDoubleEncodedAmpersands(img.url)
+            }))
+          : vehicle.images,
+        mileage: fixDoubleEncodedAmpersands(vehicle.mileage),
+        transmission: fixDoubleEncodedAmpersands(vehicle.transmission),
+        fuelType: fixDoubleEncodedAmpersands(vehicle.fuelType),
+        dailyRate: fixDoubleEncodedAmpersands(vehicle.dailyRate),
+        engineSize: fixDoubleEncodedAmpersands(vehicle.engineSize),
+        color: fixDoubleEncodedAmpersands(vehicle.color),
+        serviceHistory: fixDoubleEncodedAmpersands(vehicle.serviceHistory),
+        accidentHistory: fixDoubleEncodedAmpersands(vehicle.accidentHistory),
+        warranty: fixDoubleEncodedAmpersands(vehicle.warranty),
+        registrationStatus: fixDoubleEncodedAmpersands(vehicle.registrationStatus),
+        insuranceStatus: fixDoubleEncodedAmpersands(vehicle.insuranceStatus)
       };
     });
     
-    // Save the fixed data
+    // Save the fixed data back to localStorage
     localStorage.setItem(STORAGE_KEY, JSON.stringify(fixedVehicles));
-    
-    return { 
-      success: true, 
-      message: `Fixed ${vehicles.length} vehicles in storage` 
-    };
+    console.log('Successfully fixed double-encoded data in vehicle storage');
   } catch (error) {
-    console.error('Error fixing vehicle storage:', error);
-    return { 
-      success: false, 
-      message: `Failed to fix vehicle storage: ${error instanceof Error ? error.message : String(error)}` 
-    };
+    console.error('Error fixing vehicle storage data:', error);
   }
-}
-
-/**
- * Clear vehicle storage cache to force a refresh
- */
-export function clearVehicleStorageCache(): void {
-  // Dispatch event to notify other parts of the app
-  window.dispatchEvent(new Event('vehiclesUpdated'));
-  console.log('Vehicle storage cache cleared');
 }

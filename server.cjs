@@ -1,6 +1,9 @@
 // Simple backend server for testing the Zamto Africa frontend integration
 // This is a basic example for development purposes only
 
+// Load environment variables
+require('dotenv').config();
+
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');

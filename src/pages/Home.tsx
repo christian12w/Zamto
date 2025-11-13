@@ -15,18 +15,30 @@ export function Home() {
     pickupTrucks: 0
   });
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const vehicles = getVehicles();
-    setVehicleCounts({
-      all: vehicles.length,
-      sale: vehicles.filter(v => v.type === 'sale').length,
-      hire: vehicles.filter(v => v.type === 'hire').length,
-      popular: vehicles.filter(v => v.popular).length,
-      suv: vehicles.filter(v => v.category === 'SUV').length,
-      smallCars: vehicles.filter(v => v.category === 'SMALL CARS').length,
-      familyCars: vehicles.filter(v => v.category === 'GROUPS & FAMILY CARS').length,
-      pickupTrucks: vehicles.filter(v => v.category === 'PICKUP TRUCKS').length
-    });
+    const loadVehicleCounts = async () => {
+      try {
+        const vehicles = await getVehicles();
+        setVehicleCounts({
+          all: vehicles.length,
+          sale: vehicles.filter(v => v.type === 'sale').length,
+          hire: vehicles.filter(v => v.type === 'hire').length,
+          popular: vehicles.filter(v => v.popular).length,
+          suv: vehicles.filter(v => v.category === 'SUV').length,
+          smallCars: vehicles.filter(v => v.category === 'SMALL CARS').length,
+          familyCars: vehicles.filter(v => v.category === 'GROUPS & FAMILY CARS').length,
+          pickupTrucks: vehicles.filter(v => v.category === 'PICKUP TRUCKS').length
+        });
+      } catch (error) {
+        console.error('Failed to load vehicle counts:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadVehicleCounts();
   }, []);
 
   const features = [{
@@ -167,7 +179,11 @@ export function Home() {
                   {category.name}
                 </h3>
                 <p className="text-[#228B22] font-semibold text-sm">
-                  {category.count} vehicle{category.count !== 1 ? 's' : ''}
+                  {loading ? (
+                    <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-[#228B22]"></span>
+                  ) : (
+                    `${category.count} vehicle${category.count !== 1 ? 's' : ''}`
+                  )}
                 </p>
               </Link>
             ))}
@@ -187,7 +203,13 @@ export function Home() {
                 Browse our extensive collection of quality pre-owned and new vehicles. 
                 All vehicles are thoroughly inspected and come with competitive financing options.
               </p>
-              <p className="text-2xl sm:text-3xl font-bold mb-4">{vehicleCounts.sale} Vehicles Available</p>
+              <p className="text-2xl sm:text-3xl font-bold mb-4">
+                {loading ? (
+                  <span className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-white"></span>
+                ) : (
+                  `${vehicleCounts.sale} Vehicles Available`
+                )}
+              </p>
               <Link 
                 to="/vehicles-for-sale" 
                 className="inline-block bg-[#FF6600] hover:bg-[#e55a00] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold transition-colors text-sm sm:text-base text-center"
@@ -205,7 +227,13 @@ export function Home() {
                 Need a vehicle for a short period? Rent from our fleet of well-maintained vehicles 
                 suitable for business trips, family outings, or special occasions.
               </p>
-              <p className="text-2xl sm:text-3xl font-bold mb-4">{vehicleCounts.hire} Vehicles Available</p>
+              <p className="text-2xl sm:text-3xl font-bold mb-4">
+                {loading ? (
+                  <span className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-white"></span>
+                ) : (
+                  `${vehicleCounts.hire} Vehicles Available`
+                )}
+              </p>
               <Link 
                 to="/vehicles-for-hire" 
                 className="inline-block bg-[#003366] hover:bg-[#002244] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold transition-colors text-sm sm:text-base text-center"
@@ -217,42 +245,58 @@ export function Home() {
         </div>
       </section>
 
-      <section className="py-16 bg-white">
+      {/* Features Section */}
+      <section className="py-12 sm:py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#003366] mb-4">
-              Why Choose Us?
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#003366] mb-3 sm:mb-4">
+              Why Choose Zamto Africa?
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              At Zamto Africa, we are more than just car sellers; we are
-              automotive enthusiasts passionate about connecting people with
-              quality vehicles.
+            <p className="text-gray-600 max-w-2xl mx-auto text-sm sm:text-base">
+              We're committed to providing you with an exceptional automotive experience
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => <div key={index} className="bg-gray-50 p-6 rounded-lg hover:shadow-lg transition-shadow">
-                <div className="text-[#FF6600] mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-semibold text-[#003366] mb-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            {features.map((feature, index) => (
+              <div key={index} className="bg-white p-6 sm:p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                <div className="text-[#FF6600] mb-4">
+                  {feature.icon}
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-[#003366] mb-3">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600">{feature.description}</p>
-              </div>)}
+                <p className="text-gray-600 text-sm sm:text-base">
+                  {feature.description}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
-      
-      <section className="py-16 bg-[#003366] text-white">
+
+      {/* CTA Section */}
+      <section className="py-12 sm:py-16 bg-[#003366]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to Find Your Dream Car?
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 sm:mb-6">
+            Ready to Find Your Perfect Vehicle?
           </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Visit our showroom or contact us today to explore our extensive
-            collection of Japanese imported vehicles.
+          <p className="text-blue-100 max-w-2xl mx-auto mb-6 sm:mb-8 text-sm sm:text-base">
+            Whether you're looking to buy or rent, our team is ready to help you drive away in the vehicle of your dreams.
           </p>
-          <Link to="/contact" className="inline-block bg-[#FF6600] hover:bg-[#e55a00] text-white px-8 py-3 rounded-md font-semibold transition-colors">
-            Get Started
-          </Link>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link 
+              to="/inventory" 
+              className="bg-[#FF6600] hover:bg-[#e55a00] text-white px-6 py-3 sm:px-8 sm:py-4 rounded-md font-semibold transition-colors text-sm sm:text-base"
+            >
+              Browse Our Inventory
+            </Link>
+            <Link 
+              to="/contact" 
+              className="bg-white hover:bg-gray-100 text-[#003366] px-6 py-3 sm:px-8 sm:py-4 rounded-md font-semibold transition-colors text-sm sm:text-base"
+            >
+              Schedule a Test Drive
+            </Link>
+          </div>
         </div>
       </section>
     </div>;

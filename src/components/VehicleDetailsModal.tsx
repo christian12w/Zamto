@@ -54,7 +54,7 @@ export function VehicleDetailsModal({ vehicle, onClose }: VehicleDetailsModalPro
             <img 
               src={images[currentImageIndex].url} 
               alt={`${vehicle.name} - ${images[currentImageIndex].label}`} 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
               loading="lazy"
             />
             {images.length > 1 && (
