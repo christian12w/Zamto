@@ -15,7 +15,7 @@ export function About() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <img src="https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=800" alt="Zamto Africa Vehicles" className="rounded-lg shadow-xl w-full" />
+              <img src="/about us image replacement .jpg" alt="Zamto Africa Vehicles" className="rounded-lg shadow-xl w-full" />
             </div>
             <div>
               <h2 className="text-3xl font-bold text-[#003366] mb-6">
