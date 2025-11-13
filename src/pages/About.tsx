@@ -15,7 +15,7 @@ export function About() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <img src="/E5799C1F-7C18-46C0-A5BF-15DE2B697EB9_L0_001-30_10_2025%2C_12_59_14.png" alt="Zamto Africa Vehicles" className="rounded-lg shadow-xl w-full" />
+              <img src="https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=800" alt="Zamto Africa Vehicles" className="rounded-lg shadow-xl w-full" />
             </div>
             <div>
               <h2 className="text-3xl font-bold text-[#003366] mb-6">
@@ -23,7 +23,7 @@ export function About() {
               </h2>
               <div className="mb-6">
                 <img 
-                  src="/E5799C1F-7C18-46C0-A5BF-15DE2B697EB9_L0_001-30_10_2025%2C_12_59_14.png" 
+                  src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800" 
                   alt="Zamto Africa Vehicle" 
                   className="rounded-lg shadow-xl w-full max-w-2xl mx-auto"
                 />
