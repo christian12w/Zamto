@@ -2,15 +2,17 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { AdminVehicleForm } from '../components/AdminVehicleForm';
 import { VehicleCard } from '../components/VehicleCard';
 import { UserManagement } from '../components/UserManagement';
+import { CSVImport } from '../components/CSVImport';
 import { getVehicles, refreshVehicles, deleteVehicle, Vehicle, clearVehicleCache } from '../utils/vehicleStorage';
 import { useAuth } from '../contexts/AuthContext';
-import { PlusIcon, EyeIcon, EditIcon, TrashIcon, UserIcon, LogOutIcon } from 'lucide-react';
+import { PlusIcon, EyeIcon, EditIcon, TrashIcon, UserIcon, LogOutIcon, UploadIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function Admin() {
   const { user, logout } = useAuth();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [showCSVImport, setShowCSVImport] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showUserManagement, setShowUserManagement] = useState(false);
@@ -72,6 +74,15 @@ export function Admin() {
     loadVehicles();
   };
 
+  const handleCSVImportClose = () => {
+    setShowCSVImport(false);
+  };
+
+  const handleImportSuccess = () => {
+    // Refresh vehicle list after successful import
+    loadVehicles();
+  };
+
   // Filter vehicles based on search term
   const filteredVehicles = vehicles.filter(vehicle => 
     vehicle.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -128,13 +139,22 @@ export function Admin() {
           <div>
             <p className="text-gray-600">Manage your vehicle inventory</p>
           </div>
-          <button 
-            onClick={() => setShowForm(true)} 
-            className="flex items-center bg-[#FF6600] hover:bg-[#e55a00] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold transition-colors"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Add New Vehicle
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setShowCSVImport(true)} 
+              className="flex items-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold transition-colors"
+            >
+              <UploadIcon className="h-5 w-5 mr-2" />
+              Import CSV
+            </button>
+            <button 
+              onClick={() => setShowForm(true)} 
+              className="flex items-center bg-[#FF6600] hover:bg-[#e55a00] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold transition-colors"
+            >
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Add New Vehicle
+            </button>
+          </div>
         </div>
 
         {/* Search Bar */}
@@ -262,6 +282,14 @@ export function Admin() {
         <AdminVehicleForm 
           vehicle={editingVehicle} 
           onClose={handleFormClose} 
+        />
+      )}
+      
+      {/* CSV Import Modal */}
+      {showCSVImport && (
+        <CSVImport 
+          onClose={handleCSVImportClose} 
+          onImportSuccess={handleImportSuccess}
         />
       )}
       
