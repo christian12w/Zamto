@@ -12,7 +12,7 @@ export function Navigation() {
 
   const navItems = [
     { name: 'Home', path: '/' },
-    { name: 'About', path: '/about' },
+    { name: 'About Us', path: '/about' },
     { name: 'Services', path: '/services' },
     { name: 'Inventory', path: '/inventory' },
     { name: 'Vehicles For Sale', path: '/vehicles-for-sale' },

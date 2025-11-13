@@ -21,6 +21,13 @@ export function About() {
               <h2 className="text-3xl font-bold text-[#003366] mb-6">
                 Our Story
               </h2>
+              <div className="mb-6">
+                <img 
+                  src="/logo.png" 
+                  alt="Zamto Africa Logo" 
+                  className="h-24 w-auto mx-auto"
+                />
+              </div>
               <p className="text-gray-700 mb-4">
                 At Zamto Africa Company Limited, we are more than just car
                 sellers; we are automotive enthusiasts passionate about
