@@ -47,9 +47,9 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-// Increase the payload limit for JSON and URL-encoded data
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+// Increase the payload limit for JSON and URL-encoded data to allow larger images
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.use((req, res, next) => {
   console.log(`Incoming request: ${req.method} ${req.path} from ${req.get('origin') || 'no origin'}`);

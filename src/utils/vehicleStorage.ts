@@ -135,17 +135,6 @@ export async function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Promise<Vehi
       return null;
     }
     
-    // Log the vehicle data size for debugging
-    const jsonData = JSON.stringify(vehicleData);
-    console.log('Vehicle data size:', jsonData.length, 'characters');
-    console.log('Estimated base64 size:', jsonData.length * 1.33, 'characters');
-    
-    // Check if the data is too large
-    if (jsonData.length > 8 * 1024 * 1024) { // 8MB limit
-      alert('Vehicle data is too large. Please reduce the size of your images.');
-      return null;
-    }
-    
     // Fix any double-encoded data in the input
     const fixedData: any = {
       ...vehicleData,
@@ -216,20 +205,12 @@ export async function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Promise<Vehi
       return response.vehicle;
     } else {
       console.error('Failed to add vehicle:', response.message);
-      if (response.message && response.message.includes('413')) {
-        alert('Failed to add vehicle: The vehicle data is too large. Please reduce the size of your images.');
-      } else {
-        alert(`Failed to add vehicle: ${response.message}`);
-      }
+      alert(`Failed to add vehicle: ${response.message}`);
       return null;
     }
   } catch (error: any) {
     console.error('Failed to add vehicle:', error);
-    if (error.message && error.message.includes('413')) {
-      alert('Failed to add vehicle: The vehicle data is too large. Please reduce the size of your images.');
-    } else {
-      alert('An error occurred while adding the vehicle. Please try again.');
-    }
+    alert('An error occurred while adding the vehicle. Please try again.');
     return null;
   }
 }
@@ -318,8 +299,6 @@ export async function updateVehicle(id: string, updates: Partial<Vehicle>): Prom
     console.error('Failed to update vehicle:', error);
     if (error.message && error.message.includes('timeout')) {
       alert('Request timeout - the server took too long to respond. Please try again or check your network connection.');
-    } else if (error.message && error.message.includes('413')) {
-      alert('Failed to update vehicle: The vehicle data is too large. Please reduce the size of your images.');
     } else {
       alert('An error occurred while updating the vehicle. Please try again.');
     }
