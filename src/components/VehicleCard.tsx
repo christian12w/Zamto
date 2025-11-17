@@ -34,7 +34,7 @@ export function VehicleCard({
     }
   }, [currentImageIndex, images]);
 
-  return <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-transparent hover:border-[#FF6600]">
+  return <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-transparent hover:border-[#FF6600] h-full flex flex-col">
       {vehicle.popular && <div className="bg-gradient-to-r from-[#FF6600] to-[#e55a00] text-white text-sm font-bold px-4 py-2 flex items-center">
           <SparklesIcon className="h-4 w-4 mr-2" />
           POPULAR CHOICE
@@ -55,7 +55,7 @@ export function VehicleCard({
         )}
       </div>
       
-      <div className="h-48 sm:h-56 overflow-hidden relative group">
+      <div className="h-56 sm:h-64 overflow-hidden relative group flex-grow">
         <img 
           src={images[currentImageIndex].url} 
           alt={`${vehicle.name} - ${images[currentImageIndex].label}`} 
@@ -93,14 +93,14 @@ export function VehicleCard({
           </>}
       </div>
       
-      <div className="p-4 sm:p-6">
+      <div className="p-4 sm:p-6 flex-grow flex flex-col">
         <div className="flex justify-between items-start mb-2 sm:mb-3">
           <h3 className="text-xl sm:text-2xl font-bold text-[#003366]">{vehicle.name}</h3>
-          <span className="text-xs sm:text-sm bg-gradient-to-r from-blue-500 to-blue-600 text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full font-semibold">
+          <span className="text-xs sm:text-sm bg-gradient-to-r from-blue-500 to-blue-600 text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full font-semibold whitespace-nowrap">
             {vehicle.category}
           </span>
         </div>
-        <p className="text-gray-600 mb-4 text-sm sm:text-base line-clamp-2">{vehicle.description}</p>
+        <p className="text-gray-600 mb-4 text-sm sm:text-base line-clamp-2 flex-grow">{vehicle.description}</p>
         <ul className="space-y-2 mb-4">
           {vehicle.features.slice(0, 3).map((feature, index) => (
             <li key={index} className="flex items-start text-xs sm:text-sm text-gray-700">
@@ -110,7 +110,7 @@ export function VehicleCard({
           ))}
         </ul>
         
-        <div className="border-t border-gray-100 pt-4">
+        <div className="border-t border-gray-100 pt-4 mt-auto">
           {/* Display price or daily rate based on vehicle type */}
           {vehicle.type === 'sale' ? (
             <div className="flex justify-between items-center mb-3">
