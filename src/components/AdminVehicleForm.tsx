@@ -101,6 +101,17 @@ export function AdminVehicleForm({
       return;
     }
     
+    // Additional check for base64 encoded size (approximate)
+    // Base64 encoding increases size by ~33%
+    const estimatedBase64Size = file.size * 1.33;
+    if (estimatedBase64Size > 8 * 1024 * 1024) { // 8MB limit for base64
+      setUploadErrors(prev => ({
+        ...prev,
+        [label]: 'Image is too large. Please choose a smaller image.'
+      }));
+      return;
+    }
+    
     // Convert image to base64
     const reader = new FileReader();
     reader.onloadstart = () => {
@@ -109,6 +120,15 @@ export function AdminVehicleForm({
     
     reader.onloadend = () => {
       const base64String = reader.result as string;
+      // Additional check on actual base64 size
+      if (base64String.length > 8 * 1024 * 1024) { // 8MB limit
+        setUploadErrors(prev => ({
+          ...prev,
+          [label]: 'Image is too large after processing. Please choose a smaller image.'
+        }));
+        return;
+      }
+      
       // Remove existing image with same label if any
       const filteredImages = images.filter(img => img.label !== label);
       setImages([...filteredImages, {
