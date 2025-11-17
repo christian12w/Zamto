@@ -37,8 +37,7 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Indexes
-userSchema.index({ username: 1 });
-userSchema.index({ email: 1 });
+// Remove duplicate index definitions since unique: true already creates indexes
+// Only add compound indexes or special indexes here if needed
 
 module.exports = mongoose.model('User', userSchema);
