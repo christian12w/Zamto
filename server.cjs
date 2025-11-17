@@ -459,29 +459,12 @@ app.post('/api/vehicles', authenticateToken, requireAdmin, async (req, res) => {
     
     console.log('Adding new vehicle with data:', JSON.stringify(vehicleData, null, 2));
     
-    // Validate input with more detailed checks
-    if (!vehicleData.name || vehicleData.name.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        message: 'Vehicle name is required'
-      });
+    // Fix any HTML entity encoding issues
+    if (vehicleData.category) {
+      vehicleData.category = vehicleData.category.replace(/&amp;/g, '&');
     }
     
-    if (!vehicleData.category || vehicleData.category.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        message: 'Vehicle category is required'
-      });
-    }
-    
-    if (!vehicleData.price || vehicleData.price.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        message: 'Vehicle price is required'
-      });
-    }
-    
-    // Create new vehicle
+    // Create new vehicle (with flexible validation)
     const startTime = Date.now();
     const newVehicle = new Vehicle(vehicleData);
     await newVehicle.save();
@@ -496,6 +479,15 @@ app.post('/api/vehicles', authenticateToken, requireAdmin, async (req, res) => {
     });
   } catch (error) {
     console.error('Error adding vehicle:', error);
+    // Check if it's a validation error
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error: ' + messages.join(', ')
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'An error occurred while adding vehicle: ' + error.message
@@ -509,6 +501,11 @@ app.put('/api/vehicles/:id', authenticateToken, requireAdmin, async (req, res) =
     const updates = req.body;
     
     console.log(`Updating vehicle ${id} with data:`, JSON.stringify(updates, null, 2));
+    
+    // Fix any HTML entity encoding issues
+    if (updates.category) {
+      updates.category = updates.category.replace(/&amp;/g, '&');
+    }
     
     // Find and update vehicle
     const startTime = Date.now();
@@ -537,6 +534,15 @@ app.put('/api/vehicles/:id', authenticateToken, requireAdmin, async (req, res) =
     });
   } catch (error) {
     console.error('Error updating vehicle:', error);
+    // Check if it's a validation error
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error: ' + messages.join(', ')
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'An error occurred while updating vehicle: ' + error.message

@@ -136,37 +136,18 @@ export function AdminVehicleForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields
-    if (!formData.name || formData.name.trim() === '') {
-      alert('Vehicle name is required');
-      return;
-    }
-    
-    if (!formData.category || formData.category.trim() === '') {
-      alert('Vehicle category is required');
-      return;
-    }
-    
-    if (!formData.price || formData.price.trim() === '') {
-      alert('Vehicle price is required');
-      return;
-    }
-    
-    // Allow submission even if no images are uploaded
-    // But show a warning if no images
-    if (images.length === 0) {
-      const confirmSubmit = window.confirm('You have not uploaded any images. Are you sure you want to submit without images?');
-      if (!confirmSubmit) {
-        return;
-      }
-    }
-    
+    // Prepare vehicle data
     const vehicleData = {
       ...formData,
       features: formData.features.split(',').map(f => f.trim()).filter(f => f.length > 0),
       images: images,
       image: images[0]?.url || '' // Set main image as first image for backward compatibility
     };
+    
+    // Fix any HTML entity encoding issues
+    if (vehicleData.category) {
+      vehicleData.category = vehicleData.category.replace(/&amp;/g, '&');
+    }
     
     try {
       console.log('Submitting vehicle data:', vehicleData);
@@ -221,7 +202,7 @@ export function AdminVehicleForm({
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-blue-800 text-sm">
-              <span className="font-semibold">Note:</span> Fields marked with <span className="text-red-500">*</span> are required.
+              <span className="font-semibold">Note:</span> Fill in as much information as possible. Fields marked with <span className="text-red-500">*</span> are recommended but not required.
             </p>
           </div>
           
@@ -273,17 +254,15 @@ export function AdminVehicleForm({
                 onChange={handleChange} 
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
                 placeholder="e.g., Toyota Land Cruiser" 
-                required
               />
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Vehicle Type <span className="text-red-500">*</span>
+                Vehicle Type
               </label>
               <select 
                 name="type" 
-                required 
                 value={formData.type} 
                 onChange={handleChange} 
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
@@ -295,18 +274,17 @@ export function AdminVehicleForm({
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category <span className="text-red-500">*</span>
+                Category
               </label>
               <select 
                 name="category" 
                 value={formData.category} 
                 onChange={handleChange} 
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
-                required
               >
                 <option value="SUV">SUV</option>
                 <option value="SMALL CARS">Small Cars</option>
-                <option value="GROUPS & FAMILY CARS">
+                <option value="GROUPS &amp; FAMILY CARS">
                   Groups & Family Cars
                 </option>
                 <option value="PICKUP TRUCKS">Pickup Trucks</option>
@@ -315,7 +293,7 @@ export function AdminVehicleForm({
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {formData.type === 'sale' ? 'Price' : 'Price'} <span className="text-red-500">*</span>
+                {formData.type === 'sale' ? 'Price' : 'Daily Rate'}
               </label>
               <input 
                 type="text" 
@@ -323,16 +301,29 @@ export function AdminVehicleForm({
                 value={formData.price} 
                 onChange={handleChange} 
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" 
-                placeholder="e.g., ZMW 450,000" 
-                required
+                placeholder={formData.type === 'sale' ? 'e.g., ZMW 450,000' : 'e.g., ZMW 500/day'}
               />
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {formData.type === 'hire' ? 'Daily Rate' : 'Daily Rate'}
+                Description
               </label>
-              <input type="text" name="dailyRate" value={formData.dailyRate} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., ZMW 500/day" />
+              <textarea 
+                name="description" 
+                rows={3} 
+                value={formData.description} 
+                onChange={handleChange} 
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" 
+                placeholder="Brief description of the vehicle"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Features (comma-separated)
+              </label>
+              <input type="text" name="features" value={formData.features} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., 4WD, 7-seater, Leather interior, Sunroof" />
             </div>
             
             <div>
@@ -419,20 +410,6 @@ export function AdminVehicleForm({
                 </span>
               </label>
             </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
-            <textarea name="description" rows={3} value={formData.description} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="Brief description of the vehicle" />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Features (comma-separated)
-            </label>
-            <input type="text" name="features" value={formData.features} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., 4WD, 7-seater, Leather interior, Sunroof" />
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

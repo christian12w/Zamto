@@ -21,13 +21,13 @@ const vehicleSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    required: true,
+    required: false, // Make category optional
     enum: ['SUV', 'SMALL CARS', 'GROUPS & FAMILY CARS', 'PICKUP TRUCKS'],
     default: 'SUV'
   },
   price: {
     type: String,
-    required: true
+    required: false // Make price optional to allow for hire vehicles
   },
   dailyRate: {
     type: String
@@ -39,7 +39,7 @@ const vehicleSchema = new mongoose.Schema({
   images: [vehicleImageSchema],
   description: {
     type: String,
-    required: true
+    required: false // Make description optional
   },
   features: [{
     type: String
