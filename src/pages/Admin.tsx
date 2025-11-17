@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AdminVehicleForm } from '../components/AdminVehicleForm';
 import { VehicleCard } from '../components/VehicleCard';
 import { UserManagement } from '../components/UserManagement';
@@ -86,10 +86,14 @@ export function Admin() {
 
   const handleCSVImportClose = () => {
     setShowCSVImport(false);
+    // Refresh vehicle list after CSV import
+    clearVehicleCache();
+    loadVehicles();
   };
 
   const handleImportSuccess = () => {
     // Refresh vehicle list after successful import
+    clearVehicleCache();
     loadVehicles();
   };
 
@@ -252,6 +256,10 @@ export function Admin() {
                             src={vehicle.images[0]?.url || vehicle.image} 
                             alt={vehicle.name} 
                             className="h-12 w-12 object-cover rounded"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = 'https://images.unsplash.com/photo-1542362567-b07e54358753?w=800';
+                            }}
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">

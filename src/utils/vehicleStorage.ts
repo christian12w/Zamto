@@ -6,11 +6,6 @@ import { authService } from '../services/authService';
 // Run the fix function when the module loads
 fixVehicleStorage();
 
-export interface VehicleImage {
-  url: string;
-  label: 'exterior' | 'interior' | 'front' | 'back' | 'additional';
-}
-
 export interface Vehicle {
   id: string;
   name: string;
@@ -43,6 +38,11 @@ export interface Vehicle {
   insuranceStatus?: string;   // Insurance status (for hire vehicles)
 }
 
+export interface VehicleImage {
+  url: string;
+  label: 'exterior' | 'interior' | 'front' | 'back' | 'additional';
+}
+
 // Cache for vehicles to avoid repeated API calls
 let vehiclesCache: Vehicle[] | null = null;
 // Cache for the last time API was called
@@ -59,7 +59,15 @@ async function fetchVehicles(): Promise<Vehicle[]> {
   try {
     const response = await vehicleService.getVehicles();
     if (response.success && response.vehicles) {
-      return response.vehicles;
+      // Ensure all vehicles have proper IDs
+      return response.vehicles.map(vehicle => {
+        // Handle case where vehicle might come from MongoDB with _id instead of id
+        const vehicleWithId = vehicle as Vehicle & { _id?: string };
+        return {
+          ...vehicle,
+          id: vehicle.id || vehicleWithId._id || Math.random().toString(36).substr(2, 9)
+        };
+      });
     }
     return [];
   } catch (error) {

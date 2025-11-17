@@ -330,15 +330,15 @@ export function UserManagement({ onClose }: UserManagementProps) {
                             : 'Never'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button
-                    onClick={() => handleDeleteUser(user.id, user.username)}
-                    className="text-red-600 hover:text-red-900 flex items-center"
-                    disabled={users.length <= 1 || isLoading}
-                  >
-                    <TrashIcon className="h-4 w-4 mr-1" />
-                    Delete
-                  </button>
-                </td>
+                          <button
+                            onClick={() => handleDeleteUser(user.id, user.username)}
+                            className="text-red-600 hover:text-red-900 flex items-center"
+                            disabled={users.length <= 1 || isLoading}
+                          >
+                            <TrashIcon className="h-4 w-4 mr-1" />
+                            Delete
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

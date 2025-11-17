@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UploadIcon, XIcon } from 'lucide-react';
+import { vehicleService } from '../services/vehicleService';
+import { useAuth } from '../contexts/AuthContext';
 
 interface CSVImportProps {
   onClose: () => void;
@@ -7,9 +9,15 @@ interface CSVImportProps {
 }
 
 export function CSVImport({ onClose, onImportSuccess }: CSVImportProps) {
+  const { token } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<{ success: boolean; message: string; imported?: number } | null>(null);
+
+  // Debug the token
+  useEffect(() => {
+    console.log('CSVImport: Token updated:', token);
+  }, [token]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -37,6 +45,68 @@ export function CSVImport({ onClose, onImportSuccess }: CSVImportProps) {
     }
   };
 
+  const parseCSV = (csvText: string): any[] => {
+    const lines = csvText.split('\n').filter(line => line.trim() !== '');
+    if (lines.length < 2) return [];
+    
+    // Parse headers
+    const headers = lines[0].split(',').map(header => header.trim().replace(/^"|"$/g, ''));
+    
+    // Parse rows
+    const result = [];
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(',').map(value => value.trim().replace(/^"|"$/g, ''));
+      if (values.length === headers.length) {
+        const row: any = {};
+        headers.forEach((header, index) => {
+          row[header] = values[index];
+        });
+        result.push(row);
+      }
+    }
+    
+    return result;
+  };
+
+  const convertToVehicleFormat = (csvData: any[]): any[] => {
+    return csvData.map(row => ({
+      name: row.name || '',
+      category: row.category || 'SUV',
+      price: row.price || '',
+      dailyRate: row.dailyRate || '',
+      image: row.image || '',
+      images: row.images ? (() => {
+        try {
+          return JSON.parse(row.images);
+        } catch {
+          // If JSON parsing fails, treat as comma-separated URLs
+          return row.images.split(',').map((url: string) => ({
+            url: url.trim(),
+            label: 'exterior'
+          }));
+        }
+      })() : [],
+      description: row.description || '',
+      features: row.features ? row.features.split(',').map((f: string) => f.trim()) : [],
+      popular: row.popular === 'true' || row.popular === '1' || false,
+      year: row.year ? parseInt(row.year, 10) : undefined,
+      mileage: row.mileage || '',
+      transmission: row.transmission || 'Automatic',
+      fuelType: row.fuelType || 'Petrol',
+      type: row.type || 'sale',
+      engineSize: row.engineSize || '',
+      doors: row.doors ? parseInt(row.doors, 10) : undefined,
+      seats: row.seats ? parseInt(row.seats, 10) : undefined,
+      color: row.color || '',
+      condition: row.condition || 'Good',
+      serviceHistory: row.serviceHistory || '',
+      accidentHistory: row.accidentHistory || '',
+      warranty: row.warranty || '',
+      registrationStatus: row.registrationStatus || '',
+      insuranceStatus: row.insuranceStatus || ''
+    }));
+  };
+
   const handleImport = async () => {
     if (!file) {
       setUploadResult({
@@ -46,33 +116,86 @@ export function CSVImport({ onClose, onImportSuccess }: CSVImportProps) {
       return;
     }
 
+    console.log('Token before import:', token);
+    if (!token) {
+      setUploadResult({
+        success: false,
+        message: 'Authentication required. Please log in again.'
+      });
+      return;
+    }
+
+    // Check if token is a valid string
+    if (typeof token !== 'string' || token.length === 0) {
+      setUploadResult({
+        success: false,
+        message: 'Invalid authentication token. Please log in again.'
+      });
+      return;
+    }
+
     setIsUploading(true);
     setUploadResult(null);
 
     try {
-      // In a real implementation, we would:
-      // 1. Upload the file to the server
-      // 2. Process it on the server side
-      // 3. Return the result
+      // Read the CSV file
+      const text = await file.text();
+      console.log('CSV text:', text);
       
-      // For now, we'll simulate the import process
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Parse CSV data
+      const csvData = parseCSV(text);
+      console.log('Parsed CSV data:', csvData);
       
-      setUploadResult({
-        success: true,
-        message: 'Vehicles imported successfully',
-        imported: Math.floor(Math.random() * 100) + 50 // Simulate importing 50-150 vehicles
-      });
+      if (csvData.length === 0) {
+        throw new Error('CSV file is empty or invalid');
+      }
       
-      // Notify parent component of success
-      setTimeout(() => {
-        onImportSuccess();
-        onClose();
-      }, 2000);
-    } catch (error) {
+      // Convert to proper vehicle format
+      const vehiclesData = convertToVehicleFormat(csvData);
+      console.log('Converted vehicles data:', vehiclesData);
+      
+      if (vehiclesData.length === 0) {
+        throw new Error('No valid vehicles found in CSV file');
+      }
+      
+      // Check if vehiclesData is actually an array
+      if (!Array.isArray(vehiclesData)) {
+        throw new Error('Vehicles data is not an array');
+      }
+      
+      // Check if vehiclesData has valid objects
+      if (vehiclesData.some(vehicle => typeof vehicle !== 'object' || vehicle === null)) {
+        throw new Error('Vehicles data contains invalid objects');
+      }
+      
+      console.log('Sending vehicles data to API:', vehiclesData);
+      console.log('Using token:', token);
+      
+      // Import vehicles via API
+      const response = await vehicleService.importVehicles(vehiclesData, token);
+      
+      console.log('API response:', response);
+      
+      if (response.success) {
+        setUploadResult({
+          success: true,
+          message: response.message || 'Vehicles imported successfully',
+          imported: response.imported
+        });
+        
+        // Notify parent component of success
+        setTimeout(() => {
+          onImportSuccess();
+          onClose();
+        }, 2000);
+      } else {
+        throw new Error(response.message || 'Failed to import vehicles');
+      }
+    } catch (error: any) {
+      console.error('Import error:', error);
       setUploadResult({
         success: false,
-        message: 'Failed to import vehicles: ' + (error instanceof Error ? error.message : 'Unknown error')
+        message: 'Failed to import vehicles: ' + (error.message || 'Unknown error')
       });
     } finally {
       setIsUploading(false);
@@ -158,7 +281,7 @@ export function CSVImport({ onClose, onImportSuccess }: CSVImportProps) {
           {uploadResult && (
             <div className={`p-4 rounded-lg ${uploadResult.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
               <p className="font-medium">{uploadResult.message}</p>
-              {uploadResult.imported && (
+              {uploadResult.imported !== undefined && (
                 <p className="mt-1">Successfully imported {uploadResult.imported} vehicles.</p>
               )}
             </div>
