@@ -459,11 +459,25 @@ app.post('/api/vehicles', authenticateToken, requireAdmin, async (req, res) => {
     
     console.log('Adding new vehicle with data:', JSON.stringify(vehicleData, null, 2));
     
-    // Validate input
-    if (!vehicleData.name || !vehicleData.category || !vehicleData.price) {
+    // Validate input with more detailed checks
+    if (!vehicleData.name || vehicleData.name.trim() === '') {
       return res.status(400).json({
         success: false,
-        message: 'Name, category, and price are required'
+        message: 'Vehicle name is required'
+      });
+    }
+    
+    if (!vehicleData.category || vehicleData.category.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'Vehicle category is required'
+      });
+    }
+    
+    if (!vehicleData.price || vehicleData.price.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'Vehicle price is required'
       });
     }
     

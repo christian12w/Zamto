@@ -136,6 +136,22 @@ export function AdminVehicleForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate required fields
+    if (!formData.name || formData.name.trim() === '') {
+      alert('Vehicle name is required');
+      return;
+    }
+    
+    if (!formData.category || formData.category.trim() === '') {
+      alert('Vehicle category is required');
+      return;
+    }
+    
+    if (!formData.price || formData.price.trim() === '') {
+      alert('Vehicle price is required');
+      return;
+    }
+    
     // Allow submission even if no images are uploaded
     // But show a warning if no images
     if (images.length === 0) {
@@ -203,6 +219,12 @@ export function AdminVehicleForm({
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-blue-800 text-sm">
+              <span className="font-semibold">Note:</span> Fields marked with <span className="text-red-500">*</span> are required.
+            </p>
+          </div>
+          
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Vehicle Photos (Upload at least one photo)
@@ -242,16 +264,30 @@ export function AdminVehicleForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Vehicle Name
+                Vehicle Name <span className="text-red-500">*</span>
               </label>
-              <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., Toyota Land Cruiser" />
+              <input 
+                type="text" 
+                name="name" 
+                value={formData.name} 
+                onChange={handleChange} 
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
+                placeholder="e.g., Toyota Land Cruiser" 
+                required
+              />
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Vehicle Type *
+                Vehicle Type <span className="text-red-500">*</span>
               </label>
-              <select name="type" required value={formData.type} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent">
+              <select 
+                name="type" 
+                required 
+                value={formData.type} 
+                onChange={handleChange} 
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
+              >
                 <option value="sale">For Sale</option>
                 <option value="hire">For Hire</option>
               </select>
@@ -259,9 +295,15 @@ export function AdminVehicleForm({
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
+                Category <span className="text-red-500">*</span>
               </label>
-              <select name="category" value={formData.category} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent">
+              <select 
+                name="category" 
+                value={formData.category} 
+                onChange={handleChange} 
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent"
+                required
+              >
                 <option value="SUV">SUV</option>
                 <option value="SMALL CARS">Small Cars</option>
                 <option value="GROUPS & FAMILY CARS">
@@ -273,9 +315,17 @@ export function AdminVehicleForm({
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {formData.type === 'sale' ? 'Price' : 'Price'}
+                {formData.type === 'sale' ? 'Price' : 'Price'} <span className="text-red-500">*</span>
               </label>
-              <input type="text" name="price" value={formData.price} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., ZMW 450,000" />
+              <input 
+                type="text" 
+                name="price" 
+                value={formData.price} 
+                onChange={handleChange} 
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" 
+                placeholder="e.g., ZMW 450,000" 
+                required
+              />
             </div>
             
             <div>
