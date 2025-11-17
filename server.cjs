@@ -17,9 +17,42 @@ const Vehicle = require('./db/models/Vehicle.cjs');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
-app.use(cors());
+// Enhanced CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // List of allowed origins
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'https://zamtoafrica.com',
+      // Add your Netlify domain here
+      'https://zamtoafrica.netlify.app',
+      'https://zamtoafrica.netlify.com',
+      // Render default domains
+      'https://zamto-1.onrender.com'
+    ];
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
+
+app.use((req, res, next) => {
+  console.log(`Incoming request: ${req.method} ${req.path} from ${req.get('origin') || 'no origin'}`);
+  next();
+});
 
 // Rate limiting
 const limiter = rateLimit({
@@ -542,9 +575,9 @@ app.get('/api/health', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Backend server running on port ${PORT}`);
-  console.log(`API endpoints available at http://localhost:${PORT}/api`);
+  console.log(`API endpoints available at http://0.0.0.0:${PORT}/api`);
 });
 
 module.exports = app;
