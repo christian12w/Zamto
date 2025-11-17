@@ -141,7 +141,7 @@ export function AdminVehicleForm({
     return images.find(img => img.label === label);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Allow submission even if no images are uploaded
@@ -160,12 +160,24 @@ export function AdminVehicleForm({
       image: images[0]?.url || '' // Set main image as first image for backward compatibility
     };
     
-    if (vehicle) {
-      updateVehicle(vehicle.id, vehicleData);
-    } else {
-      addVehicle(vehicleData);
+    try {
+      let success = false;
+      if (vehicle) {
+        success = await updateVehicle(vehicle.id, vehicleData);
+      } else {
+        const newVehicle = await addVehicle(vehicleData);
+        success = newVehicle !== null;
+      }
+      
+      if (success) {
+        onClose();
+      } else {
+        alert('Failed to save vehicle. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error saving vehicle:', error);
+      alert('An error occurred while saving the vehicle. Please try again.');
     }
-    onClose();
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

@@ -131,6 +131,7 @@ export async function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Promise<Vehi
     const token = getAuthToken();
     if (!token) {
       console.error('Authentication required to add vehicle');
+      alert('Authentication required. Please log in again.');
       return null;
     }
     
@@ -202,10 +203,14 @@ export async function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Promise<Vehi
       window.dispatchEvent(new Event('vehiclesUpdated'));
       
       return response.vehicle;
+    } else {
+      console.error('Failed to add vehicle:', response.message);
+      alert(`Failed to add vehicle: ${response.message}`);
+      return null;
     }
-    return null;
   } catch (error) {
     console.error('Failed to add vehicle:', error);
+    alert('An error occurred while adding the vehicle. Please try again.');
     return null;
   }
 }
@@ -215,6 +220,7 @@ export async function updateVehicle(id: string, updates: Partial<Vehicle>): Prom
     const token = getAuthToken();
     if (!token) {
       console.error('Authentication required to update vehicle');
+      alert('Authentication required. Please log in again.');
       return false;
     }
     
@@ -278,10 +284,14 @@ export async function updateVehicle(id: string, updates: Partial<Vehicle>): Prom
       window.dispatchEvent(new Event('vehiclesUpdated'));
       
       return true;
+    } else {
+      console.error('Failed to update vehicle:', response.message);
+      alert(`Failed to update vehicle: ${response.message}`);
+      return false;
     }
-    return false;
   } catch (error) {
     console.error('Failed to update vehicle:', error);
+    alert('An error occurred while updating the vehicle. Please try again.');
     return false;
   }
 }
