@@ -47,7 +47,55 @@ export interface VehicleImage {
 let vehiclesCache: Vehicle[] | null = null;
 // Cache for the last time API was called
 let lastUpdateTimestamp: number = 0;
-const CACHE_DURATION = 2000; // 2 second cache duration for better performance
+const CACHE_DURATION = 30 * 60 * 1000; // Extend cache to 30 minutes for better performance
+
+// Persistent cache key for localStorage
+const VEHICLE_CACHE_KEY = 'vehicles_cache';
+const VEHICLE_CACHE_TIMESTAMP_KEY = 'vehicles_cache_timestamp';
+
+// Initialize cache from localStorage on module load
+function initializeCacheFromStorage() {
+  try {
+    const cachedVehicles = localStorage.getItem(VEHICLE_CACHE_KEY);
+    const cachedTimestamp = localStorage.getItem(VEHICLE_CACHE_TIMESTAMP_KEY);
+    
+    if (cachedVehicles && cachedTimestamp) {
+      vehiclesCache = JSON.parse(cachedVehicles);
+      lastUpdateTimestamp = parseInt(cachedTimestamp, 10);
+      
+      // Check if cache is still valid (less than 30 minutes old)
+      const now = Date.now();
+      if ((now - lastUpdateTimestamp) >= CACHE_DURATION) {
+        // Cache expired, clear it
+        vehiclesCache = null;
+        lastUpdateTimestamp = 0;
+        localStorage.removeItem(VEHICLE_CACHE_KEY);
+        localStorage.removeItem(VEHICLE_CACHE_TIMESTAMP_KEY);
+      }
+    }
+  } catch (error) {
+    console.error('Failed to initialize cache from storage:', error);
+    // Clear invalid cache
+    localStorage.removeItem(VEHICLE_CACHE_KEY);
+    localStorage.removeItem(VEHICLE_CACHE_TIMESTAMP_KEY);
+  }
+}
+
+// Call initialization when module loads
+initializeCacheFromStorage();
+
+// Save cache to localStorage
+function saveCacheToStorage(vehicles: Vehicle[]) {
+  try {
+    localStorage.setItem(VEHICLE_CACHE_KEY, JSON.stringify(vehicles));
+    localStorage.setItem(VEHICLE_CACHE_TIMESTAMP_KEY, lastUpdateTimestamp.toString());
+  } catch (error) {
+    console.error('Failed to save cache to storage:', error);
+    // Clear cache if storage fails (might be full)
+    localStorage.removeItem(VEHICLE_CACHE_KEY);
+    localStorage.removeItem(VEHICLE_CACHE_TIMESTAMP_KEY);
+  }
+}
 
 // Get auth token from localStorage (for admin operations)
 function getAuthToken(): string | null {
@@ -100,6 +148,9 @@ export async function getVehicles(): Promise<Vehicle[]> {
   // Update cache
   vehiclesCache = vehicles;
   lastUpdateTimestamp = now;
+  
+  // Save to persistent storage
+  saveCacheToStorage(vehicles);
   
   return vehicles;
 }
@@ -338,6 +389,11 @@ export function clearVehicleCache(): void {
   console.log('Vehicle cache cleared');
 }
 
+// Export function to get current cache
+export function getCurrentVehicleCache(): Vehicle[] | null {
+  return vehiclesCache;
+}
+
 export function getVehicleCacheInfo(): { 
   isCached: boolean; 
   cacheAge: number; 
@@ -352,4 +408,51 @@ export function getVehicleCacheInfo(): {
     cacheSize: vehiclesCache ? vehiclesCache.length : 0,
     cacheDuration: CACHE_DURATION
   };
+}
+
+// Background refresh function to update cache without blocking UI
+let backgroundRefreshTimeout: NodeJS.Timeout | null = null;
+
+function scheduleBackgroundRefresh() {
+  // Clear any existing scheduled refresh
+  if (backgroundRefreshTimeout) {
+    clearTimeout(backgroundRefreshTimeout);
+  }
+  
+  // Schedule refresh for 5 minutes from now
+  backgroundRefreshTimeout = setTimeout(async () => {
+    try {
+      console.log('Performing background vehicle cache refresh');
+      const freshVehicles = await fetchVehicles();
+      
+      // Update cache
+      vehiclesCache = freshVehicles;
+      lastUpdateTimestamp = Date.now();
+      
+      // Save to persistent storage
+      saveCacheToStorage(freshVehicles);
+      
+      // Dispatch event to notify UI of updated data
+      window.dispatchEvent(new Event('vehiclesCacheUpdated'));
+      
+      // Schedule next refresh
+      scheduleBackgroundRefresh();
+    } catch (error) {
+      console.error('Background refresh failed:', error);
+      // Try again in 1 minute if failed
+      backgroundRefreshTimeout = setTimeout(scheduleBackgroundRefresh, 60 * 1000);
+    }
+  }, 5 * 60 * 1000); // 5 minutes
+}
+
+// Start background refresh when module loads
+scheduleBackgroundRefresh();
+
+// Clear background refresh on module unload
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    if (backgroundRefreshTimeout) {
+      clearTimeout(backgroundRefreshTimeout);
+    }
+  });
 }

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { VehicleCard } from '../components/VehicleCard';
 import { VehicleDetailsModal } from '../components/VehicleDetailsModal';
-import { getVehicles, Vehicle } from '../utils/vehicleStorage';
+import { getVehicles, Vehicle, getCurrentVehicleCache } from '../utils/vehicleStorage';
 import { LayoutGridIcon, StarIcon, TruckIcon, CarIcon, Users2Icon, PickaxeIcon } from 'lucide-react';
 
 export function VehiclesForSale() {
@@ -44,6 +44,11 @@ export function VehiclesForSale() {
       setVehicles(vehicleData);
     } catch (error) {
       console.error('Failed to load vehicles:', error);
+      // Try to use cached data if available
+      const cachedData = getCurrentVehicleCache();
+      if (cachedData && cachedData.length > 0) {
+        setVehicles(cachedData);
+      }
     } finally {
       setLoading(false);
     }
