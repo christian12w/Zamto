@@ -11,7 +11,7 @@ interface VehicleResponse {
 
 // Backend API configuration
 const API_BASE_URL = (import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:3001/api';
-const API_TIMEOUT = 10000; // 10 seconds
+const API_TIMEOUT = 30000; // Increase timeout to 30 seconds
 
 class VehicleService {
   // Helper function to make API requests with timeout
@@ -20,6 +20,7 @@ class VehicleService {
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
     
     try {
+      console.log(`Making API request to: ${API_BASE_URL}${endpoint}`);
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
         signal: controller.signal,
@@ -31,6 +32,7 @@ class VehicleService {
       });
       
       clearTimeout(timeoutId);
+      console.log(`API request completed with status: ${response.status}`);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -41,8 +43,10 @@ class VehicleService {
     } catch (error: any) {
       clearTimeout(timeoutId);
       if (error.name === 'AbortError') {
-        throw new Error('Request timeout');
+        console.error('Request timeout after', API_TIMEOUT, 'ms');
+        throw new Error('Request timeout - the server took too long to respond');
       }
+      console.error('API request failed:', error);
       throw error;
     }
   }

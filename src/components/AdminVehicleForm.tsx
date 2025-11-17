@@ -161,17 +161,25 @@ export function AdminVehicleForm({
     };
     
     try {
+      console.log('Submitting vehicle data:', vehicleData);
       let success = false;
+      
       if (vehicle) {
+        console.log(`Updating existing vehicle ${vehicle.id}`);
         success = await updateVehicle(vehicle.id, vehicleData);
       } else {
+        console.log('Adding new vehicle');
         const newVehicle = await addVehicle(vehicleData);
         success = newVehicle !== null;
       }
       
+      console.log('Vehicle operation result:', success);
+      
       if (success) {
+        console.log('Vehicle operation successful, closing form');
         onClose();
       } else {
+        console.log('Vehicle operation failed');
         alert('Failed to save vehicle. Please try again.');
       }
     } catch (error) {

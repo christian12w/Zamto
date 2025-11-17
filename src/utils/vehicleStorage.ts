@@ -224,6 +224,9 @@ export async function updateVehicle(id: string, updates: Partial<Vehicle>): Prom
       return false;
     }
     
+    // Log the update attempt
+    console.log('Attempting to update vehicle:', id, updates);
+    
     // Fix any double-encoded data in updates
     const fixedUpdates: Partial<Vehicle> = {};
     Object.keys(updates).forEach(key => {
@@ -274,6 +277,8 @@ export async function updateVehicle(id: string, updates: Partial<Vehicle>): Prom
       }
     });
     
+    console.log('Sending sanitized updates:', sanitizedUpdates);
+    
     const response = await vehicleService.updateVehicle(id, sanitizedUpdates, token);
     if (response.success) {
       // Clear cache to force refresh on next getVehicles call
@@ -283,15 +288,20 @@ export async function updateVehicle(id: string, updates: Partial<Vehicle>): Prom
       // Dispatch event to notify other parts of the app that vehicles have been updated
       window.dispatchEvent(new Event('vehiclesUpdated'));
       
+      console.log('Vehicle updated successfully:', response.vehicle);
       return true;
     } else {
       console.error('Failed to update vehicle:', response.message);
       alert(`Failed to update vehicle: ${response.message}`);
       return false;
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to update vehicle:', error);
-    alert('An error occurred while updating the vehicle. Please try again.');
+    if (error.message && error.message.includes('timeout')) {
+      alert('Request timeout - the server took too long to respond. Please try again or check your network connection.');
+    } else {
+      alert('An error occurred while updating the vehicle. Please try again.');
+    }
     return false;
   }
 }

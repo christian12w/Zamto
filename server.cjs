@@ -455,6 +455,8 @@ app.post('/api/vehicles', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const vehicleData = req.body;
     
+    console.log('Adding new vehicle with data:', JSON.stringify(vehicleData, null, 2));
+    
     // Validate input
     if (!vehicleData.name || !vehicleData.category || !vehicleData.price) {
       return res.status(400).json({
@@ -464,8 +466,12 @@ app.post('/api/vehicles', authenticateToken, requireAdmin, async (req, res) => {
     }
     
     // Create new vehicle
+    const startTime = Date.now();
     const newVehicle = new Vehicle(vehicleData);
     await newVehicle.save();
+    const endTime = Date.now();
+    
+    console.log(`Database operation took ${endTime - startTime}ms`);
     
     res.status(201).json({
       success: true,
@@ -473,9 +479,10 @@ app.post('/api/vehicles', authenticateToken, requireAdmin, async (req, res) => {
       message: 'Vehicle added successfully'
     });
   } catch (error) {
+    console.error('Error adding vehicle:', error);
     res.status(500).json({
       success: false,
-      message: 'An error occurred while adding vehicle'
+      message: 'An error occurred while adding vehicle: ' + error.message
     });
   }
 });
@@ -485,29 +492,38 @@ app.put('/api/vehicles/:id', authenticateToken, requireAdmin, async (req, res) =
     const { id } = req.params;
     const updates = req.body;
     
+    console.log(`Updating vehicle ${id} with data:`, JSON.stringify(updates, null, 2));
+    
     // Find and update vehicle
+    const startTime = Date.now();
     const updatedVehicle = await Vehicle.findByIdAndUpdate(
       id, 
       updates, 
       { new: true, runValidators: true }
     );
+    const endTime = Date.now();
+    
+    console.log(`Database operation took ${endTime - startTime}ms`);
     
     if (!updatedVehicle) {
+      console.log(`Vehicle ${id} not found`);
       return res.status(404).json({
         success: false,
         message: 'Vehicle not found'
       });
     }
     
+    console.log(`Successfully updated vehicle ${id}`);
     res.json({
       success: true,
       vehicle: updatedVehicle,
       message: 'Vehicle updated successfully'
     });
   } catch (error) {
+    console.error('Error updating vehicle:', error);
     res.status(500).json({
       success: false,
-      message: 'An error occurred while updating vehicle'
+      message: 'An error occurred while updating vehicle: ' + error.message
     });
   }
 });
@@ -516,23 +532,33 @@ app.delete('/api/vehicles/:id', authenticateToken, requireAdmin, async (req, res
   try {
     const { id } = req.params;
     
+    console.log(`Deleting vehicle ${id}`);
+    
     // Delete vehicle
+    const startTime = Date.now();
     const result = await Vehicle.findByIdAndDelete(id);
+    const endTime = Date.now();
+    
+    console.log(`Database operation took ${endTime - startTime}ms`);
+    
     if (!result) {
+      console.log(`Vehicle ${id} not found`);
       return res.status(404).json({
         success: false,
         message: 'Vehicle not found'
       });
     }
     
+    console.log(`Successfully deleted vehicle ${id}`);
     res.json({
       success: true,
       message: 'Vehicle deleted successfully'
     });
   } catch (error) {
+    console.error('Error deleting vehicle:', error);
     res.status(500).json({
       success: false,
-      message: 'An error occurred while deleting vehicle'
+      message: 'An error occurred while deleting vehicle: ' + error.message
     });
   }
 });
