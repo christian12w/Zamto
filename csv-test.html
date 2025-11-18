@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSV Import Test</title>
+</head>
+<body>
+    <h1>CSV Import Test</h1>
+    <input type="file" id="csvFile" accept=".csv" />
+    <button id="parseButton">Parse CSV</button>
+    <div id="output"></div>
+
+    <script>
+        document.getElementById('parseButton').addEventListener('click', async () => {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a CSV file');
+                return;
+            }
+            
+            const text = await file.text();
+            console.log('CSV text:', text);
+            
+            // Parse CSV data
+            const lines = text.split('\n').filter(line => line.trim() !== '');
+            if (lines.length < 2) {
+                alert('CSV file is empty or invalid');
+                return;
+            }
+            
+            // Parse headers
+            const headers = lines[0].split(',').map(header => header.trim().replace(/^"|"$/g, ''));
+            console.log('Headers:', headers);
+            
+            // Parse rows
+            const result = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(value => value.trim().replace(/^"|"$/g, ''));
+                if (values.length === headers.length) {
+                    const row = {};
+                    headers.forEach((header, index) => {
+                        row[header] = values[index];
+                    });
+                    result.push(row);
+                }
+            }
+            
+            console.log('Parsed data:', result);
+            
+            // Convert to vehicle format
+            const vehicleData = result.map(row => ({
+                name: row.name || '',
+                category: row.category || 'SUV',
+                price: row.price || '',
+                description: row.description || ''
+            }));
+            
+            console.log('Vehicle data:', vehicleData);
+            
+            // Display results
+            document.getElementById('output').innerHTML = `
+                <h2>Parsed Data:</h2>
+                <pre>${JSON.stringify(result, null, 2)}</pre>
+                <h2>Vehicle Data:</h2>
+                <pre>${JSON.stringify(vehicleData, null, 2)}</pre>
+            `;
+        });
+    </script>
+</body>
+</html>
