@@ -44,7 +44,7 @@ class VehicleService {
       clearTimeout(timeoutId);
       if (error.name === 'AbortError') {
         console.error('Request timeout after', API_TIMEOUT, 'ms');
-        throw new Error('Request timeout - the server took too long to respond');
+        throw new Error('Request timeout - the server took too long to respond. This might be due to server sleep mode. Please try again.');
       }
       console.error('API request failed:', error);
       throw error;

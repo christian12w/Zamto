@@ -102,7 +102,7 @@ function getAuthToken(): string | null {
   return localStorage.getItem('authToken');
 }
 
-// Fetch vehicles from API
+// Fetch vehicles from API with better error handling
 async function fetchVehicles(): Promise<Vehicle[]> {
   try {
     const response = await vehicleService.getVehicles();
@@ -118,8 +118,30 @@ async function fetchVehicles(): Promise<Vehicle[]> {
       });
     }
     return [];
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to fetch vehicles from API:', error);
+    
+    // If it's a timeout or network error, try one more time
+    if (error.message && (error.message.includes('timeout') || error.message.includes('network'))) {
+      console.log('Retrying vehicle fetch due to network issue...');
+      try {
+        // Wait 2 seconds and try again
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        const retryResponse = await vehicleService.getVehicles();
+        if (retryResponse.success && retryResponse.vehicles) {
+          return retryResponse.vehicles.map(vehicle => {
+            const vehicleWithId = vehicle as Vehicle & { _id?: string };
+            return {
+              ...vehicle,
+              id: vehicle.id || vehicleWithId._id || Math.random().toString(36).substr(2, 9)
+            };
+          });
+        }
+      } catch (retryError) {
+        console.error('Retry failed:', retryError);
+      }
+    }
+    
     return [];
   }
 }
@@ -412,6 +434,23 @@ export function getVehicleCacheInfo(): {
 
 // Background refresh function to update cache without blocking UI
 let backgroundRefreshTimeout: NodeJS.Timeout | null = null;
+let keepAliveInterval: NodeJS.Timeout | null = null;
+
+// Function to send keep-alive ping to server
+async function sendKeepAlivePing() {
+  try {
+    // Only ping if we have vehicles in cache (meaning user has visited the site)
+    if (vehiclesCache && vehiclesCache.length > 0) {
+      const response = await fetch(`${(import.meta as any).env.VITE_API_BASE_URL}/keep-alive`);
+      if (response.ok) {
+        console.log('Keep-alive ping sent successfully');
+      }
+    }
+  } catch (error) {
+    console.log('Keep-alive ping failed (server might be sleeping):', error);
+    // This is expected when server is asleep, we'll wake it up with the next real request
+  }
+}
 
 function scheduleBackgroundRefresh() {
   // Clear any existing scheduled refresh
@@ -445,14 +484,29 @@ function scheduleBackgroundRefresh() {
   }, 5 * 60 * 1000); // 5 minutes
 }
 
-// Start background refresh when module loads
-scheduleBackgroundRefresh();
+// Start keep-alive pings every 10 minutes
+function startKeepAlivePings() {
+  // Clear any existing keep-alive interval
+  if (keepAliveInterval) {
+    clearInterval(keepAliveInterval);
+  }
+  
+  // Send a ping every 10 minutes to keep server awake
+  keepAliveInterval = setInterval(sendKeepAlivePing, 10 * 60 * 1000); // 10 minutes
+}
 
-// Clear background refresh on module unload
+// Start background refresh and keep-alive when module loads
+scheduleBackgroundRefresh();
+startKeepAlivePings();
+
+// Clear intervals on module unload
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeunload', () => {
     if (backgroundRefreshTimeout) {
       clearTimeout(backgroundRefreshTimeout);
+    }
+    if (keepAliveInterval) {
+      clearInterval(keepAliveInterval);
     }
   });
 }

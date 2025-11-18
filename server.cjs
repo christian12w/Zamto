@@ -622,6 +622,15 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Add a keep-alive endpoint
+app.get('/api/keep-alive', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Keep-alive ping received',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Backend server running on port ${PORT}`);
