@@ -17,6 +17,9 @@ const Vehicle = require('./db/models/Vehicle.cjs');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Enable trust proxy - this is needed for rate limiting to work correctly behind proxies like Render
+app.set('trust proxy', 1); // trust first proxy
+
 // Enhanced CORS configuration
 const corsOptions = {
   origin: function (origin, callback) {
@@ -56,6 +59,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// Enable trust proxy - this is needed for rate limiting to work correctly behind proxies like Render
+app.set('trust proxy', 1); // trust first proxy
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -63,6 +69,11 @@ const limiter = rateLimit({
   message: {
     success: false,
     message: 'Too many requests from this IP, please try again later.'
+  },
+  // Trust the X-Forwarded-For header for accurate IP identification
+  keyGenerator: (req) => {
+    // Use the X-Forwarded-For header if available, otherwise fall back to remote address
+    return req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   }
 });
 
