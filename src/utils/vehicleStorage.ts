@@ -102,11 +102,18 @@ function getAuthToken(): string | null {
   return localStorage.getItem('authToken');
 }
 
-// Fetch vehicles from API with better error handling
+// Fetch vehicles from API with better error handling and performance optimizations
 async function fetchVehicles(): Promise<Vehicle[]> {
   try {
+    console.log('Fetching vehicles from API...');
+    const startTime = Date.now();
+    
     const response = await vehicleService.getVehicles();
+    const endTime = Date.now();
+    console.log(`API call completed in ${endTime - startTime}ms`);
+    
     if (response.success && response.vehicles) {
+      console.log(`Received ${response.vehicles.length} vehicles from API`);
       // Ensure all vehicles have proper IDs
       return response.vehicles.map(vehicle => {
         // Handle case where vehicle might come from MongoDB with _id instead of id

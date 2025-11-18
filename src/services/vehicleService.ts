@@ -11,7 +11,7 @@ interface VehicleResponse {
 
 // Backend API configuration
 const API_BASE_URL = (import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:3001/api';
-const API_TIMEOUT = 30000; // Increase timeout to 30 seconds
+const API_TIMEOUT = 45000; // Increase timeout to 45 seconds for better performance with large datasets
 
 class VehicleService {
   // Helper function to make API requests with timeout
@@ -51,10 +51,11 @@ class VehicleService {
     }
   }
 
-  // Get all vehicles
-  async getVehicles(): Promise<VehicleResponse> {
+  // Get all vehicles with pagination support
+  async getVehicles(page: number = 1, limit: number = 50): Promise<VehicleResponse> {
     try {
-      const response = await this.apiRequest('/vehicles', {
+      // For now, we'll fetch all vehicles but we can add pagination later
+      const response = await this.apiRequest(`/vehicles?page=${page}&limit=${limit}`, {
         method: 'GET',
       });
       

@@ -439,16 +439,41 @@ app.delete('/api/users/:id', authenticateToken, requireAdmin, async (req, res) =
 // Vehicle routes
 app.get('/api/vehicles', async (req, res) => {
   try {
-    const vehicles = await Vehicle.find();
+    // Add pagination support
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50; // Default to 50 vehicles per page
+    const skip = (page - 1) * limit;
+    
+    // Add sorting for better performance
+    const startTime = Date.now();
+    const [vehicles, total] = await Promise.all([
+      Vehicle.find()
+        .sort({ createdAt: -1 }) // Sort by creation date, newest first
+        .skip(skip)
+        .limit(limit)
+        .lean(), // Use lean() for better performance
+      Vehicle.countDocuments()
+    ]);
+    const endTime = Date.now();
+    
+    console.log(`Vehicle query took ${endTime - startTime}ms for ${vehicles.length} vehicles`);
+    
     res.json({
       success: true,
       vehicles: vehicles,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      },
       message: 'Vehicles retrieved successfully'
     });
   } catch (error) {
+    console.error('Error retrieving vehicles:', error);
     res.status(500).json({
       success: false,
-      message: 'An error occurred while retrieving vehicles'
+      message: 'An error occurred while retrieving vehicles: ' + error.message
     });
   }
 });
