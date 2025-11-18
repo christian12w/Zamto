@@ -291,19 +291,35 @@ export function AdminVehicleForm({
               </select>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {formData.type === 'sale' ? 'Price' : 'Daily Rate'}
-              </label>
-              <input 
-                type="text" 
-                name="price" 
-                value={formData.price} 
-                onChange={handleChange} 
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" 
-                placeholder={formData.type === 'sale' ? 'e.g., ZMW 450,000' : 'e.g., ZMW 500/day'}
-              />
-            </div>
+            {formData.type === 'sale' ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Price
+                </label>
+                <input 
+                  type="text" 
+                  name="price" 
+                  value={formData.price} 
+                  onChange={handleChange} 
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" 
+                  placeholder="e.g., ZMW 450,000"
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Daily Rate
+                </label>
+                <input 
+                  type="text" 
+                  name="dailyRate" 
+                  value={formData.dailyRate} 
+                  onChange={handleChange} 
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" 
+                  placeholder="e.g., ZMW 500/day"
+                />
+              </div>
+            )}
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -300,6 +300,9 @@ export async function updateVehicle(id: string, updates: Partial<Vehicle>): Prom
     // Log the update attempt
     console.log('Attempting to update vehicle:', id, updates);
     
+    // Show a temporary loading state to the user
+    const startTime = Date.now();
+    
     // Fix any double-encoded data in updates
     const fixedUpdates: Partial<Vehicle> = {};
     Object.keys(updates).forEach(key => {
@@ -353,6 +356,9 @@ export async function updateVehicle(id: string, updates: Partial<Vehicle>): Prom
     console.log('Sending sanitized updates:', sanitizedUpdates);
     
     const response = await vehicleService.updateVehicle(id, sanitizedUpdates, token);
+    const endTime = Date.now();
+    console.log(`Vehicle update took ${endTime - startTime}ms`);
+    
     if (response.success) {
       // Clear cache to force refresh on next getVehicles call
       vehiclesCache = null;
