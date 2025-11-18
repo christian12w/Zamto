@@ -52,6 +52,7 @@ const CACHE_DURATION = 30 * 60 * 1000; // Extend cache to 30 minutes for better 
 // Persistent cache key for localStorage
 const VEHICLE_CACHE_KEY = 'vehicles_cache';
 const VEHICLE_CACHE_TIMESTAMP_KEY = 'vehicles_cache_timestamp';
+const MAX_CACHED_VEHICLES = 100; // Limit to 100 vehicles for storage efficiency
 
 // Initialize cache from localStorage on module load
 function initializeCacheFromStorage() {
@@ -66,11 +67,8 @@ function initializeCacheFromStorage() {
       // Check if cache is still valid (less than 30 minutes old)
       const now = Date.now();
       if ((now - lastUpdateTimestamp) >= CACHE_DURATION) {
-        // Cache expired, clear it
-        vehiclesCache = null;
-        lastUpdateTimestamp = 0;
-        localStorage.removeItem(VEHICLE_CACHE_KEY);
-        localStorage.removeItem(VEHICLE_CACHE_TIMESTAMP_KEY);
+        // Cache expired, but we'll still use it if API fails
+        console.log('Vehicle cache expired but keeping for offline use');
       }
     }
   } catch (error) {
@@ -84,11 +82,16 @@ function initializeCacheFromStorage() {
 // Call initialization when module loads
 initializeCacheFromStorage();
 
-// Save cache to localStorage
+// Save cache to localStorage with size limit
 function saveCacheToStorage(vehicles: Vehicle[]) {
   try {
-    localStorage.setItem(VEHICLE_CACHE_KEY, JSON.stringify(vehicles));
+    // Limit to MAX_CACHED_VEHICLES to prevent storage issues
+    const vehiclesToCache = vehicles.slice(0, MAX_CACHED_VEHICLES);
+    
+    localStorage.setItem(VEHICLE_CACHE_KEY, JSON.stringify(vehiclesToCache));
     localStorage.setItem(VEHICLE_CACHE_TIMESTAMP_KEY, lastUpdateTimestamp.toString());
+    
+    console.log(`Saved ${vehiclesToCache.length} vehicles to localStorage cache`);
   } catch (error) {
     console.error('Failed to save cache to storage:', error);
     // Clear cache if storage fails (might be full)
@@ -102,7 +105,7 @@ function getAuthToken(): string | null {
   return localStorage.getItem('authToken');
 }
 
-// Fetch vehicles from API with better error handling and performance optimizations
+// Fetch vehicles from API with better error handling and offline fallback
 async function fetchVehicles(): Promise<Vehicle[]> {
   try {
     console.log('Fetching vehicles from API...');
@@ -128,6 +131,12 @@ async function fetchVehicles(): Promise<Vehicle[]> {
   } catch (error: any) {
     console.error('Failed to fetch vehicles from API:', error);
     
+    // If we have cached vehicles, return them as fallback for offline use
+    if (vehiclesCache && vehiclesCache.length > 0) {
+      console.log('Returning cached vehicles due to network error');
+      return vehiclesCache;
+    }
+    
     // If it's a timeout or network error, try one more time
     if (error.message && (error.message.includes('timeout') || error.message.includes('network'))) {
       console.log('Retrying vehicle fetch due to network issue...');
@@ -146,6 +155,11 @@ async function fetchVehicles(): Promise<Vehicle[]> {
         }
       } catch (retryError) {
         console.error('Retry failed:', retryError);
+        // Still return cached vehicles if available
+        if (vehiclesCache && vehiclesCache.length > 0) {
+          console.log('Returning cached vehicles after retry failure');
+          return vehiclesCache;
+        }
       }
     }
     
@@ -162,11 +176,11 @@ async function saveVehicles(vehicles: Vehicle[]): Promise<void> {
   lastUpdateTimestamp = 0;
 }
 
-// Function to get vehicles with caching
+// Function to get vehicles with caching and offline support
 export async function getVehicles(): Promise<Vehicle[]> {
   const now = Date.now();
   
-  // Check if cache is valid
+  // Check if cache is valid (less than 30 minutes old)
   if (vehiclesCache && (now - lastUpdateTimestamp) < CACHE_DURATION) {
     return vehiclesCache;
   }
@@ -180,6 +194,17 @@ export async function getVehicles(): Promise<Vehicle[]> {
   
   // Save to persistent storage
   saveCacheToStorage(vehicles);
+  
+  // Send to service worker for offline caching
+  try {
+    // Dynamically import to avoid circular dependency
+    const indexModule = await import('../index');
+    if (indexModule && typeof indexModule.cacheVehiclesInServiceWorker === 'function') {
+      indexModule.cacheVehiclesInServiceWorker(vehicles);
+    }
+  } catch (error) {
+    console.log('Service worker caching not available');
+  }
   
   return vehicles;
 }
@@ -204,6 +229,36 @@ export async function refreshVehicles(): Promise<Vehicle[]> {
   
   // Get fresh data
   return await getVehicles();
+}
+
+// Function to get vehicles with offline fallback
+export async function getVehiclesWithOfflineSupport(): Promise<Vehicle[]> {
+  try {
+    const vehicles = await getVehicles();
+    return vehicles;
+  } catch (error) {
+    console.error('Error getting vehicles:', error);
+    
+    // Try to get from localStorage cache as fallback
+    if (vehiclesCache && vehiclesCache.length > 0) {
+      console.log('Returning vehicles from memory cache');
+      return vehiclesCache;
+    }
+    
+    try {
+      const cachedVehicles = localStorage.getItem(VEHICLE_CACHE_KEY);
+      if (cachedVehicles) {
+        const vehicles = JSON.parse(cachedVehicles);
+        console.log('Returning vehicles from localStorage cache');
+        return vehicles;
+      }
+    } catch (storageError) {
+      console.error('Error reading from localStorage:', storageError);
+    }
+    
+    // Return empty array if all else fails
+    return [];
+  }
 }
 
 export async function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Promise<Vehicle | null> {

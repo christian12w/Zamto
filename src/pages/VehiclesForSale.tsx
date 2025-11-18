@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { VehicleCard } from '../components/VehicleCard';
 import { VehicleDetailsModal } from '../components/VehicleDetailsModal';
-import { getVehicles, Vehicle, getCurrentVehicleCache } from '../utils/vehicleStorage';
+import { getVehiclesWithOfflineSupport, Vehicle, getCurrentVehicleCache } from '../utils/vehicleStorage';
 import { LayoutGridIcon, StarIcon, TruckIcon, CarIcon, Users2Icon, PickaxeIcon } from 'lucide-react';
 
 export function VehiclesForSale() {
@@ -40,7 +40,7 @@ export function VehiclesForSale() {
   const loadVehicles = async () => {
     try {
       setLoading(true);
-      const vehicleData = await getVehicles();
+      const vehicleData = await getVehiclesWithOfflineSupport();
       setVehicles(vehicleData);
     } catch (error) {
       console.error('Failed to load vehicles:', error);
