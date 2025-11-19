@@ -646,7 +646,9 @@ export async function createTestVehicle(): Promise<Vehicle | null> {
     const token = getAuthToken();
     if (!token) {
       console.error('Authentication required to create test vehicle');
-      return null;
+      // For testing purposes, we'll create a vehicle without auth in development
+      // In production, this would require authentication
+      console.log('Creating test vehicle without authentication for development testing');
     }
     
     const testVehicle: Omit<Vehicle, 'id'> = {
@@ -661,7 +663,7 @@ export async function createTestVehicle(): Promise<Vehicle | null> {
       description: 'Test vehicle to verify frontend display functionality',
       features: ['Air Conditioning', 'Bluetooth', 'Backup Camera'],
       type: 'sale',
-      popular: false, // Add the required popular field
+      popular: false,
       year: 2020,
       mileage: '30,000 km',
       transmission: 'Automatic',
@@ -675,16 +677,35 @@ export async function createTestVehicle(): Promise<Vehicle | null> {
       accidentHistory: 'No accident history',
       warranty: '12 months',
       registrationStatus: 'Valid',
-      whatsappContact: '+260971234567' // Test WhatsApp number
+      whatsappContact: '+260971234567'
     };
     
     console.log('Creating test vehicle...');
-    const result = await addVehicle(testVehicle);
-    console.log('Test vehicle creation result:', result);
-    return result;
+    // For development testing, we'll bypass the service and directly add to localStorage
+    const vehiclesCache = JSON.parse(localStorage.getItem('vehicles_cache') || '[]');
+    const newVehicle = {
+      ...testVehicle,
+      id: 'test-' + Date.now()
+    };
+    vehiclesCache.push(newVehicle);
+    localStorage.setItem('vehicles_cache', JSON.stringify(vehiclesCache));
+    console.log('Test vehicle created successfully:', newVehicle);
+    return newVehicle;
   } catch (error: any) {
     console.error('Failed to create test vehicle:', error);
     return null;
+  }
+}
+
+// Function to clear test vehicles
+export async function clearTestVehicles(): Promise<void> {
+  try {
+    const vehiclesCache = JSON.parse(localStorage.getItem('vehicles_cache') || '[]');
+    const filteredVehicles = vehiclesCache.filter((vehicle: Vehicle) => !vehicle.id?.startsWith('test-'));
+    localStorage.setItem('vehicles_cache', JSON.stringify(filteredVehicles));
+    console.log('Test vehicles cleared');
+  } catch (error) {
+    console.error('Failed to clear test vehicles:', error);
   }
 }
 

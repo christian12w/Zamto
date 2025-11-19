@@ -62,6 +62,17 @@ export function VehicleCard({
           className="w-full h-full object-contain transform transition-transform duration-500 group-hover:scale-110" 
           loading="lazy"
         />
+        {/* WhatsApp icon on image */}
+        <a 
+          href={`https://wa.me/${vehicle.whatsappContact?.replace(/\D/g, '') || '260572213038'}?text=Hello,%20I'm%20interested%20in%20the%20${encodeURIComponent(vehicle.name)}`} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="absolute top-2 sm:top-3 right-3 bg-green-500 hover:bg-green-600 text-white p-1.5 sm:p-2 rounded-full opacity-90 hover:opacity-100 transition-all focus:outline-none focus:ring-2 focus:ring-white z-10"
+          aria-label="Contact via WhatsApp"
+        >
+          <MessageCircleIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+        </a>
+        
         {images.length > 1 && <>
             <button 
               onClick={prevImage} 
@@ -87,6 +98,16 @@ export function VehicleCard({
                 />
               ))}
             </div>
+            {/* WhatsApp icon for gallery */}
+            <a 
+              href={`https://wa.me/${vehicle.whatsappContact?.replace(/\D/g, '') || '260572213038'}?text=Hello,%20I'm%20interested%20in%20the%20${encodeURIComponent(vehicle.name)}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="absolute bottom-2 sm:bottom-3 right-3 bg-green-500 hover:bg-green-600 text-white p-1.5 sm:p-2 rounded-full opacity-90 hover:opacity-100 transition-all focus:outline-none focus:ring-2 focus:ring-white"
+              aria-label="Contact via WhatsApp"
+            >
+              <MessageCircleIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+            </a>
             <div className="absolute top-2 sm:top-3 left-3 bg-black bg-opacity-70 text-white text-xs px-2 py-1 sm:px-3 sm:py-1.5 rounded-full font-medium backdrop-blur-sm">
               {images[currentImageIndex].label.charAt(0).toUpperCase() + images[currentImageIndex].label.slice(1)}
             </div>

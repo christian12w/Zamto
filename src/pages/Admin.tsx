@@ -155,6 +155,36 @@ export function Admin() {
           </div>
           <div className="flex gap-2">
             <button 
+              onClick={() => {
+                // Import the createTestVehicle function
+                import('../utils/vehicleStorage').then(module => {
+                  module.createTestVehicle();
+                  // Refresh the vehicle list
+                  loadVehicles();
+                });
+              }}
+              className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold transition-colors"
+              disabled={loading}
+            >
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Create Test Vehicle
+            </button>
+            <button 
+              onClick={() => {
+                // Import the clearTestVehicles function
+                import('../utils/vehicleStorage').then(module => {
+                  module.clearTestVehicles();
+                  // Refresh the vehicle list
+                  loadVehicles();
+                });
+              }}
+              className="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold transition-colors"
+              disabled={loading}
+            >
+              <TrashIcon className="h-5 w-5 mr-2" />
+              Clear Test Vehicles
+            </button>
+            <button 
               onClick={() => setShowCSVImport(true)} 
               className="flex items-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold transition-colors"
               disabled={loading}
