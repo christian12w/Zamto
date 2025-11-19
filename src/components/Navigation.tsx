@@ -34,9 +34,9 @@ export function Navigation() {
               <img 
                 src="/logo.png" 
                 alt="Zamto Africa Logo" 
-                className="h-12 w-auto"
+                className="h-10 w-auto sm:h-12"
               />
-              <span className="text-2xl font-bold text-[#003366]">Zamto Africa</span>
+              <span className="text-xl font-bold text-[#003366] sm:text-2xl">Zamto Africa</span>
             </Link>
           </div>
           

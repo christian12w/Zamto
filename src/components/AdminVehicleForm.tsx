@@ -105,7 +105,7 @@ export function AdminVehicleForm({
         const base64String = reader.result as string;
         
         try {
-          // Apply logo watermark to image
+          // Apply logo watermark to image with reduced opacity and smaller size
           const response = await fetch(`${(import.meta as any).env.VITE_API_BASE_URL}/images/watermark`, {
             method: 'POST',
             headers: {
@@ -114,7 +114,9 @@ export function AdminVehicleForm({
             },
             body: JSON.stringify({
               imageBase64: base64String,
-              watermarkType: 'logo'
+              watermarkType: 'logo',
+              opacity: 0.3, // Reduced opacity for subtlety
+              size: 0.15    // Smaller size
             })
           });
           
@@ -202,7 +204,8 @@ export function AdminVehicleForm({
       
       if (vehicle) {
         console.log(`Updating existing vehicle ${vehicle.id}`);
-        success = await updateVehicle(vehicle.id, vehicleData);
+        const updatedVehicle = await updateVehicle(vehicle.id, vehicleData);
+        success = updatedVehicle !== null;
       } else {
         console.log('Adding new vehicle');
         const newVehicle = await addVehicle(vehicleData);
