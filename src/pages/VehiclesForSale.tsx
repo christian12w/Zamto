@@ -41,6 +41,14 @@ export function VehiclesForSale() {
     try {
       setLoading(true);
       const vehicleData = await getVehiclesWithOfflineSupport();
+      console.log('Loaded vehicles:', vehicleData);
+      console.log('Total vehicles loaded:', vehicleData.length);
+      
+      // Log the type of each vehicle for debugging
+      vehicleData.forEach((vehicle, index) => {
+        console.log(`Vehicle ${index}: ${vehicle.name}, type: ${vehicle.type}, category: ${vehicle.category}`);
+      });
+      
       setVehicles(vehicleData);
     } catch (error) {
       console.error('Failed to load vehicles:', error);
@@ -70,6 +78,16 @@ export function VehiclesForSale() {
   }, []);
 
   const filteredVehicles = vehicles.filter(vehicle => {
+    // Log filtering process for debugging
+    console.log(`Filtering vehicle: ${vehicle.name}`, {
+      type: vehicle.type,
+      matchesSale: vehicle.type === 'sale',
+      selectedCategory,
+      isPopular: vehicle.popular,
+      vehicleCategory: vehicle.category,
+      selectedCategoryNormalized: selectedCategory.trim()
+    });
+    
     // Filter for sale vehicles only
     if (vehicle.type !== 'sale') return false;
     
@@ -79,7 +97,7 @@ export function VehiclesForSale() {
     
     // For category matching, we'll do a more robust comparison
     // Trim whitespace and normalize the strings for comparison
-    const vehicleCategory = vehicle.category.trim();
+    const vehicleCategory = vehicle.category ? vehicle.category.trim() : '';
     const selectedCategoryNormalized = selectedCategory.trim();
     
     return vehicleCategory === selectedCategoryNormalized;

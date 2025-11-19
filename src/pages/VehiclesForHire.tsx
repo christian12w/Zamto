@@ -41,9 +41,17 @@ export function VehiclesForHire() {
     try {
       setLoading(true);
       const vehicleData = await getVehiclesWithOfflineSupport();
+      console.log('Loaded hire vehicles:', vehicleData);
+      console.log('Total hire vehicles loaded:', vehicleData.length);
+      
+      // Log the type of each vehicle for debugging
+      vehicleData.forEach((vehicle, index) => {
+        console.log(`Hire Vehicle ${index}: ${vehicle.name}, type: ${vehicle.type}, category: ${vehicle.category}`);
+      });
+      
       setVehicles(vehicleData);
     } catch (error) {
-      console.error('Failed to load vehicles:', error);
+      console.error('Failed to load hire vehicles:', error);
       // Try to use cached data if available
       const cachedData = getCurrentVehicleCache();
       if (cachedData && cachedData.length > 0) {
@@ -70,6 +78,16 @@ export function VehiclesForHire() {
   }, []);
 
   const filteredVehicles = vehicles.filter(vehicle => {
+    // Log filtering process for debugging
+    console.log(`Filtering hire vehicle: ${vehicle.name}`, {
+      type: vehicle.type,
+      matchesHire: vehicle.type === 'hire',
+      selectedCategory,
+      isPopular: vehicle.popular,
+      vehicleCategory: vehicle.category,
+      selectedCategoryNormalized: selectedCategory.trim()
+    });
+    
     // Filter for hire vehicles only
     if (vehicle.type !== 'hire') return false;
     
@@ -79,7 +97,7 @@ export function VehiclesForHire() {
     
     // For category matching, we'll do a more robust comparison
     // Trim whitespace and normalize the strings for comparison
-    const vehicleCategory = vehicle.category.trim();
+    const vehicleCategory = vehicle.category ? vehicle.category.trim() : '';
     const selectedCategoryNormalized = selectedCategory.trim();
     
     return vehicleCategory === selectedCategoryNormalized;

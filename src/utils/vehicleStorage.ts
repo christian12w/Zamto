@@ -556,7 +556,7 @@ export function clearVehicleCache(): void {
   console.log('Vehicle cache cleared');
 }
 
-// Export function to get current cache
+// Export function to get current cache for debugging
 export function getCurrentVehicleCache(): Vehicle[] | null {
   return vehiclesCache;
 }
@@ -650,15 +650,15 @@ export async function createTestVehicle(): Promise<Vehicle | null> {
     }
     
     const testVehicle: Omit<Vehicle, 'id'> = {
-      name: 'Test Vehicle with WhatsApp',
-      category: 'Sedan',
+      name: 'Test Vehicle for Debugging',
+      category: 'SUV',
       price: 'ZMW 250,000',
       image: 'https://images.unsplash.com/photo-1542362567-b07e54358753?w=800',
       images: [{
         url: 'https://images.unsplash.com/photo-1542362567-b07e54358753?w=800',
         label: 'exterior'
       }],
-      description: 'Test vehicle to verify WhatsApp functionality',
+      description: 'Test vehicle to verify frontend display functionality',
       features: ['Air Conditioning', 'Bluetooth', 'Backup Camera'],
       type: 'sale',
       popular: false, // Add the required popular field
@@ -678,17 +678,10 @@ export async function createTestVehicle(): Promise<Vehicle | null> {
       whatsappContact: '+260971234567' // Test WhatsApp number
     };
     
-    const response = await vehicleService.addVehicle(testVehicle, token);
-    if (response.success && response.vehicle) {
-      console.log('Test vehicle created successfully:', response.vehicle);
-      // Clear cache to force refresh
-      vehiclesCache = null;
-      lastUpdateTimestamp = 0;
-      return response.vehicle;
-    } else {
-      console.error('Failed to create test vehicle:', response.message);
-      return null;
-    }
+    console.log('Creating test vehicle...');
+    const result = await addVehicle(testVehicle);
+    console.log('Test vehicle creation result:', result);
+    return result;
   } catch (error: any) {
     console.error('Failed to create test vehicle:', error);
     return null;
