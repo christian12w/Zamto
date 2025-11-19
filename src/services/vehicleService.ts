@@ -51,11 +51,44 @@ class VehicleService {
     }
   }
 
+  // Helper function to make API requests with retry logic for server sleep mode
+  private async apiRequestWithRetry(endpoint: string, options: RequestInit, token?: string, maxRetries: number = 3) {
+    let lastError: Error | null = null;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`API request attempt ${attempt}/${maxRetries} to: ${API_BASE_URL}${endpoint}`);
+        const result = await this.apiRequest(endpoint, options, token);
+        return result;
+      } catch (error: any) {
+        lastError = error;
+        console.log(`API request attempt ${attempt} failed:`, error.message);
+        
+        // If it's not a timeout error, don't retry
+        if (!error.message || !error.message.includes('timeout')) {
+          throw error;
+        }
+        
+        // If it's the last attempt, throw the error
+        if (attempt === maxRetries) {
+          throw new Error(`Request failed after ${maxRetries} attempts. The server might be waking up from sleep mode. Please try again in a moment.`);
+        }
+        
+        // Wait before retrying (exponential backoff: 2s, 4s, 8s, etc.)
+        const waitTime = Math.pow(2, attempt) * 1000;
+        console.log(`Waiting ${waitTime}ms before retry ${attempt + 1}`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    }
+    
+    throw lastError || new Error('Unknown error occurred');
+  }
+
   // Get all vehicles with pagination support
   async getVehicles(page: number = 1, limit: number = 50): Promise<VehicleResponse> {
     try {
       // For now, we'll fetch all vehicles but we can add pagination later
-      const response = await this.apiRequest(`/vehicles?page=${page}&limit=${limit}`, {
+      const response = await this.apiRequestWithRetry(`/vehicles?page=${page}&limit=${limit}`, {
         method: 'GET',
       });
       
@@ -83,7 +116,7 @@ class VehicleService {
         };
       }
       
-      const response = await this.apiRequest('/vehicles', {
+      const response = await this.apiRequestWithRetry('/vehicles', {
         method: 'POST',
         body: JSON.stringify(vehicleData),
       }, token);
@@ -112,7 +145,7 @@ class VehicleService {
         };
       }
       
-      const response = await this.apiRequest(`/vehicles/${id}`, {
+      const response = await this.apiRequestWithRetry(`/vehicles/${id}`, {
         method: 'PUT',
         body: JSON.stringify(updates),
       }, token);
@@ -141,7 +174,7 @@ class VehicleService {
         };
       }
       
-      const response = await this.apiRequest(`/vehicles/${id}`, {
+      const response = await this.apiRequestWithRetry(`/vehicles/${id}`, {
         method: 'DELETE',
       }, token);
       
@@ -168,7 +201,7 @@ class VehicleService {
         };
       }
       
-      const response = await this.apiRequest('/vehicles/import', {
+      const response = await this.apiRequestWithRetry('/vehicles/import', {
         method: 'POST',
         body: JSON.stringify({ vehicles }),
       }, token);

@@ -270,8 +270,13 @@ export async function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Promise<Vehi
     if (!token) {
       console.error('Authentication required to add vehicle');
       alert('Authentication required. Please log in again.');
+      // Redirect to login page
+      window.location.href = '/login';
       return null;
     }
+    
+    // Show a loading message to the user
+    alert('Adding vehicle... This may take a moment as the server wakes up from sleep mode.');
     
     // Ensure WhatsApp contact is included in the data
     const vehicleDataWithWhatsApp = {
@@ -348,6 +353,9 @@ export async function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Promise<Vehi
       // Dispatch event to notify other parts of the app that vehicles have been updated
       window.dispatchEvent(new Event('vehiclesUpdated'));
       
+      // Show success message
+      alert('Vehicle added successfully!');
+      
       return response.vehicle;
     } else {
       console.error('Failed to add vehicle:', response.message);
@@ -378,8 +386,13 @@ export async function updateVehicle(vehicleId: string, vehicleData: Partial<Vehi
     if (!token) {
       console.error('Authentication required to update vehicle');
       alert('Authentication required. Please log in again.');
+      // Redirect to login page
+      window.location.href = '/login';
       return null;
     }
+    
+    // Show a loading message to the user
+    alert('Updating vehicle... This may take a moment as the server wakes up from sleep mode.');
     
     // Ensure WhatsApp contact is included in the data if it exists
     const vehicleDataWithWhatsApp = {
@@ -464,6 +477,9 @@ export async function updateVehicle(vehicleId: string, vehicleData: Partial<Vehi
       // Dispatch event to notify other parts of the app that vehicles have been updated
       window.dispatchEvent(new Event('vehiclesUpdated'));
       
+      // Show success message
+      alert('Vehicle updated successfully!');
+      
       return response.vehicle;
     } else {
       console.error('Failed to update vehicle:', response.message);
@@ -493,8 +509,12 @@ export async function deleteVehicle(id: string): Promise<boolean> {
     const token = getAuthToken();
     if (!token) {
       console.error('Authentication required to delete vehicle');
+      alert('Authentication required. Please log in again.');
       return false;
     }
+    
+    // Show a loading message to the user
+    alert('Deleting vehicle... This may take a moment as the server wakes up from sleep mode.');
     
     const response = await vehicleService.deleteVehicle(id, token);
     if (response.success) {
@@ -504,6 +524,9 @@ export async function deleteVehicle(id: string): Promise<boolean> {
       
       // Dispatch event to notify other parts of the app that vehicles have been updated
       window.dispatchEvent(new Event('vehiclesUpdated'));
+      
+      // Show success message
+      alert('Vehicle deleted successfully!');
       
       return true;
     }
@@ -515,11 +538,14 @@ export async function deleteVehicle(id: string): Promise<boolean> {
       localStorage.removeItem('authToken');
       // Redirect to login page
       window.location.href = '/login';
+    } else {
+      alert(`Failed to delete vehicle: ${response.message}`);
     }
     
     return false;
   } catch (error) {
     console.error('Failed to delete vehicle:', error);
+    alert('An error occurred while deleting the vehicle. Please try again.');
     return false;
   }
 }
