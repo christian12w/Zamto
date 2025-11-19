@@ -351,7 +351,18 @@ export async function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Promise<Vehi
       return response.vehicle;
     } else {
       console.error('Failed to add vehicle:', response.message);
-      alert(`Failed to add vehicle: ${response.message}`);
+      
+      // Check if it's a token expiration issue
+      if (response.message && response.message.includes('Invalid or expired token')) {
+        alert('Your session has expired. Please log in again.');
+        // Clear the expired token
+        localStorage.removeItem('authToken');
+        // Redirect to login page
+        window.location.href = '/login';
+      } else {
+        alert(`Failed to add vehicle: ${response.message}`);
+      }
+      
       return null;
     }
   } catch (error: any) {
@@ -456,7 +467,18 @@ export async function updateVehicle(vehicleId: string, vehicleData: Partial<Vehi
       return response.vehicle;
     } else {
       console.error('Failed to update vehicle:', response.message);
-      alert(`Failed to update vehicle: ${response.message}`);
+      
+      // Check if it's a token expiration issue
+      if (response.message && response.message.includes('Invalid or expired token')) {
+        alert('Your session has expired. Please log in again.');
+        // Clear the expired token
+        localStorage.removeItem('authToken');
+        // Redirect to login page
+        window.location.href = '/login';
+      } else {
+        alert(`Failed to update vehicle: ${response.message}`);
+      }
+      
       return null;
     }
   } catch (error: any) {
@@ -485,6 +507,16 @@ export async function deleteVehicle(id: string): Promise<boolean> {
       
       return true;
     }
+    
+    // Check if it's a token expiration issue
+    if (response.message && response.message.includes('Invalid or expired token')) {
+      alert('Your session has expired. Please log in again.');
+      // Clear the expired token
+      localStorage.removeItem('authToken');
+      // Redirect to login page
+      window.location.href = '/login';
+    }
+    
     return false;
   } catch (error) {
     console.error('Failed to delete vehicle:', error);

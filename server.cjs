@@ -167,16 +167,29 @@ function authenticateToken(req, res, next) {
   if (!token) {
     return res.status(401).json({ 
       success: false, 
-      message: 'Authentication required' 
+      message: 'Authentication required - No token provided' 
     });
   }
   
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Invalid or expired token' 
-      });
+      // Provide more specific error messages
+      if (err.name === 'TokenExpiredError') {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'Invalid or expired token - Token has expired. Please log in again.' 
+        });
+      } else if (err.name === 'JsonWebTokenError') {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'Invalid or expired token - Token is invalid. Please log in again.' 
+        });
+      } else {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'Invalid or expired token - ' + err.message 
+        });
+      }
     }
     req.user = user;
     next();
