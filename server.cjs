@@ -690,12 +690,18 @@ app.post('/api/images/watermark', authenticateToken, requireAdmin, async (req, r
       if (watermarkType === 'logo') {
         // Apply logo watermark
         const logoPath = path.join(__dirname, 'public', 'logo.png');
-        watermarkedImageBuffer = await addLogoWatermarkToImage(imageBuffer, logoPath, {
-          position: 'bottom-right',
-          margin: 20,
-          opacity: 0.7,
-          scale: 0.15
-        });
+        // Check if logo file exists
+        if (!require('fs').existsSync(logoPath)) {
+          console.warn('Logo file not found, returning original image');
+          watermarkedImageBuffer = imageBuffer;
+        } else {
+          watermarkedImageBuffer = await addLogoWatermarkToImage(imageBuffer, logoPath, {
+            position: 'bottom-right',
+            margin: 20,
+            opacity: 0.7,
+            scale: 0.15
+          });
+        }
       } else {
         // Apply text watermark
         watermarkedImageBuffer = await addTextWatermarkToImage(imageBuffer, 'ZAMTO AFRICA', {

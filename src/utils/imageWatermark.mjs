@@ -2,14 +2,16 @@
 // Use dynamic import for sharp since it's a CommonJS module
 let sharp;
 
-// Import sharp dynamically
+// Import sharp dynamically with error handling
 import('sharp')
   .then((sharpModule) => {
+    // Handle both default and named exports
     sharp = sharpModule.default || sharpModule;
     console.log('Sharp module loaded successfully');
   })
   .catch((error) => {
     console.error('Failed to load sharp module:', error);
+    console.error('Sharp will not be available for image processing');
   });
 
 // Function to add logo watermark to an image
@@ -17,7 +19,7 @@ export async function addLogoWatermarkToImage(imageBuffer, logoPath, options = {
   try {
     // Check if sharp is available
     if (!sharp) {
-      throw new Error('Sharp module not loaded');
+      throw new Error('Sharp module not loaded - image processing unavailable');
     }
     
     // Default options
@@ -96,7 +98,7 @@ export async function addTextWatermarkToImage(imageBuffer, text, options = {}) {
   try {
     // Check if sharp is available
     if (!sharp) {
-      throw new Error('Sharp module not loaded');
+      throw new Error('Sharp module not loaded - image processing unavailable');
     }
     
     // Default options
