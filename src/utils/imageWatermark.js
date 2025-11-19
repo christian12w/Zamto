@@ -1,16 +1,135 @@
-// Image watermarking utility
-// This would typically be implemented on the backend due to resource requirements
-// For now, we'll provide a placeholder that can be extended later
+// Image watermarking utility using Sharp
+const sharp = require('sharp');
+const path = require('path');
 
-export function addWatermarkToImage(imageData, watermarkText = 'ZAMTO AFRICA') {
-  // In a real implementation, this would use a library like Sharp or Canvas to add watermarks
-  // For now, we'll just return the original image data
-  console.log('Watermarking would be applied to image with text:', watermarkText);
-  return imageData;
+// Function to add logo watermark to an image
+async function addLogoWatermarkToImage(imageBuffer, logoPath, options = {}) {
+  try {
+    // Default options
+    const {
+      position = 'bottom-right', // top-left, top-right, bottom-left, bottom-right, center
+      margin = 20, // margin in pixels
+      opacity = 0.7, // logo opacity (0-1)
+      scale = 0.15 // logo scale relative to image size (0-1)
+    } = options;
+    
+    // Load the main image
+    const image = sharp(imageBuffer);
+    const imageMetadata = await image.metadata();
+    
+    // Load the logo
+    const logo = sharp(logoPath);
+    const logoMetadata = await logo.metadata();
+    
+    // Calculate logo dimensions based on scale
+    const logoWidth = Math.floor(imageMetadata.width * scale);
+    const logoHeight = Math.floor(logoMetadata.height * (logoWidth / logoMetadata.width));
+    
+    // Resize logo
+    const resizedLogo = await logo
+      .resize(logoWidth, logoHeight)
+      .png() // Ensure logo is in PNG format for transparency
+      .toBuffer();
+    
+    // Calculate position
+    let left, top;
+    switch (position) {
+      case 'top-left':
+        left = margin;
+        top = margin;
+        break;
+      case 'top-right':
+        left = imageMetadata.width - logoWidth - margin;
+        top = margin;
+        break;
+      case 'bottom-left':
+        left = margin;
+        top = imageMetadata.height - logoHeight - margin;
+        break;
+      case 'center':
+        left = Math.floor((imageMetadata.width - logoWidth) / 2);
+        top = Math.floor((imageMetadata.height - logoHeight) / 2);
+        break;
+      case 'bottom-right':
+      default:
+        left = imageMetadata.width - logoWidth - margin;
+        top = imageMetadata.height - logoHeight - margin;
+        break;
+    }
+    
+    // Composite the logo onto the image
+    const watermarkedImage = await image
+      .composite([{
+        input: resizedLogo,
+        top: top,
+        left: left,
+        opacity: opacity
+      }])
+      .jpeg({ quality: 90 }) // Output as JPEG with good quality
+      .toBuffer();
+    
+    return watermarkedImage;
+  } catch (error) {
+    console.error('Error adding logo watermark:', error);
+    // Return original image if watermarking fails
+    return imageBuffer;
+  }
 }
 
-export function addLogoWatermarkToImage(imageData, logoPath) {
-  // In a real implementation, this would overlay a logo on the image
-  console.log('Logo watermark would be applied to image with logo:', logoPath);
-  return imageData;
+// Function to add text watermark to an image
+async function addTextWatermarkToImage(imageBuffer, text, options = {}) {
+  try {
+    // Default options
+    const {
+      position = 'bottom-right', // top-left, top-right, bottom-left, bottom-right, center
+      margin = 20, // margin in pixels
+      fontSize = 32, // font size
+      color = 'rgba(255, 255, 255, 0.8)', // text color with opacity
+      backgroundColor = 'rgba(0, 0, 0, 0.5)', // background color with opacity
+      padding = 10 // padding around text
+    } = options;
+    
+    // Load the main image
+    const image = sharp(imageBuffer);
+    const imageMetadata = await image.metadata();
+    
+    // Create SVG overlay for text
+    const svgOverlay = `
+      <svg width="${imageMetadata.width}" height="${imageMetadata.height}">
+        <rect width="100%" height="100%" fill="none"/>
+        <text 
+          x="${position.includes('right') ? imageMetadata.width - margin : margin}" 
+          y="${position.includes('bottom') ? imageMetadata.height - margin : margin + fontSize}" 
+          font-family="Arial, sans-serif" 
+          font-size="${fontSize}" 
+          fill="${color}" 
+          text-anchor="${position.includes('right') ? 'end' : 'start'}" 
+          dominant-baseline="${position.includes('bottom') ? 'baseline' : 'hanging'}"
+          style="paint-order: stroke; stroke: ${backgroundColor}; stroke-width: ${padding}; stroke-linejoin: round;">
+          ${text}
+        </text>
+      </svg>
+    `;
+    
+    // Composite the text onto the image
+    const watermarkedImage = await image
+      .composite([{
+        input: Buffer.from(svgOverlay),
+        top: 0,
+        left: 0
+      }])
+      .jpeg({ quality: 90 }) // Output as JPEG with good quality
+      .toBuffer();
+    
+    return watermarkedImage;
+  } catch (error) {
+    console.error('Error adding text watermark:', error);
+    // Return original image if watermarking fails
+    return imageBuffer;
+  }
 }
+
+module.exports = {
+  addLogoWatermarkToImage,
+  addTextWatermarkToImage
+};

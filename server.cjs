@@ -9,10 +9,14 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 // Add MongoDB dependencies
 const { connectDB } = require('./db/config.cjs');
 const User = require('./db/models/User.cjs');
 const Vehicle = require('./db/models/Vehicle.cjs');
+
+// Add image processing dependencies
+const { addLogoWatermarkToImage } = require('./src/utils/imageWatermark.js');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -645,6 +649,61 @@ app.post('/api/vehicles/import', authenticateToken, requireAdmin, async (req, re
     res.status(500).json({
       success: false,
       message: 'An error occurred while importing vehicles: ' + error.message
+    });
+  }
+});
+
+// Route for processing images with watermarks
+app.post('/api/images/watermark', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { imageBase64, watermarkType } = req.body;
+    
+    if (!imageBase64) {
+      return res.status(400).json({
+        success: false,
+        message: 'Image data is required'
+      });
+    }
+    
+    // Convert base64 to buffer
+    const imageBuffer = Buffer.from(imageBase64.split(',')[1], 'base64');
+    
+    let watermarkedImageBuffer;
+    
+    if (watermarkType === 'logo') {
+      // Apply logo watermark
+      const logoPath = path.join(__dirname, 'public', 'logo.png');
+      watermarkedImageBuffer = await addLogoWatermarkToImage(imageBuffer, logoPath, {
+        position: 'bottom-right',
+        margin: 20,
+        opacity: 0.7,
+        scale: 0.15
+      });
+    } else {
+      // Apply text watermark
+      watermarkedImageBuffer = await addTextWatermarkToImage(imageBuffer, 'ZAMTO AFRICA', {
+        position: 'bottom-right',
+        margin: 20,
+        fontSize: 32,
+        color: 'rgba(255, 255, 255, 0.8)',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        padding: 10
+      });
+    }
+    
+    // Convert back to base64
+    const watermarkedBase64 = 'data:image/jpeg;base64,' + watermarkedImageBuffer.toString('base64');
+    
+    res.json({
+      success: true,
+      image: watermarkedBase64,
+      message: 'Image watermarked successfully'
+    });
+  } catch (error) {
+    console.error('Error watermarking image:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while watermarking the image: ' + error.message
     });
   }
 });

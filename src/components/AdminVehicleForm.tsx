@@ -83,7 +83,7 @@ export function AdminVehicleForm({
     }
   }, [vehicle]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, label: (typeof imageLabels)[number]) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, label: (typeof imageLabels)[number]) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
@@ -94,35 +94,76 @@ export function AdminVehicleForm({
       return newErrors;
     });
     
-    // Convert image to base64 without size restrictions
-    const reader = new FileReader();
-    reader.onloadstart = () => {
-      // Show loading state if needed
-    };
-    
-    reader.onloadend = () => {
-      const base64String = reader.result as string;
+    try {
+      // Read file as base64
+      const reader = new FileReader();
+      reader.onloadstart = () => {
+        // Show loading state if needed
+      };
       
-      // Apply watermark to image (placeholder implementation)
-      // In a real implementation, this would be done on the backend
-      const watermarkedImage = base64String; // Placeholder - would apply watermark here
+      reader.onloadend = async () => {
+        const base64String = reader.result as string;
+        
+        try {
+          // Apply logo watermark to image
+          const response = await fetch(`${(import.meta as any).env.VITE_API_BASE_URL}/images/watermark`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify({
+              imageBase64: base64String,
+              watermarkType: 'logo'
+            })
+          });
+          
+          const result = await response.json();
+          
+          if (result.success && result.image) {
+            // Use watermarked image
+            const watermarkedImage = result.image;
+            
+            // Remove existing image with same label if any
+            const filteredImages = images.filter(img => img.label !== label);
+            setImages([...filteredImages, {
+              url: watermarkedImage,
+              label
+            }]);
+          } else {
+            // Fallback to original image if watermarking fails
+            const filteredImages = images.filter(img => img.label !== label);
+            setImages([...filteredImages, {
+              url: base64String,
+              label
+            }]);
+          }
+        } catch (watermarkError) {
+          console.error('Watermarking failed, using original image:', watermarkError);
+          // Fallback to original image if watermarking fails
+          const filteredImages = images.filter(img => img.label !== label);
+          setImages([...filteredImages, {
+            url: base64String,
+            label
+          }]);
+        }
+      };
       
-      // Remove existing image with same label if any
-      const filteredImages = images.filter(img => img.label !== label);
-      setImages([...filteredImages, {
-        url: watermarkedImage,
-        label
-      }]);
-    };
-    
-    reader.onerror = () => {
+      reader.onerror = () => {
+        setUploadErrors(prev => ({
+          ...prev,
+          [label]: 'Failed to read file'
+        }));
+      };
+      
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error processing image:', error);
       setUploadErrors(prev => ({
         ...prev,
-        [label]: 'Failed to read file'
+        [label]: 'Failed to process image'
       }));
-    };
-    
-    reader.readAsDataURL(file);
+    }
   };
 
   const removeImage = (label: (typeof imageLabels)[number]) => {
