@@ -67,33 +67,33 @@ export function VehicleCard({
           href={`https://wa.me/${vehicle.whatsappContact?.replace(/\D/g, '') || '260572213038'}?text=Hello,%20I'm%20interested%20in%20the%20${encodeURIComponent(vehicle.name)}`} 
           target="_blank" 
           rel="noopener noreferrer"
-          className="absolute top-2 sm:top-3 right-3 bg-green-500 hover:bg-green-600 text-white p-1.5 sm:p-2 rounded-full opacity-90 hover:opacity-100 transition-all focus:outline-none focus:ring-2 focus:ring-white z-10"
+          className="absolute top-3 right-3 bg-green-600 hover:bg-green-700 text-white p-2 rounded-full opacity-90 hover:opacity-100 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white z-10 shadow-lg hover:scale-110"
           aria-label="Contact via WhatsApp"
         >
-          <MessageCircleIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+          <MessageCircleIcon className="h-5 w-5" />
         </a>
         
         {images.length > 1 && <>
             <button 
               onClick={prevImage} 
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-60 text-white p-1.5 sm:p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-white"
+              className="absolute left-3 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white"
               aria-label="Previous image"
             >
-              <ChevronLeftIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+              <ChevronLeftIcon className="h-5 w-5" />
             </button>
             <button 
               onClick={nextImage} 
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-60 text-white p-1.5 sm:p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-white"
+              className="absolute right-3 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white"
               aria-label="Next image"
             >
-              <ChevronRightIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+              <ChevronRightIcon className="h-5 w-5" />
             </button>
-            <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 flex space-x-1 sm:space-x-1.5">
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2">
               {images.map((_, index) => (
                 <button 
                   key={index} 
                   onClick={() => setCurrentImageIndex(index)} 
-                  className={`transition-all ${index === currentImageIndex ? 'bg-white w-4 h-1.5 sm:w-6 sm:h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5 sm:w-2 sm:h-2'} rounded-full`}
+                  className={`transition-all duration-300 ${index === currentImageIndex ? 'bg-white w-6 h-2' : 'bg-white bg-opacity-50 w-2 h-2'} rounded-full`}
                   aria-label={`View image ${index + 1}`}
                 />
               ))}
@@ -103,12 +103,12 @@ export function VehicleCard({
               href={`https://wa.me/${vehicle.whatsappContact?.replace(/\D/g, '') || '260572213038'}?text=Hello,%20I'm%20interested%20in%20the%20${encodeURIComponent(vehicle.name)}`} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="absolute bottom-2 sm:bottom-3 right-3 bg-green-500 hover:bg-green-600 text-white p-1.5 sm:p-2 rounded-full opacity-90 hover:opacity-100 transition-all focus:outline-none focus:ring-2 focus:ring-white"
+              className="absolute bottom-3 right-3 bg-green-600 hover:bg-green-700 text-white p-2 rounded-full opacity-90 hover:opacity-100 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white hover:scale-110"
               aria-label="Contact via WhatsApp"
             >
-              <MessageCircleIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+              <MessageCircleIcon className="h-5 w-5" />
             </a>
-            <div className="absolute top-2 sm:top-3 left-3 bg-black bg-opacity-70 text-white text-xs px-2 py-1 sm:px-3 sm:py-1.5 rounded-full font-medium backdrop-blur-sm">
+            <div className="absolute top-3 left-3 bg-black bg-opacity-70 text-white text-xs px-3 py-1.5 rounded-full font-medium backdrop-blur-sm">
               {images[currentImageIndex].label.charAt(0).toUpperCase() + images[currentImageIndex].label.slice(1)}
             </div>
           </>}
@@ -170,7 +170,8 @@ export function VehicleCard({
               className="flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl font-semibold transition-all transform hover:scale-105 shadow-md w-full text-sm sm:text-base"
             >
               <MessageCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              WhatsApp
+              <span className="hidden sm:inline">WhatsApp</span>
+              <span className="sm:hidden">WA</span>
             </a>
             
             <a 
