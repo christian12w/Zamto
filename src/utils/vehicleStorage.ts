@@ -273,33 +273,40 @@ export async function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Promise<Vehi
       return null;
     }
     
+    // Ensure WhatsApp contact is included in the data
+    const vehicleDataWithWhatsApp = {
+      ...vehicleData,
+      whatsappContact: vehicleData.whatsappContact || '+260572213038' // Default to company number
+    };
+    
     // Fix any double-encoded data in the input
     const fixedData: any = {
-      ...vehicleData,
-      name: fixDoubleEncodedAmpersands(vehicleData.name),
-      category: fixDoubleEncodedAmpersands(vehicleData.category),
-      price: fixDoubleEncodedAmpersands(vehicleData.price),
-      description: fixDoubleEncodedAmpersands(vehicleData.description),
-      features: vehicleData.features.map((feature: string) => fixDoubleEncodedAmpersands(feature)),
-      image: fixDoubleEncodedAmpersands(vehicleData.image),
-      images: vehicleData.images.map((img: VehicleImage) => ({
+      ...vehicleDataWithWhatsApp,
+      name: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.name),
+      category: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.category),
+      price: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.price),
+      description: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.description),
+      features: vehicleDataWithWhatsApp.features.map((feature: string) => fixDoubleEncodedAmpersands(feature)),
+      image: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.image),
+      images: vehicleDataWithWhatsApp.images.map((img: VehicleImage) => ({
         url: fixDoubleEncodedAmpersands(img.url),
         label: img.label
       })),
       // Fix optional fields
-      ...(vehicleData.year && { year: vehicleData.year }),
-      ...(vehicleData.mileage && { mileage: fixDoubleEncodedAmpersands(vehicleData.mileage) }),
-      ...(vehicleData.transmission && { transmission: fixDoubleEncodedAmpersands(vehicleData.transmission) }),
-      ...(vehicleData.fuelType && { fuelType: fixDoubleEncodedAmpersands(vehicleData.fuelType) }),
-      ...(vehicleData.dailyRate && { dailyRate: fixDoubleEncodedAmpersands(vehicleData.dailyRate) }),
-      ...(vehicleData.engineSize && { engineSize: fixDoubleEncodedAmpersands(vehicleData.engineSize) }),
-      ...(vehicleData.color && { color: fixDoubleEncodedAmpersands(vehicleData.color) }),
-      ...(vehicleData.condition && { condition: vehicleData.condition as 'Excellent' | 'Good' | 'Fair' | 'Poor' | undefined }),
-      ...(vehicleData.serviceHistory && { serviceHistory: fixDoubleEncodedAmpersands(vehicleData.serviceHistory) }),
-      ...(vehicleData.accidentHistory && { accidentHistory: fixDoubleEncodedAmpersands(vehicleData.accidentHistory) }),
-      ...(vehicleData.warranty && { warranty: fixDoubleEncodedAmpersands(vehicleData.warranty) }),
-      ...(vehicleData.registrationStatus && { registrationStatus: fixDoubleEncodedAmpersands(vehicleData.registrationStatus) }),
-      ...(vehicleData.insuranceStatus && { insuranceStatus: fixDoubleEncodedAmpersands(vehicleData.insuranceStatus) })
+      ...(vehicleDataWithWhatsApp.year && { year: vehicleDataWithWhatsApp.year }),
+      ...(vehicleDataWithWhatsApp.mileage && { mileage: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.mileage) }),
+      ...(vehicleDataWithWhatsApp.transmission && { transmission: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.transmission) }),
+      ...(vehicleDataWithWhatsApp.fuelType && { fuelType: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.fuelType) }),
+      ...(vehicleDataWithWhatsApp.dailyRate && { dailyRate: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.dailyRate) }),
+      ...(vehicleDataWithWhatsApp.engineSize && { engineSize: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.engineSize) }),
+      ...(vehicleDataWithWhatsApp.color && { color: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.color) }),
+      ...(vehicleDataWithWhatsApp.condition && { condition: vehicleDataWithWhatsApp.condition as 'Excellent' | 'Good' | 'Fair' | 'Poor' | undefined }),
+      ...(vehicleDataWithWhatsApp.serviceHistory && { serviceHistory: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.serviceHistory) }),
+      ...(vehicleDataWithWhatsApp.accidentHistory && { accidentHistory: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.accidentHistory) }),
+      ...(vehicleDataWithWhatsApp.warranty && { warranty: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.warranty) }),
+      ...(vehicleDataWithWhatsApp.registrationStatus && { registrationStatus: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.registrationStatus) }),
+      ...(vehicleDataWithWhatsApp.insuranceStatus && { insuranceStatus: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.insuranceStatus) }),
+      ...(vehicleDataWithWhatsApp.whatsappContact && { whatsappContact: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.whatsappContact) })
     };
     
     // Sanitize input data
@@ -328,7 +335,8 @@ export async function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Promise<Vehi
       ...(fixedData.accidentHistory && { accidentHistory: sanitizeInput(fixedData.accidentHistory) }),
       ...(fixedData.warranty && { warranty: sanitizeInput(fixedData.warranty) }),
       ...(fixedData.registrationStatus && { registrationStatus: sanitizeInput(fixedData.registrationStatus) }),
-      ...(fixedData.insuranceStatus && { insuranceStatus: sanitizeInput(fixedData.insuranceStatus) })
+      ...(fixedData.insuranceStatus && { insuranceStatus: sanitizeInput(fixedData.insuranceStatus) }),
+      ...(fixedData.whatsappContact && { whatsappContact: sanitizeInput(fixedData.whatsappContact) })
     };
     
     const response = await vehicleService.addVehicle(sanitizedData as Omit<Vehicle, 'id'>, token);
@@ -353,78 +361,91 @@ export async function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Promise<Vehi
   }
 }
 
-export async function updateVehicle(id: string, updates: Partial<Vehicle>): Promise<boolean> {
+export async function updateVehicle(vehicleId: string, vehicleData: Partial<Vehicle>): Promise<Vehicle | null> {
   try {
     const token = getAuthToken();
     if (!token) {
       console.error('Authentication required to update vehicle');
       alert('Authentication required. Please log in again.');
-      return false;
+      return null;
     }
     
-    // Log the update attempt
-    console.log('Attempting to update vehicle:', id, updates);
+    // Ensure WhatsApp contact is included in the data if it exists
+    const vehicleDataWithWhatsApp = {
+      ...vehicleData,
+      ...(vehicleData.whatsappContact && { whatsappContact: vehicleData.whatsappContact })
+    };
     
-    // Show a temporary loading state to the user
-    const startTime = Date.now();
+    // Fix any double-encoded data in the input
+    const fixedData: any = {
+      ...vehicleDataWithWhatsApp,
+      ...(vehicleDataWithWhatsApp.name && { name: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.name) }),
+      ...(vehicleDataWithWhatsApp.category && { category: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.category) }),
+      ...(vehicleDataWithWhatsApp.price && { price: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.price) }),
+      ...(vehicleDataWithWhatsApp.description && { description: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.description) }),
+      ...(vehicleDataWithWhatsApp.features && { 
+        features: vehicleDataWithWhatsApp.features.map((feature: string) => fixDoubleEncodedAmpersands(feature)) 
+      }),
+      ...(vehicleDataWithWhatsApp.image && { image: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.image) }),
+      ...(vehicleDataWithWhatsApp.images && { 
+        images: vehicleDataWithWhatsApp.images.map((img: VehicleImage) => ({
+          url: fixDoubleEncodedAmpersands(img.url),
+          label: img.label
+        })) 
+      }),
+      // Fix optional fields
+      ...(vehicleDataWithWhatsApp.year && { year: vehicleDataWithWhatsApp.year }),
+      ...(vehicleDataWithWhatsApp.mileage && { mileage: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.mileage) }),
+      ...(vehicleDataWithWhatsApp.transmission && { transmission: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.transmission) }),
+      ...(vehicleDataWithWhatsApp.fuelType && { fuelType: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.fuelType) }),
+      ...(vehicleDataWithWhatsApp.dailyRate && { dailyRate: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.dailyRate) }),
+      ...(vehicleDataWithWhatsApp.engineSize && { engineSize: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.engineSize) }),
+      ...(vehicleDataWithWhatsApp.color && { color: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.color) }),
+      ...(vehicleDataWithWhatsApp.condition && { condition: vehicleDataWithWhatsApp.condition as 'Excellent' | 'Good' | 'Fair' | 'Poor' | undefined }),
+      ...(vehicleDataWithWhatsApp.serviceHistory && { serviceHistory: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.serviceHistory) }),
+      ...(vehicleDataWithWhatsApp.accidentHistory && { accidentHistory: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.accidentHistory) }),
+      ...(vehicleDataWithWhatsApp.warranty && { warranty: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.warranty) }),
+      ...(vehicleDataWithWhatsApp.registrationStatus && { registrationStatus: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.registrationStatus) }),
+      ...(vehicleDataWithWhatsApp.insuranceStatus && { insuranceStatus: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.insuranceStatus) }),
+      ...(vehicleDataWithWhatsApp.whatsappContact && { whatsappContact: fixDoubleEncodedAmpersands(vehicleDataWithWhatsApp.whatsappContact) })
+    };
     
-    // Fix any double-encoded data in updates
-    const fixedUpdates: Partial<Vehicle> = {};
-    Object.keys(updates).forEach(key => {
-      const value = updates[key as keyof Vehicle];
-      if (typeof value === 'string') {
-        fixedUpdates[key as keyof Vehicle] = fixDoubleEncodedAmpersands(value) as any;
-      } else if (Array.isArray(value)) {
-        // Handle arrays (features, images)
-        if (key === 'features') {
-          fixedUpdates[key as keyof Vehicle] = value.map((item: any) => 
-            typeof item === 'string' ? fixDoubleEncodedAmpersands(item) : item
-          ) as any;
-        } else if (key === 'images') {
-          fixedUpdates[key as keyof Vehicle] = value.map((img: any) => ({
-            url: fixDoubleEncodedAmpersands(img.url),
-            label: img.label
-          })) as any;
-        } else {
-          fixedUpdates[key as keyof Vehicle] = value as any;
-        }
-      } else {
-        fixedUpdates[key as keyof Vehicle] = value as any;
-      }
-    });
+    // Sanitize input data
+    const sanitizedData: any = {
+      ...fixedData,
+      ...(fixedData.name && { name: sanitizeInput(fixedData.name) }),
+      ...(fixedData.category && { category: sanitizeInput(fixedData.category) }),
+      ...(fixedData.price && { price: sanitizeInput(fixedData.price) }),
+      ...(fixedData.description && { description: sanitizeInput(fixedData.description) }),
+      ...(fixedData.features && { 
+        features: fixedData.features.map((feature: string) => sanitizeInput(feature)) 
+      }),
+      ...(fixedData.image && { image: sanitizeInput(fixedData.image) }),
+      ...(fixedData.images && { 
+        images: fixedData.images.map((img: VehicleImage) => ({
+          url: sanitizeInput(img.url),
+          label: img.label
+        })) 
+      }),
+      // Sanitize optional fields
+      ...(fixedData.year && { year: fixedData.year }),
+      ...(fixedData.mileage && { mileage: sanitizeInput(fixedData.mileage) }),
+      ...(fixedData.transmission && { transmission: sanitizeInput(fixedData.transmission) }),
+      ...(fixedData.fuelType && { fuelType: sanitizeInput(fixedData.fuelType) }),
+      ...(fixedData.dailyRate && { dailyRate: sanitizeInput(fixedData.dailyRate) }),
+      ...(fixedData.engineSize && { engineSize: sanitizeInput(fixedData.engineSize) }),
+      ...(fixedData.color && { color: sanitizeInput(fixedData.color) }),
+      ...(fixedData.condition && { condition: fixedData.condition as 'Excellent' | 'Good' | 'Fair' | 'Poor' | undefined }),
+      ...(fixedData.serviceHistory && { serviceHistory: sanitizeInput(fixedData.serviceHistory) }),
+      ...(fixedData.accidentHistory && { accidentHistory: sanitizeInput(fixedData.accidentHistory) }),
+      ...(fixedData.warranty && { warranty: sanitizeInput(fixedData.warranty) }),
+      ...(fixedData.registrationStatus && { registrationStatus: sanitizeInput(fixedData.registrationStatus) }),
+      ...(fixedData.insuranceStatus && { insuranceStatus: sanitizeInput(fixedData.insuranceStatus) }),
+      ...(fixedData.whatsappContact && { whatsappContact: sanitizeInput(fixedData.whatsappContact) })
+    };
     
-    // Sanitize updates
-    const sanitizedUpdates: Partial<Vehicle> = {};
-    Object.keys(fixedUpdates).forEach(key => {
-      const value = fixedUpdates[key as keyof Vehicle];
-      if (typeof value === 'string') {
-        sanitizedUpdates[key as keyof Vehicle] = sanitizeInput(value) as any;
-      } else if (Array.isArray(value)) {
-        // Handle arrays (features, images)
-        if (key === 'features') {
-          sanitizedUpdates[key as keyof Vehicle] = value.map((item: any) => 
-            typeof item === 'string' ? sanitizeInput(item) : item
-          ) as any;
-        } else if (key === 'images') {
-          sanitizedUpdates[key as keyof Vehicle] = value.map((img: any) => ({
-            url: sanitizeInput(img.url),
-            label: img.label
-          })) as any;
-        } else {
-          sanitizedUpdates[key as keyof Vehicle] = value as any;
-        }
-      } else {
-        sanitizedUpdates[key as keyof Vehicle] = value as any;
-      }
-    });
-    
-    console.log('Sending sanitized updates:', sanitizedUpdates);
-    
-    const response = await vehicleService.updateVehicle(id, sanitizedUpdates, token);
-    const endTime = Date.now();
-    console.log(`Vehicle update took ${endTime - startTime}ms`);
-    
-    if (response.success) {
+    const response = await vehicleService.updateVehicle(vehicleId, sanitizedData as Partial<Vehicle>, token);
+    if (response.success && response.vehicle) {
       // Clear cache to force refresh on next getVehicles call
       vehiclesCache = null;
       lastUpdateTimestamp = 0;
@@ -432,21 +453,16 @@ export async function updateVehicle(id: string, updates: Partial<Vehicle>): Prom
       // Dispatch event to notify other parts of the app that vehicles have been updated
       window.dispatchEvent(new Event('vehiclesUpdated'));
       
-      console.log('Vehicle updated successfully:', response.vehicle);
-      return true;
+      return response.vehicle;
     } else {
       console.error('Failed to update vehicle:', response.message);
       alert(`Failed to update vehicle: ${response.message}`);
-      return false;
+      return null;
     }
   } catch (error: any) {
     console.error('Failed to update vehicle:', error);
-    if (error.message && error.message.includes('timeout')) {
-      alert('Request timeout - the server took too long to respond. Please try again or check your network connection.');
-    } else {
-      alert('An error occurred while updating the vehicle. Please try again.');
-    }
-    return false;
+    alert('An error occurred while updating the vehicle. Please try again.');
+    return null;
   }
 }
 
@@ -564,6 +580,61 @@ function startKeepAlivePings() {
   
   // Send a ping every 10 minutes to keep server awake
   keepAliveInterval = setInterval(sendKeepAlivePing, 10 * 60 * 1000); // 10 minutes
+}
+
+// Function to create a test vehicle with WhatsApp number
+export async function createTestVehicle(): Promise<Vehicle | null> {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      console.error('Authentication required to create test vehicle');
+      return null;
+    }
+    
+    const testVehicle: Omit<Vehicle, 'id'> = {
+      name: 'Test Vehicle with WhatsApp',
+      category: 'Sedan',
+      price: 'ZMW 250,000',
+      image: 'https://images.unsplash.com/photo-1542362567-b07e54358753?w=800',
+      images: [{
+        url: 'https://images.unsplash.com/photo-1542362567-b07e54358753?w=800',
+        label: 'exterior'
+      }],
+      description: 'Test vehicle to verify WhatsApp functionality',
+      features: ['Air Conditioning', 'Bluetooth', 'Backup Camera'],
+      type: 'sale',
+      popular: false, // Add the required popular field
+      year: 2020,
+      mileage: '30,000 km',
+      transmission: 'Automatic',
+      fuelType: 'Petrol',
+      engineSize: '2.0L',
+      doors: 4,
+      seats: 5,
+      color: 'White',
+      condition: 'Good',
+      serviceHistory: 'Full service history',
+      accidentHistory: 'No accident history',
+      warranty: '12 months',
+      registrationStatus: 'Valid',
+      whatsappContact: '+260971234567' // Test WhatsApp number
+    };
+    
+    const response = await vehicleService.addVehicle(testVehicle, token);
+    if (response.success && response.vehicle) {
+      console.log('Test vehicle created successfully:', response.vehicle);
+      // Clear cache to force refresh
+      vehiclesCache = null;
+      lastUpdateTimestamp = 0;
+      return response.vehicle;
+    } else {
+      console.error('Failed to create test vehicle:', response.message);
+      return null;
+    }
+  } catch (error: any) {
+    console.error('Failed to create test vehicle:', error);
+    return null;
+  }
 }
 
 // Start background refresh and keep-alive when module loads
