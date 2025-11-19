@@ -15,14 +15,22 @@ const { connectDB } = require('./db/config.cjs');
 const User = require('./db/models/User.cjs');
 const Vehicle = require('./db/models/Vehicle.cjs');
 
-// Add image processing dependencies
-const { addLogoWatermarkToImage } = require('./src/utils/imageWatermark.js');
+// Add image processing dependencies (will be imported dynamically)
+let addLogoWatermarkToImage, addTextWatermarkToImage;
+
+// Import watermarking functions dynamically
+import('./src/utils/imageWatermark.mjs')
+  .then((watermarkModule) => {
+    addLogoWatermarkToImage = watermarkModule.addLogoWatermarkToImage;
+    addTextWatermarkToImage = watermarkModule.addTextWatermarkToImage;
+    console.log('Watermarking module loaded successfully');
+  })
+  .catch((error) => {
+    console.error('Failed to load watermarking module:', error);
+  });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-
-// Enable trust proxy - this is needed for rate limiting to work correctly behind proxies like Render
-app.set('trust proxy', 1); // trust first proxy
 
 // Enhanced CORS configuration
 const corsOptions = {
@@ -656,6 +664,14 @@ app.post('/api/vehicles/import', authenticateToken, requireAdmin, async (req, re
 // Route for processing images with watermarks
 app.post('/api/images/watermark', authenticateToken, requireAdmin, async (req, res) => {
   try {
+    // Check if watermarking functions are available
+    if (!addLogoWatermarkToImage || !addTextWatermarkToImage) {
+      return res.status(503).json({
+        success: false,
+        message: 'Watermarking service not available yet, please try again in a moment'
+      });
+    }
+    
     const { imageBase64, watermarkType } = req.body;
     
     if (!imageBase64) {

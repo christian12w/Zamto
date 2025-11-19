@@ -1,9 +1,9 @@
 // Image watermarking utility using Sharp
-const sharp = require('sharp');
-const path = require('path');
+import sharp from 'sharp';
+import path from 'path';
 
 // Function to add logo watermark to an image
-async function addLogoWatermarkToImage(imageBuffer, logoPath, options = {}) {
+export async function addLogoWatermarkToImage(imageBuffer, logoPath, options = {}) {
   try {
     // Default options
     const {
@@ -77,7 +77,7 @@ async function addLogoWatermarkToImage(imageBuffer, logoPath, options = {}) {
 }
 
 // Function to add text watermark to an image
-async function addTextWatermarkToImage(imageBuffer, text, options = {}) {
+export async function addTextWatermarkToImage(imageBuffer, text, options = {}) {
   try {
     // Default options
     const {
@@ -128,8 +128,3 @@ async function addTextWatermarkToImage(imageBuffer, text, options = {}) {
     return imageBuffer;
   }
 }
-
-module.exports = {
-  addLogoWatermarkToImage,
-  addTextWatermarkToImage
-};
