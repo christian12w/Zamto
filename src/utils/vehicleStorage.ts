@@ -36,6 +36,9 @@ export interface Vehicle {
   warranty?: string;          // Warranty information
   registrationStatus?: string; // Registration status
   insuranceStatus?: string;   // Insurance status (for hire vehicles)
+  
+  // WhatsApp contact for inquiries
+  whatsappContact?: string;   // WhatsApp number for vehicle inquiries
 }
 
 export interface VehicleImage {

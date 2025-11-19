@@ -97,6 +97,11 @@ const vehicleSchema = new mongoose.Schema({
   },
   insuranceStatus: {
     type: String
+  },
+  // Add WhatsApp contact field
+  whatsappContact: {
+    type: String,
+    default: '+260572213038' // Default company WhatsApp number
   }
 }, {
   timestamps: true

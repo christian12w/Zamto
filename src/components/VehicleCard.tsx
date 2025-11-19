@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircleIcon, PhoneIcon, ChevronLeftIcon, ChevronRightIcon, SparklesIcon, TagIcon, ClockIcon, EyeIcon } from 'lucide-react';
+import { CheckCircleIcon, PhoneIcon, ChevronLeftIcon, ChevronRightIcon, SparklesIcon, TagIcon, ClockIcon, EyeIcon, MessageCircleIcon } from 'lucide-react';
 import { Vehicle } from '../utils/vehicleStorage';
 
 interface VehicleCardProps {
@@ -140,6 +140,17 @@ export function VehicleCard({
               <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
               View Details
             </button>
+            
+            {/* WhatsApp button */}
+            <a 
+              href={`https://wa.me/${vehicle.whatsappContact?.replace(/\D/g, '') || '260572213038'}?text=Hello,%20I'm%20interested%20in%20the%20${encodeURIComponent(vehicle.name)}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl font-semibold transition-all transform hover:scale-105 shadow-md w-full text-sm sm:text-base"
+            >
+              <MessageCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+              WhatsApp
+            </a>
             
             <a 
               href="/contact" 

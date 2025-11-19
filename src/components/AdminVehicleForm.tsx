@@ -33,7 +33,8 @@ export function AdminVehicleForm({
     accidentHistory: vehicle?.accidentHistory || '',
     warranty: vehicle?.warranty || '',
     registrationStatus: vehicle?.registrationStatus || '',
-    insuranceStatus: vehicle?.insuranceStatus || ''
+    insuranceStatus: vehicle?.insuranceStatus || '',
+    whatsappContact: vehicle?.whatsappContact || '+260572213038' // Default company WhatsApp
   });
   
   const [images, setImages] = useState<VehicleImage[]>(vehicle?.images && vehicle.images.length > 0 ? vehicle.images : []);
@@ -76,7 +77,8 @@ export function AdminVehicleForm({
         accidentHistory: vehicle.accidentHistory || '',
         warranty: vehicle.warranty || '',
         registrationStatus: vehicle.registrationStatus || '',
-        insuranceStatus: vehicle.insuranceStatus || ''
+        insuranceStatus: vehicle.insuranceStatus || '',
+        whatsappContact: vehicle.whatsappContact || '+260572213038' // Default company WhatsApp
       });
     }
   }, [vehicle]);
@@ -101,10 +103,14 @@ export function AdminVehicleForm({
     reader.onloadend = () => {
       const base64String = reader.result as string;
       
+      // Apply watermark to image (placeholder implementation)
+      // In a real implementation, this would be done on the backend
+      const watermarkedImage = base64String; // Placeholder - would apply watermark here
+      
       // Remove existing image with same label if any
       const filteredImages = images.filter(img => img.label !== label);
       setImages([...filteredImages, {
-        url: base64String,
+        url: watermarkedImage,
         label
       }]);
     };
@@ -455,6 +461,13 @@ export function AdminVehicleForm({
                 Registration Status
               </label>
               <input type="text" name="registrationStatus" value={formData.registrationStatus} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., Valid until 2026" />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                WhatsApp Contact
+              </label>
+              <input type="text" name="whatsappContact" value={formData.whatsappContact} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF6600] focus:border-transparent" placeholder="e.g., +260572213038" />
             </div>
             
             {formData.type === 'hire' && (
