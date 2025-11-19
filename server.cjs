@@ -686,25 +686,31 @@ app.post('/api/images/watermark', authenticateToken, requireAdmin, async (req, r
     
     let watermarkedImageBuffer;
     
-    if (watermarkType === 'logo') {
-      // Apply logo watermark
-      const logoPath = path.join(__dirname, 'public', 'logo.png');
-      watermarkedImageBuffer = await addLogoWatermarkToImage(imageBuffer, logoPath, {
-        position: 'bottom-right',
-        margin: 20,
-        opacity: 0.7,
-        scale: 0.15
-      });
-    } else {
-      // Apply text watermark
-      watermarkedImageBuffer = await addTextWatermarkToImage(imageBuffer, 'ZAMTO AFRICA', {
-        position: 'bottom-right',
-        margin: 20,
-        fontSize: 32,
-        color: 'rgba(255, 255, 255, 0.8)',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        padding: 10
-      });
+    try {
+      if (watermarkType === 'logo') {
+        // Apply logo watermark
+        const logoPath = path.join(__dirname, 'public', 'logo.png');
+        watermarkedImageBuffer = await addLogoWatermarkToImage(imageBuffer, logoPath, {
+          position: 'bottom-right',
+          margin: 20,
+          opacity: 0.7,
+          scale: 0.15
+        });
+      } else {
+        // Apply text watermark
+        watermarkedImageBuffer = await addTextWatermarkToImage(imageBuffer, 'ZAMTO AFRICA', {
+          position: 'bottom-right',
+          margin: 20,
+          fontSize: 32,
+          color: 'rgba(255, 255, 255, 0.8)',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          padding: 10
+        });
+      }
+    } catch (watermarkError) {
+      console.error('Watermarking failed:', watermarkError);
+      // Return original image if watermarking fails
+      watermarkedImageBuffer = imageBuffer;
     }
     
     // Convert back to base64
@@ -713,13 +719,13 @@ app.post('/api/images/watermark', authenticateToken, requireAdmin, async (req, r
     res.json({
       success: true,
       image: watermarkedBase64,
-      message: 'Image watermarked successfully'
+      message: 'Image processed successfully'
     });
   } catch (error) {
-    console.error('Error watermarking image:', error);
+    console.error('Error processing image:', error);
     res.status(500).json({
       success: false,
-      message: 'An error occurred while watermarking the image: ' + error.message
+      message: 'An error occurred while processing the image: ' + error.message
     });
   }
 });
@@ -729,6 +735,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     success: true,
     message: 'Backend server is running',
+    watermarkingAvailable: !!(addLogoWatermarkToImage && addTextWatermarkToImage),
     timestamp: new Date().toISOString()
   });
 });
