@@ -67,10 +67,10 @@ export function VehicleCard({
           href={`https://wa.me/${vehicle.whatsappContact?.replace(/\D/g, '') || '260572213038'}?text=Hello,%20I'm%20interested%20in%20the%20${encodeURIComponent(vehicle.name)}`} 
           target="_blank" 
           rel="noopener noreferrer"
-          className="absolute top-3 right-3 bg-green-600 hover:bg-green-700 text-white p-2 rounded-full opacity-90 hover:opacity-100 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white z-10 shadow-lg hover:scale-110"
+          className="absolute top-2.5 right-2.5 bg-green-500 hover:bg-green-600 text-white p-1.5 rounded-full opacity-80 hover:opacity-100 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white z-10 shadow-md hover:scale-110 border-2 border-white"
           aria-label="Contact via WhatsApp"
         >
-          <MessageCircleIcon className="h-5 w-5" />
+          <MessageCircleIcon className="h-4 w-4" />
         </a>
         
         {images.length > 1 && <>
@@ -98,16 +98,6 @@ export function VehicleCard({
                 />
               ))}
             </div>
-            {/* WhatsApp icon for gallery */}
-            <a 
-              href={`https://wa.me/${vehicle.whatsappContact?.replace(/\D/g, '') || '260572213038'}?text=Hello,%20I'm%20interested%20in%20the%20${encodeURIComponent(vehicle.name)}`} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="absolute bottom-3 right-3 bg-green-600 hover:bg-green-700 text-white p-2 rounded-full opacity-90 hover:opacity-100 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white hover:scale-110"
-              aria-label="Contact via WhatsApp"
-            >
-              <MessageCircleIcon className="h-5 w-5" />
-            </a>
             <div className="absolute top-3 left-3 bg-black bg-opacity-70 text-white text-xs px-3 py-1.5 rounded-full font-medium backdrop-blur-sm">
               {images[currentImageIndex].label.charAt(0).toUpperCase() + images[currentImageIndex].label.slice(1)}
             </div>
@@ -167,11 +157,10 @@ export function VehicleCard({
               href={`https://wa.me/${vehicle.whatsappContact?.replace(/\D/g, '') || '260572213038'}?text=Hello,%20I'm%20interested%20in%20the%20${encodeURIComponent(vehicle.name)}`} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl font-semibold transition-all transform hover:scale-105 shadow-md w-full text-sm sm:text-base"
+              className="flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-3 py-2 sm:px-4 sm:py-3 rounded-lg sm:rounded-xl font-semibold transition-all transform hover:scale-105 shadow-md w-full text-xs sm:text-sm"
             >
-              <MessageCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              <span className="hidden sm:inline">WhatsApp</span>
-              <span className="sm:hidden">WA</span>
+              <MessageCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+              <span className="truncate">WhatsApp</span>
             </a>
             
             <a 
