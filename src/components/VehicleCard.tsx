@@ -143,13 +143,13 @@ export function VehicleCard({
             </div>
           )}
           
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <button 
               onClick={() => onShowDetails(vehicle)}
-              className="flex items-center justify-center bg-gradient-to-r from-[#003366] to-[#004080] hover:from-[#004080] hover:to-[#003366] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl font-semibold transition-all transform hover:scale-105 shadow-md w-full text-sm sm:text-base"
+              className="flex items-center justify-center bg-gradient-to-r from-[#003366] to-[#004080] hover:from-[#004080] hover:to-[#003366] text-white px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md w-full text-sm flex-grow"
             >
-              <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              View Details
+              <EyeIcon className="h-4 w-4 mr-1.5 sm:mr-2" />
+              <span className="truncate">View Details</span>
             </button>
             
             {/* WhatsApp button */}
@@ -157,18 +157,18 @@ export function VehicleCard({
               href={`https://wa.me/${vehicle.whatsappContact?.replace(/\D/g, '') || '260572213038'}?text=Hello,%20I'm%20interested%20in%20the%20${encodeURIComponent(vehicle.name)}`} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-3 py-2 sm:px-4 sm:py-3 rounded-lg sm:rounded-xl font-semibold transition-all transform hover:scale-105 shadow-md w-full text-xs sm:text-sm"
+              className="flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md w-full text-sm flex-grow"
             >
-              <MessageCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+              <MessageCircleIcon className="h-4 w-4 mr-1.5 sm:mr-2" />
               <span className="truncate">WhatsApp</span>
             </a>
             
             <a 
               href="/contact" 
-              className="flex items-center justify-center bg-gradient-to-r from-[#FF6600] to-[#e55a00] hover:from-[#e55a00] hover:to-[#FF6600] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl font-semibold transition-all transform hover:scale-105 shadow-md w-full text-sm sm:text-base"
+              className="flex items-center justify-center bg-gradient-to-r from-[#FF6600] to-[#e55a00] hover:from-[#e55a00] hover:to-[#FF6600] text-white px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md w-full text-sm flex-grow"
             >
-              <PhoneIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              {vehicle.type === 'sale' ? 'Inquire' : 'Book'}
+              <PhoneIcon className="h-4 w-4 mr-1.5 sm:mr-2" />
+              <span className="truncate">{vehicle.type === 'sale' ? 'Inquire' : 'Book'}</span>
             </a>
           </div>
         </div>
