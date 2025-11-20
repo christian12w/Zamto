@@ -643,16 +643,11 @@ function startKeepAlivePings() {
 // Function to create a test vehicle with WhatsApp number
 export async function createTestVehicle(): Promise<Vehicle | null> {
   try {
-    const token = getAuthToken();
-    if (!token) {
-      console.error('Authentication required to create test vehicle');
-      // For testing purposes, we'll create a vehicle without auth in development
-      // In production, this would require authentication
-      console.log('Creating test vehicle without authentication for development testing');
-    }
-    
-    const testVehicle: Omit<Vehicle, 'id'> = {
-      name: 'Test Vehicle for Debugging',
+    // For development testing, we'll bypass the service and directly add to localStorage
+    const vehiclesCache = JSON.parse(localStorage.getItem('vehicles_cache') || '[]');
+    const newVehicle: Vehicle = {
+      id: 'test-' + Date.now(),
+      name: 'Test Vehicle',
       category: 'SUV',
       price: 'ZMW 250,000',
       image: 'https://images.unsplash.com/photo-1542362567-b07e54358753?w=800',
@@ -660,10 +655,10 @@ export async function createTestVehicle(): Promise<Vehicle | null> {
         url: 'https://images.unsplash.com/photo-1542362567-b07e54358753?w=800',
         label: 'exterior'
       }],
-      description: 'Test vehicle to verify frontend display functionality',
-      features: ['Air Conditioning', 'Bluetooth', 'Backup Camera'],
+      description: 'Test vehicle to verify frontend display functionality with WhatsApp icon and improved buttons',
+      features: ['Air Conditioning', 'Bluetooth', 'Backup Camera', 'Leather Seats'],
       type: 'sale',
-      popular: false,
+      popular: true,
       year: 2020,
       mileage: '30,000 km',
       transmission: 'Automatic',
@@ -679,17 +674,13 @@ export async function createTestVehicle(): Promise<Vehicle | null> {
       registrationStatus: 'Valid',
       whatsappContact: '+260971234567'
     };
-    
-    console.log('Creating test vehicle...');
-    // For development testing, we'll bypass the service and directly add to localStorage
-    const vehiclesCache = JSON.parse(localStorage.getItem('vehicles_cache') || '[]');
-    const newVehicle = {
-      ...testVehicle,
-      id: 'test-' + Date.now()
-    };
     vehiclesCache.push(newVehicle);
     localStorage.setItem('vehicles_cache', JSON.stringify(vehiclesCache));
     console.log('Test vehicle created successfully:', newVehicle);
+    
+    // Dispatch event to notify UI of vehicle update
+    window.dispatchEvent(new Event('vehiclesUpdated'));
+    
     return newVehicle;
   } catch (error: any) {
     console.error('Failed to create test vehicle:', error);

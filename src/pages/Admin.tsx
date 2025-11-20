@@ -153,14 +153,12 @@ export function Admin() {
           <div>
             <p className="text-gray-600">Manage your vehicle inventory</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button 
               onClick={() => {
                 // Import the createTestVehicle function
                 import('../utils/vehicleStorage').then(module => {
                   module.createTestVehicle();
-                  // Refresh the vehicle list
-                  loadVehicles();
                 });
               }}
               className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold transition-colors"
