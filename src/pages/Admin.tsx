@@ -3,9 +3,10 @@ import { AdminVehicleForm } from '../components/AdminVehicleForm';
 import { VehicleCard } from '../components/VehicleCard';
 import { UserManagement } from '../components/UserManagement';
 import { CSVImport } from '../components/CSVImport';
+import { PerformanceDashboard } from '../components/PerformanceDashboard';
 import { getVehicles, refreshVehicles, deleteVehicle, Vehicle, clearVehicleCache } from '../utils/vehicleStorage';
 import { useAuth } from '../contexts/AuthContext';
-import { PlusIcon, EyeIcon, EditIcon, TrashIcon, UserIcon, LogOutIcon, UploadIcon } from 'lucide-react';
+import { PlusIcon, EyeIcon, EditIcon, TrashIcon, UserIcon, LogOutIcon, UploadIcon, BarChartIcon, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function Admin() {
@@ -16,6 +17,7 @@ export function Admin() {
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showUserManagement, setShowUserManagement] = useState(false);
+  const [showPerformanceDashboard, setShowPerformanceDashboard] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Load vehicles with useCallback for performance
@@ -118,42 +120,13 @@ export function Admin() {
             <p className="text-gray-600 mt-2">Welcome, {user.username}!</p>
           </div>
           <div className="flex gap-2">
-            <Link 
-              to="/debug" 
-              className="flex items-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition-colors"
-            >
-              <EyeIcon className="h-5 w-5 mr-2" />
-              Debug
-            </Link>
-            <Link 
-              to="/test" 
-              className="flex items-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition-colors"
-            >
-              <EyeIcon className="h-5 w-5 mr-2" />
-              Test
-            </Link>
             <button 
-              onClick={() => setShowUserManagement(true)}
-              className="flex items-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition-colors"
+              onClick={() => setShowPerformanceDashboard(true)}
+              className="flex items-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
             >
-              <UserIcon className="h-5 w-5 mr-2" />
-              Users
+              <BarChartIcon className="h-5 w-5 mr-2" />
+              Performance
             </button>
-            <button 
-              onClick={handleLogout}
-              className="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
-            >
-              <LogOutIcon className="h-5 w-5 mr-2" />
-              Logout
-            </button>
-          </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <div>
-            <p className="text-gray-600">Manage your vehicle inventory</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
             <button 
               onClick={() => {
                 // Import the createTestVehicle function
@@ -166,6 +139,49 @@ export function Admin() {
             >
               <PlusIcon className="h-5 w-5 mr-2" />
               Create Test Vehicle
+            </button>
+            <button 
+              onClick={() => {
+                // Import the VehicleDataStorage and create sample vehicles
+                import('../utils/vehicleDataStorage').then(module => {
+                  const { VehicleDataStorage } = module;
+                  
+                  // Create sample vehicles
+                  VehicleDataStorage.addVehicle({
+                    name: 'Toyota Land Cruiser Prado',
+                    category: 'SUV',
+                    price: 'ZMW 450,000',
+                    description: 'Premium SUV perfect for Zambian terrain. Powerful, reliable, and luxurious.',
+                    features: ['4WD', '7-seater', 'Leather interior', 'Sunroof'],
+                    type: 'sale',
+                    popular: true,
+                    images: [{
+                      url: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=800',
+                      label: 'exterior'
+                    }]
+                  });
+                  
+                  VehicleDataStorage.addVehicle({
+                    name: 'Ford Ranger Wildtrak',
+                    category: 'PICKUP TRUCKS',
+                    dailyRate: 'ZMW 750/day',
+                    description: 'Robust pickup truck ideal for work and adventure.',
+                    features: ['4WD', 'Payload capacity 1,000kg', 'Towing capacity 3,500kg'],
+                    type: 'hire',
+                    popular: true,
+                    images: [{
+                      url: 'https://images.unsplash.com/photo-1542362567-b07e54358753?w=800',
+                      label: 'exterior'
+                    }]
+                  });
+                  
+                  alert('Sample vehicles added to JSON storage!');
+                });
+              }}
+              className="flex items-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold transition-colors"
+            >
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Add Sample Vehicles
             </button>
             <button 
               onClick={() => {
@@ -197,6 +213,42 @@ export function Admin() {
             >
               <PlusIcon className="h-5 w-5 mr-2" />
               Add New Vehicle
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <div>
+            <p className="text-gray-600">Manage your vehicle inventory</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link 
+              to="/debug" 
+              className="flex items-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition-colors"
+            >
+              <EyeIcon className="h-5 w-5 mr-2" />
+              Debug
+            </Link>
+            <Link 
+              to="/test" 
+              className="flex items-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition-colors"
+            >
+              <EyeIcon className="h-5 w-5 mr-2" />
+              Test
+            </Link>
+            <button 
+              onClick={() => setShowUserManagement(true)}
+              className="flex items-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition-colors"
+            >
+              <UserIcon className="h-5 w-5 mr-2" />
+              Users
+            </button>
+            <button 
+              onClick={handleLogout}
+              className="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+            >
+              <LogOutIcon className="h-5 w-5 mr-2" />
+              Logout
             </button>
           </div>
         </div>
@@ -352,18 +404,38 @@ export function Admin() {
         />
       )}
       
+      {/* User Management Modal */}
+      {showUserManagement && (
+        <UserManagement onClose={handleUserManagementClose} />
+      )}
+      
+      {/* Performance Dashboard Modal */}
+      {showPerformanceDashboard && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-[#003366]">
+                Performance Dashboard
+              </h2>
+              <button 
+                onClick={() => setShowPerformanceDashboard(false)} 
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="p-6">
+              <PerformanceDashboard />
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* CSV Import Modal */}
       {showCSVImport && (
         <CSVImport 
           onClose={handleCSVImportClose} 
           onImportSuccess={handleImportSuccess}
-        />
-      )}
-      
-      {/* User Management Modal */}
-      {showUserManagement && (
-        <UserManagement 
-          onClose={handleUserManagementClose} 
         />
       )}
     </div>;
