@@ -121,13 +121,6 @@ export function Admin() {
           </div>
           <div className="flex gap-2">
             <button 
-              onClick={() => setShowPerformanceDashboard(true)}
-              className="flex items-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
-            >
-              <BarChartIcon className="h-5 w-5 mr-2" />
-              Performance
-            </button>
-            <button 
               onClick={() => {
                 // Import the createTestVehicle function
                 import('../utils/vehicleStorage').then(module => {
@@ -213,6 +206,25 @@ export function Admin() {
             >
               <PlusIcon className="h-5 w-5 mr-2" />
               Add New Vehicle
+            </button>
+            <button 
+              onClick={() => {
+                // Clear all caches and reload
+                localStorage.removeItem('vehicles_cache');
+                localStorage.removeItem('vehicles_cache_timestamp');
+                window.location.reload();
+              }}
+              className="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+            >
+              <TrashIcon className="h-5 w-5 mr-2" />
+              Clear Cache & Reload
+            </button>
+            <button 
+              onClick={() => setShowPerformanceDashboard(true)}
+              className="flex items-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+            >
+              <BarChartIcon className="h-5 w-5 mr-2" />
+              Performance
             </button>
           </div>
         </div>
