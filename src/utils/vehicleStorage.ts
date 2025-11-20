@@ -650,6 +650,7 @@ export async function createTestVehicle(): Promise<Vehicle | null> {
       name: 'Test Vehicle',
       category: 'SUV',
       price: 'ZMW 250,000',
+      dailyRate: 'ZMW 500/day', // Add daily rate for testing
       image: 'https://images.unsplash.com/photo-1542362567-b07e54358753?w=800',
       images: [{
         url: 'https://images.unsplash.com/photo-1542362567-b07e54358753?w=800',
@@ -657,7 +658,7 @@ export async function createTestVehicle(): Promise<Vehicle | null> {
       }],
       description: 'Test vehicle to verify frontend display functionality with WhatsApp icon and improved buttons',
       features: ['Air Conditioning', 'Bluetooth', 'Backup Camera', 'Leather Seats'],
-      type: 'sale',
+      type: 'hire', // Set to hire to test daily rate display
       popular: true,
       year: 2020,
       mileage: '30,000 km',
@@ -672,7 +673,7 @@ export async function createTestVehicle(): Promise<Vehicle | null> {
       accidentHistory: 'No accident history',
       warranty: '12 months',
       registrationStatus: 'Valid',
-      whatsappContact: '+260971234567'
+      whatsappContact: '+260572213038'
     };
     vehiclesCache.push(newVehicle);
     localStorage.setItem('vehicles_cache', JSON.stringify(vehiclesCache));

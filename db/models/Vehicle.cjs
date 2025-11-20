@@ -30,7 +30,8 @@ const vehicleSchema = new mongoose.Schema({
     required: false // Make price optional to allow for hire vehicles
   },
   dailyRate: {
-    type: String
+    type: String,
+    required: false // Make dailyRate optional for sale vehicles
   },
   image: {
     type: String,

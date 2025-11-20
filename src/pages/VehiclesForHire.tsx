@@ -85,7 +85,9 @@ export function VehiclesForHire() {
       selectedCategory,
       isPopular: vehicle.popular,
       vehicleCategory: vehicle.category,
-      selectedCategoryNormalized: selectedCategory.trim()
+      selectedCategoryNormalized: selectedCategory.trim(),
+      dailyRate: vehicle.dailyRate,
+      hasDailyRate: !!vehicle.dailyRate
     });
     
     // Filter for hire vehicles only

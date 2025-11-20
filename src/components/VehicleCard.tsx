@@ -137,7 +137,7 @@ export function VehicleCard({
               <div>
                 <span className="text-xs text-gray-500 block">Daily Rate</span>
                 <span className="text-lg sm:text-xl font-bold text-[#003366]">
-                  {vehicle.dailyRate || 'Contact for rates'}
+                  {vehicle.dailyRate ? vehicle.dailyRate : 'Contact for rates'}
                 </span>
               </div>
             </div>
