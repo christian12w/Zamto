@@ -87,10 +87,33 @@ class VehicleService {
   // Get all vehicles with pagination support
   async getVehicles(page: number = 1, limit: number = 50): Promise<VehicleResponse> {
     try {
+      // Check if we have cached data that's still valid (cache for 5 minutes)
+      const cacheKey = `vehicles_page_${page}_limit_${limit}`;
+      const cachedData = localStorage.getItem(cacheKey);
+      const cacheTimestamp = localStorage.getItem(`${cacheKey}_timestamp`);
+      
+      if (cachedData && cacheTimestamp) {
+        const ageInMinutes = (Date.now() - parseInt(cacheTimestamp)) / (1000 * 60);
+        if (ageInMinutes < 5) { // Cache for 5 minutes
+          console.log('Returning cached vehicle data');
+          return {
+            success: true,
+            vehicles: JSON.parse(cachedData),
+            message: 'Vehicles retrieved from cache'
+          };
+        }
+      }
+      
       // For now, we'll fetch all vehicles but we can add pagination later
       const response = await this.apiRequestWithRetry(`/vehicles?page=${page}&limit=${limit}`, {
         method: 'GET',
       });
+      
+      // Cache the response
+      if (response.vehicles) {
+        localStorage.setItem(cacheKey, JSON.stringify(response.vehicles));
+        localStorage.setItem(`${cacheKey}_timestamp`, Date.now().toString());
+      }
       
       return {
         success: true,
@@ -218,6 +241,39 @@ class VehicleService {
       };
     }
   }
+}
+
+// Function to ping the server to keep it alive
+export async function keepServerAlive(): Promise<void> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
+    await fetch(`${(import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:3001'}/api/keep-alive`, {
+      method: 'GET',
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    console.log('Server keep-alive ping sent');
+  } catch (error) {
+    console.log('Server keep-alive ping failed (this is normal when server is sleeping):', error);
+  }
+}
+
+// Set up periodic keep-alive pings
+if (typeof window !== 'undefined') {
+  // Ping every 10 minutes to keep server alive
+  setInterval(() => {
+    keepServerAlive();
+  }, 10 * 60 * 1000); // 10 minutes
+  
+  // Also ping when the page becomes visible
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      keepServerAlive();
+    }
+  });
 }
 
 // Export singleton instance

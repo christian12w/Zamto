@@ -107,10 +107,13 @@ const vehicleSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes
+// Indexes for better query performance
 vehicleSchema.index({ name: 'text', description: 'text' });
 vehicleSchema.index({ category: 1 });
 vehicleSchema.index({ type: 1 });
 vehicleSchema.index({ popular: 1 });
+vehicleSchema.index({ createdAt: -1 }); // For sorting by creation date
+vehicleSchema.index({ type: 1, category: 1 }); // Compound index for common queries
+vehicleSchema.index({ popular: 1, type: 1 }); // Compound index for popular vehicles by type
 
 module.exports = mongoose.model('Vehicle', vehicleSchema);

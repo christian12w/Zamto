@@ -482,14 +482,20 @@ app.get('/api/vehicles', async (req, res) => {
     
     // Add sorting for better performance
     const startTime = Date.now();
-    const [vehicles, total] = await Promise.all([
-      Vehicle.find()
-        .sort({ createdAt: -1 }) // Sort by creation date, newest first
-        .skip(skip)
-        .limit(limit)
-        .lean(), // Use lean() for better performance
-      Vehicle.countDocuments()
+    
+    // Use aggregation pipeline for better performance
+    const vehicles = await Vehicle.aggregate([
+      { $sort: { popular: -1, createdAt: -1 } }, // Sort popular vehicles first, then by creation date
+      { $skip: skip },
+      { $limit: limit },
+      { $project: {
+          __v: 0, // Exclude version field
+          // Add any other fields you want to exclude for performance
+        }
+      }
     ]);
+    
+    const total = await Vehicle.countDocuments();
     const endTime = Date.now();
     
     console.log(`Vehicle query took ${endTime - startTime}ms for ${vehicles.length} vehicles`);
@@ -497,19 +503,16 @@ app.get('/api/vehicles', async (req, res) => {
     res.json({
       success: true,
       vehicles: vehicles,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit)
-      },
+      total: total,
+      page: page,
+      pages: Math.ceil(total / limit),
       message: 'Vehicles retrieved successfully'
     });
   } catch (error) {
     console.error('Error retrieving vehicles:', error);
     res.status(500).json({
       success: false,
-      message: 'An error occurred while retrieving vehicles: ' + error.message
+      message: 'An error occurred while retrieving vehicles'
     });
   }
 });
@@ -759,11 +762,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Add a keep-alive endpoint
+// Keep-alive endpoint to prevent server sleep
 app.get('/api/keep-alive', (req, res) => {
   res.json({
     success: true,
-    message: 'Keep-alive ping received',
+    message: 'Server is alive',
     timestamp: new Date().toISOString()
   });
 });
