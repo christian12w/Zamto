@@ -1,6 +1,6 @@
 import React from 'react';
-import { XIcon, CarIcon, TagIcon, ClockIcon, CheckCircleIcon, PhoneIcon, UsersIcon, PaletteIcon } from 'lucide-react';
-import { Vehicle } from '../utils/vehicleStorage';
+import { XIcon, CarIcon, TagIcon, ClockIcon, CheckCircleIcon, PhoneIcon, UsersIcon, PaletteIcon, ShoppingCartIcon, CheckIcon } from 'lucide-react';
+import { Vehicle, updateVehicleStatus } from '../utils/vehicleStorage';
 
 interface VehicleDetailsModalProps {
   vehicle: Vehicle;
@@ -14,6 +14,17 @@ export function VehicleDetailsModal({ vehicle, onClose }: VehicleDetailsModalPro
     url: vehicle.image,
     label: 'exterior'
   }];
+  
+  // Check if user is admin (simplified check)
+  const isAdmin = !!localStorage.getItem('authToken');
+  
+  const handleStatusChange = async (status: 'available' | 'sold') => {
+    if (window.confirm(`Are you sure you want to mark this vehicle as ${status}?`)) {
+      await updateVehicleStatus(vehicle.id, status);
+      // Close the modal after updating status
+      onClose();
+    }
+  };
   
   // Preload next image for smoother experience
   React.useEffect(() => {
@@ -90,6 +101,14 @@ export function VehicleDetailsModal({ vehicle, onClose }: VehicleDetailsModalPro
             )}
           </div>
           
+          {/* Status indicator */}
+          {vehicle.status === 'sold' && (
+            <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold mb-4 bg-red-100 text-red-800">
+              <ShoppingCartIcon className="h-4 w-4 mr-1" />
+              SOLD
+            </div>
+          )}
+          
           {/* Vehicle Type Badge */}
           <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold mb-4 ${
             vehicle.type === 'sale' 
@@ -117,6 +136,12 @@ export function VehicleDetailsModal({ vehicle, onClose }: VehicleDetailsModalPro
                 <span className="text-3xl font-bold text-[#003366]">
                   {vehicle.price}
                 </span>
+                {vehicle.status === 'sold' && (
+                  <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800">
+                    <ShoppingCartIcon className="h-4 w-4 mr-1" />
+                    SOLD
+                  </div>
+                )}
               </div>
             ) : (
               <div>
@@ -127,6 +152,31 @@ export function VehicleDetailsModal({ vehicle, onClose }: VehicleDetailsModalPro
               </div>
             )}
           </div>
+          
+          {/* Admin controls for marking vehicle as sold/available */}
+          {isAdmin && vehicle.type === 'sale' && (
+            <div className="mb-6">
+              <div className="flex gap-3">
+                {vehicle.status !== 'sold' ? (
+                  <button
+                    onClick={() => handleStatusChange('sold')}
+                    className="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+                  >
+                    <ShoppingCartIcon className="h-5 w-5 mr-2" />
+                    Mark as Sold
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleStatusChange('available')}
+                    className="flex items-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+                  >
+                    <CheckIcon className="h-5 w-5 mr-2" />
+                    Mark as Available
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
           
           {/* Description */}
           <div className="mb-6">

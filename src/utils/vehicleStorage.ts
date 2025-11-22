@@ -39,6 +39,9 @@ export interface Vehicle {
   
   // WhatsApp contact for inquiries
   whatsappContact?: string;   // WhatsApp number for vehicle inquiries
+  
+  // Status field to mark vehicles as available or sold
+  status?: 'available' | 'sold'; // New field for vehicle status
 }
 
 export interface VehicleImage {
@@ -547,6 +550,56 @@ export async function deleteVehicle(id: string): Promise<boolean> {
     console.error('Failed to delete vehicle:', error);
     alert('An error occurred while deleting the vehicle. Please try again.');
     return false;
+  }
+}
+
+export async function updateVehicleStatus(vehicleId: string, status: 'available' | 'sold'): Promise<Vehicle | null> {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      console.error('Authentication required to update vehicle status');
+      alert('Authentication required. Please log in again.');
+      // Redirect to login page
+      window.location.href = '/login';
+      return null;
+    }
+    
+    // Show a loading message to the user
+    alert('Updating vehicle status... This may take a moment as the server wakes up from sleep mode.');
+    
+    const response = await vehicleService.updateVehicle(vehicleId, { status }, token);
+    if (response.success && response.vehicle) {
+      // Clear cache to force refresh on next getVehicles call
+      vehiclesCache = null;
+      lastUpdateTimestamp = 0;
+      
+      // Dispatch event to notify other parts of the app that vehicles have been updated
+      window.dispatchEvent(new Event('vehiclesUpdated'));
+      
+      // Show success message
+      alert(`Vehicle marked as ${status} successfully!`);
+      
+      return response.vehicle;
+    } else {
+      console.error('Failed to update vehicle status:', response.message);
+      
+      // Check if it's a token expiration issue
+      if (response.message && response.message.includes('Invalid or expired token')) {
+        alert('Your session has expired. Please log in again.');
+        // Clear the expired token
+        localStorage.removeItem('authToken');
+        // Redirect to login page
+        window.location.href = '/login';
+      } else {
+        alert(`Failed to update vehicle status: ${response.message}`);
+      }
+      
+      return null;
+    }
+  } catch (error: any) {
+    console.error('Failed to update vehicle status:', error);
+    alert('An error occurred while updating the vehicle status. Please try again.');
+    return null;
   }
 }
 

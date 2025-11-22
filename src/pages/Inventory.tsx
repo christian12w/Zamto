@@ -2,7 +2,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { VehicleCard } from '../components/VehicleCard';
 import { VehicleDetailsModal } from '../components/VehicleDetailsModal';
 import { getVehicles, Vehicle } from '../utils/vehicleStorage';
-import { LayoutGridIcon, StarIcon, TruckIcon, CarIcon, Users2Icon, TagIcon, ClockIcon, PickaxeIcon } from 'lucide-react';
+import { searchVehicles } from '../utils/searchVehicles';
+import { LayoutGridIcon, StarIcon, TruckIcon, CarIcon, Users2Icon, TagIcon, ClockIcon, PickaxeIcon, SearchIcon } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
 export function Inventory() {
@@ -15,6 +16,7 @@ export function Inventory() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const categories = [{
     name: 'ALL',
@@ -103,10 +105,19 @@ export function Inventory() {
     }
     
     // Then filter by category
-    if (selectedCategory === 'ALL') return true;
-    if (selectedCategory === 'POPULAR') return vehicle.popular;
-    return vehicle.category === selectedCategory;
+    if (selectedCategory === 'ALL') {
+      // If ALL category is selected, continue to search filtering
+    } else if (selectedCategory === 'POPULAR') {
+      if (!vehicle.popular) return false;
+    } else if (vehicle.category !== selectedCategory) {
+      return false;
+    }
+    
+    return true;
   });
+  
+  // Apply search filter
+  const searchFilteredVehicles = searchVehicles(filteredVehicles, searchQuery);
 
   const handleShowDetails = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
@@ -132,7 +143,7 @@ export function Inventory() {
                 <span className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-white"></span>
               ) : (
                 <>
-                  <span className="text-2xl sm:text-3xl font-bold">{filteredVehicles.length}</span>
+                  <span className="text-2xl sm:text-3xl font-bold">{searchFilteredVehicles.length}</span>
                   <span className="text-xs sm:text-sm ml-2">Vehicles Available</span>
                 </>
               )}
@@ -143,6 +154,22 @@ export function Inventory() {
 
       <section className="py-6 sm:py-8 bg-white sticky top-20 z-40 shadow-lg border-b-4 border-[#FF6600]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Search Bar */}
+          <div className="mb-4">
+            <div className="relative max-w-2xl mx-auto">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <SearchIcon className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search vehicles by name, description, category, or features..."
+                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#003366] focus:border-[#003366] text-gray-900 placeholder-gray-500"
+              />
+            </div>
+          </div>
+          
           <div className="flex flex-wrap gap-2 sm:gap-3 justify-center mb-3 sm:mb-4">
             {types.map(type => {
             const Icon = type.icon;
@@ -192,7 +219,7 @@ export function Inventory() {
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                {filteredVehicles.map(vehicle => (
+                {searchFilteredVehicles.map(vehicle => (
                   <VehicleCard 
                     key={vehicle.id} 
                     vehicle={vehicle} 
@@ -200,7 +227,7 @@ export function Inventory() {
                   />
                 ))}
               </div>
-              {filteredVehicles.length === 0 && <div className="text-center py-12 sm:py-16">
+              {searchFilteredVehicles.length === 0 && <div className="text-center py-12 sm:py-16">
                   <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🚗</div>
                   <p className="text-gray-600 text-lg sm:text-xl font-medium">
                     No vehicles found matching your criteria.

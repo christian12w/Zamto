@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { CheckCircleIcon, PhoneIcon, ChevronLeftIcon, ChevronRightIcon, SparklesIcon, TagIcon, ClockIcon, EyeIcon, MessageCircleIcon } from 'lucide-react';
+import { CheckCircleIcon, PhoneIcon, ChevronLeftIcon, ChevronRightIcon, SparklesIcon, TagIcon, ClockIcon, EyeIcon, MessageCircleIcon, ShoppingCartIcon, CheckIcon } from 'lucide-react';
 import { Vehicle } from '../utils/vehicleStorage';
+import { updateVehicleStatus } from '../utils/vehicleStorage';
 
 interface VehicleCardProps {
   vehicle: Vehicle;
@@ -25,6 +26,15 @@ export function VehicleCard({
     setCurrentImageIndex(prev => (prev - 1 + images.length) % images.length);
   };
 
+  // Check if user is admin (simplified check)
+  const isAdmin = !!localStorage.getItem('authToken');
+
+  const handleStatusChange = async (status: 'available' | 'sold') => {
+    if (window.confirm(`Are you sure you want to mark this vehicle as ${status}?`)) {
+      await updateVehicleStatus(vehicle.id, status);
+    }
+  };
+
   // Optimize image loading by preloading next image
   React.useEffect(() => {
     if (images.length > 1) {
@@ -39,6 +49,14 @@ export function VehicleCard({
           <SparklesIcon className="h-4 w-4 mr-2" />
           POPULAR CHOICE
         </div>}
+      
+      {/* Status indicator */}
+      {vehicle.status === 'sold' && (
+        <div className="bg-red-600 text-white text-sm font-bold px-4 py-2 flex items-center justify-center">
+          <ShoppingCartIcon className="h-4 w-4 mr-2" />
+          SOLD
+        </div>
+      )}
       
       {/* Type indicator */}
       <div className={`flex items-center px-4 py-2 ${vehicle.type === 'sale' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}`}>
@@ -131,6 +149,11 @@ export function VehicleCard({
                   {vehicle.price}
                 </span>
               </div>
+              {vehicle.status === 'sold' && (
+                <div className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-semibold">
+                  SOLD
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex justify-between items-center mb-3">
@@ -140,6 +163,29 @@ export function VehicleCard({
                   {vehicle.dailyRate ? vehicle.dailyRate : 'Contact for rates'}
                 </span>
               </div>
+            </div>
+          )}
+          
+          {/* Admin controls for marking vehicle as sold/available */}
+          {isAdmin && vehicle.type === 'sale' && (
+            <div className="mb-3 flex gap-2">
+              {vehicle.status !== 'sold' ? (
+                <button
+                  onClick={() => handleStatusChange('sold')}
+                  className="flex-1 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
+                >
+                  <ShoppingCartIcon className="h-4 w-4 mr-1" />
+                  Mark as Sold
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleStatusChange('available')}
+                  className="flex-1 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
+                >
+                  <CheckIcon className="h-4 w-4 mr-1" />
+                  Mark as Available
+                </button>
+              )}
             </div>
           )}
           
