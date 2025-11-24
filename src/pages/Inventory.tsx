@@ -5,6 +5,7 @@ import { getVehicles, Vehicle } from '../utils/vehicleStorage';
 import { searchVehicles } from '../utils/searchVehicles';
 import { LayoutGridIcon, StarIcon, TruckIcon, CarIcon, Users2Icon, TagIcon, ClockIcon, PickaxeIcon, SearchIcon } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import { VehicleDebug } from '../components/VehicleDebug';
 
 export function Inventory() {
   const location = useLocation();
@@ -17,6 +18,7 @@ export function Inventory() {
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showDebug, setShowDebug] = useState(false); // For debugging purposes
 
   const categories = [{
     name: 'ALL',
@@ -210,6 +212,24 @@ export function Inventory() {
         </div>
       </section>
 
+      {/* Debug section - only visible when showDebug is true */}
+      {showDebug && (
+        <section className="py-6 bg-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Debug Information</h2>
+              <button 
+                onClick={() => setShowDebug(false)}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Hide Debug
+              </button>
+            </div>
+            <VehicleDebug />
+          </div>
+        </section>
+      )}
+
       <section className="py-12 sm:py-16 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {loading ? (
@@ -218,6 +238,7 @@ export function Inventory() {
             </div>
           ) : (
             <>
+              {/* Fixed the grid classes to ensure proper mobile display */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 {searchFilteredVehicles.map(vehicle => (
                   <VehicleCard 
@@ -233,6 +254,13 @@ export function Inventory() {
                     No vehicles found matching your criteria.
                   </p>
                   <p className="text-gray-500 mt-2 text-sm sm:text-base">Try selecting different filters or check back soon!</p>
+                  {/* Show debug button when no vehicles are found */}
+                  <button 
+                    onClick={() => setShowDebug(true)}
+                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Show Debug Info
+                  </button>
                 </div>}
             </>
           )}

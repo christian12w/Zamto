@@ -73,7 +73,8 @@ export function VehicleCard({
         )}
       </div>
       
-      <div className="h-56 sm:h-64 overflow-hidden relative group flex-grow">
+      {/* Fixed the image container to be more responsive on mobile */}
+      <div className="h-48 sm:h-56 md:h-64 overflow-hidden relative group flex-grow">
         <img 
           src={images[currentImageIndex].url} 
           alt={`${vehicle.name} - ${images[currentImageIndex].label}`} 
@@ -85,7 +86,7 @@ export function VehicleCard({
           href={`https://wa.me/${vehicle.whatsappContact?.replace(/\D/g, '') || '260572213038'}?text=Hello,%20I'm%20interested%20in%20the%20${encodeURIComponent(vehicle.name)}`} 
           target="_blank" 
           rel="noopener noreferrer"
-          className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 bg-green-500 hover:bg-green-600 text-white p-1.5 rounded-full opacity-80 hover:opacity-100 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white z-10 shadow-md hover:scale-110 border-2 border-white"
+          className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-green-500 hover:bg-green-600 text-white p-1.5 rounded-full opacity-80 hover:opacity-100 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white z-10 shadow-md hover:scale-110 border-2 border-white"
           aria-label="Contact via WhatsApp"
         >
           <MessageCircleIcon className="h-4 w-4" />
