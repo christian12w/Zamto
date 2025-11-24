@@ -105,9 +105,12 @@ class VehicleService {
       }
       
       // For now, we'll fetch all vehicles but we can add pagination later
+      console.log(`Fetching vehicles from API: ${API_BASE_URL}/vehicles?page=${page}&limit=${limit}`);
       const response = await this.apiRequestWithRetry(`/vehicles?page=${page}&limit=${limit}`, {
         method: 'GET',
       });
+      
+      console.log('API response:', response);
       
       // Cache the response
       if (response.vehicles) {
@@ -121,9 +124,10 @@ class VehicleService {
         message: response.message || 'Vehicles retrieved successfully'
       };
     } catch (error: any) {
+      console.error('Error fetching vehicles:', error);
       return {
         success: false,
-        message: error.message || 'Failed to retrieve vehicles'
+        message: error.message || 'Failed to retrieve vehicles. Please check your network connection and API configuration.'
       };
     }
   }

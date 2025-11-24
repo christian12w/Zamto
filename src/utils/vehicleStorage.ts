@@ -120,6 +120,7 @@ async function fetchVehicles(): Promise<Vehicle[]> {
     const response = await vehicleService.getVehicles();
     const endTime = Date.now();
     console.log(`API call completed in ${endTime - startTime}ms`);
+    console.log('Vehicle service response:', response);
     
     if (response.success && response.vehicles) {
       console.log(`Received ${response.vehicles.length} vehicles from API`);
@@ -132,6 +133,9 @@ async function fetchVehicles(): Promise<Vehicle[]> {
           id: vehicle.id || vehicleWithId._id || Math.random().toString(36).substr(2, 9)
         };
       });
+    } else {
+      console.error('Failed to fetch vehicles:', response.message);
+      throw new Error(response.message || 'Failed to fetch vehicles from API');
     }
     return [];
   } catch (error: any) {

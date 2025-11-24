@@ -18,7 +18,8 @@ export function Inventory() {
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showDebug, setShowDebug] = useState(false); // For debugging purposes
+  const [showDebug, setShowDebug] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null); // Track loading errors
 
   const categories = [{
     name: 'ALL',
@@ -64,10 +65,15 @@ export function Inventory() {
   const loadVehicles = useCallback(async () => {
     try {
       setLoading(true);
+      setLoadError(null); // Clear any previous errors
       const vehicleData = await getVehicles();
       setVehicles(vehicleData);
-    } catch (error) {
+      if (vehicleData.length === 0) {
+        setLoadError('No vehicles found in the database. Please add some vehicles through the admin panel.');
+      }
+    } catch (error: any) {
       console.error('Failed to load vehicles:', error);
+      setLoadError(error.message || 'Failed to load vehicles. Please check your network connection and API configuration.');
     } finally {
       setLoading(false);
     }
@@ -235,6 +241,25 @@ export function Inventory() {
           {loading ? (
             <div className="flex justify-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6600]"></div>
+            </div>
+          ) : loadError ? (
+            <div className="text-center py-12 sm:py-16">
+              <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">⚠️</div>
+              <p className="text-red-600 text-lg sm:text-xl font-medium">
+                {loadError}
+              </p>
+              <button 
+                onClick={loadVehicles}
+                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Retry Loading
+              </button>
+              <button 
+                onClick={() => setShowDebug(true)}
+                className="mt-4 ml-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Show Debug Info
+              </button>
             </div>
           ) : (
             <>
