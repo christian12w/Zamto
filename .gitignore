@@ -26,3 +26,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Temporary and generated files
+export-vehicles.cjs
+export-vehicles.js
+exported-vehicles.json
+fetch-vehicles.js
+search-test.html
+src/utils/searchVehicles.test.ts
+SEARCH_AND_SOLD_FEATURES.md
