@@ -1,0 +1,158 @@
+[
+  {
+    "id": "1",
+    "name": "Toyota Land Cruiser Prado",
+    "category": "SUV",
+    "price": "ZMW 450,000",
+    "dailyRate": "",
+    "image": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=800",
+        "label": "exterior"
+      }
+    ],
+    "description": "Premium SUV perfect for Zambian terrain. Powerful, reliable, and luxurious with advanced off-road capabilities.",
+    "features": [
+      "4WD",
+      "7-seater",
+      "Leather interior",
+      "Sunroof",
+      "Climate control",
+      "Bluetooth connectivity"
+    ],
+    "popular": true,
+    "year": 2018,
+    "mileage": "85,000 km",
+    "transmission": "Automatic",
+    "fuelType": "Diesel",
+    "type": "sale",
+    "engineSize": "4.0L V6",
+    "doors": 5,
+    "seats": 7,
+    "color": "White",
+    "condition": "Good",
+    "serviceHistory": "Full service history with Toyota dealership",
+    "accidentHistory": "No accident history",
+    "warranty": "6 months",
+    "registrationStatus": "Valid until 2026",
+    "whatsappContact": "+260572213038"
+  },
+  {
+    "id": "2",
+    "name": "Ford Ranger Wildtrak",
+    "category": "PICKUP TRUCKS",
+    "price": "ZMW 380,000",
+    "dailyRate": "",
+    "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+        "label": "exterior"
+      }
+    ],
+    "description": "Durable pickup truck with excellent payload and towing capacity. Perfect for work and adventure.",
+    "features": [
+      "4WD",
+      "Payload capacity 1000kg",
+      "Towing capacity 3500kg",
+      "Bluetooth",
+      "Rear-view camera",
+      "Cruise control"
+    ],
+    "popular": true,
+    "year": 2020,
+    "mileage": "65,000 km",
+    "transmission": "Automatic",
+    "fuelType": "Diesel",
+    "type": "sale",
+    "engineSize": "3.2L",
+    "doors": 4,
+    "seats": 5,
+    "color": "Black",
+    "condition": "Excellent",
+    "serviceHistory": "Full Ford service history",
+    "accidentHistory": "No accident history",
+    "warranty": "12 months",
+    "registrationStatus": "Valid until 2027",
+    "whatsappContact": "+260572213038"
+  },
+  {
+    "id": "3",
+    "name": "Honda CR-V",
+    "category": "SUV",
+    "price": "ZMW 290,000",
+    "dailyRate": "",
+    "image": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800",
+        "label": "exterior"
+      }
+    ],
+    "description": "Reliable and fuel-efficient SUV with spacious interior. Great for family use and city driving.",
+    "features": [
+      "FWD",
+      "5-seater",
+      "Automatic climate control",
+      "Bluetooth",
+      "Backup camera",
+      "Keyless entry"
+    ],
+    "popular": false,
+    "year": 2019,
+    "mileage": "75,000 km",
+    "transmission": "CVT",
+    "fuelType": "Petrol",
+    "type": "sale",
+    "engineSize": "2.0L",
+    "doors": 5,
+    "seats": 5,
+    "color": "Silver",
+    "condition": "Good",
+    "serviceHistory": "Full Honda service history",
+    "accidentHistory": "Minor fender bender, repaired",
+    "warranty": "3 months",
+    "registrationStatus": "Valid until 2026",
+    "whatsappContact": "+260572213038"
+  },
+  {
+    "id": "4",
+    "name": "Nissan X-Trail",
+    "category": "SUV",
+    "price": "",
+    "dailyRate": "ZMW 800/day",
+    "image": "https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=800",
+        "label": "exterior"
+      }
+    ],
+    "description": "Comfortable and versatile SUV available for hire. Perfect for family trips and business travel.",
+    "features": [
+      "4WD",
+      "7-seater",
+      "Leather seats",
+      "Climate control",
+      "Bluetooth",
+      "Navigation system"
+    ],
+    "popular": true,
+    "year": 2021,
+    "mileage": "45,000 km",
+    "transmission": "Automatic",
+    "fuelType": "Petrol",
+    "type": "hire",
+    "engineSize": "2.5L",
+    "doors": 5,
+    "seats": 7,
+    "color": "Blue",
+    "condition": "Excellent",
+    "serviceHistory": "Full Nissan service history",
+    "accidentHistory": "No accident history",
+    "insuranceStatus": "Comprehensive insurance valid until 2026",
+    "registrationStatus": "Valid until 2027",
+    "whatsappContact": "+260572213038"
+  }
+]

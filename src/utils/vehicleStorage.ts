@@ -111,13 +111,26 @@ function getAuthToken(): string | null {
   return localStorage.getItem('authToken');
 }
 
+// Import the static vehicle service
+import { staticVehicleService } from '../services/staticVehicleService';
+
 // Fetch vehicles from API with better error handling and offline fallback
 async function fetchVehicles(): Promise<Vehicle[]> {
   try {
     console.log('Fetching vehicles from API...');
     const startTime = Date.now();
     
-    const response = await vehicleService.getVehicles();
+    // Check if we should use static data instead of API
+    const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+    
+    let response;
+    if (useStaticData) {
+      console.log('Using static vehicle data');
+      response = await staticVehicleService.getVehicles();
+    } else {
+      response = await vehicleService.getVehicles();
+    }
+    
     const endTime = Date.now();
     console.log(`API call completed in ${endTime - startTime}ms`);
     console.log('Vehicle service response:', response);
@@ -153,7 +166,13 @@ async function fetchVehicles(): Promise<Vehicle[]> {
       try {
         // Wait 2 seconds and try again
         await new Promise(resolve => setTimeout(resolve, 2000));
-        const retryResponse = await vehicleService.getVehicles();
+        const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+        let retryResponse;
+        if (useStaticData) {
+          retryResponse = await staticVehicleService.getVehicles();
+        } else {
+          retryResponse = await vehicleService.getVehicles();
+        }
         if (retryResponse.success && retryResponse.vehicles) {
           return retryResponse.vehicles.map(vehicle => {
             const vehicleWithId = vehicle as Vehicle & { _id?: string };
@@ -349,6 +368,7 @@ export async function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Promise<Vehi
       ...(fixedData.registrationStatus && { registrationStatus: sanitizeInput(fixedData.registrationStatus) }),
       ...(fixedData.insuranceStatus && { insuranceStatus: sanitizeInput(fixedData.insuranceStatus) }),
       ...(fixedData.whatsappContact && { whatsappContact: sanitizeInput(fixedData.whatsappContact) })
+
     };
     
     const response = await vehicleService.addVehicle(sanitizedData as Omit<Vehicle, 'id'>, token);
