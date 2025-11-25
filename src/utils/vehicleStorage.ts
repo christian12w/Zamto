@@ -585,18 +585,38 @@ export async function updateVehicleStatus(vehicleId: string, status: 'available'
     if (useStaticData) {
       // For static data, we'll update the status in localStorage
       // This is a simplified approach for static sites
-      const vehiclesCache = JSON.parse(localStorage.getItem('vehicles_cache') || '[]');
-      const vehicleIndex = vehiclesCache.findIndex((v: Vehicle) => v.id === vehicleId);
+      
+      // Get vehicles from localStorage cache or initialize from static data
+      let vehicles: Vehicle[] = [];
+      const cachedVehicles = localStorage.getItem('vehicles_cache');
+      
+      if (cachedVehicles) {
+        try {
+          vehicles = JSON.parse(cachedVehicles);
+        } catch (e) {
+          // If parsing fails, initialize from static data
+          vehicles = await getVehicles();
+        }
+      } else {
+        // If no cache exists, initialize from static data
+        vehicles = await getVehicles();
+      }
+      
+      // Find the vehicle to update
+      const vehicleIndex = vehicles.findIndex((v: Vehicle) => v.id === vehicleId);
       
       if (vehicleIndex !== -1) {
         // Update the vehicle status
-        vehiclesCache[vehicleIndex] = {
-          ...vehiclesCache[vehicleIndex],
+        const updatedVehicle = {
+          ...vehicles[vehicleIndex],
           status
         };
         
+        // Update the vehicle in the array
+        vehicles[vehicleIndex] = updatedVehicle;
+        
         // Save back to localStorage
-        localStorage.setItem('vehicles_cache', JSON.stringify(vehiclesCache));
+        localStorage.setItem('vehicles_cache', JSON.stringify(vehicles));
         
         // Dispatch event to notify other parts of the app that vehicles have been updated
         window.dispatchEvent(new Event('vehiclesUpdated'));
@@ -604,7 +624,7 @@ export async function updateVehicleStatus(vehicleId: string, status: 'available'
         // Show success message
         alert(`Vehicle marked as ${status} successfully!`);
         
-        return vehiclesCache[vehicleIndex];
+        return updatedVehicle;
       } else {
         alert('Vehicle not found');
         return null;

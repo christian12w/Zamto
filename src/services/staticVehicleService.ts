@@ -94,8 +94,22 @@ class StaticVehicleService {
 
   async updateVehicleStatus(id: string, status: 'available' | 'sold'): Promise<VehicleResponse> {
     try {
+      // Get vehicles from localStorage cache or fallback to static data
+      let vehicles: Vehicle[] = [];
+      const cachedVehicles = localStorage.getItem('vehicles_cache');
+      
+      if (cachedVehicles) {
+        try {
+          vehicles = JSON.parse(cachedVehicles);
+        } catch (e) {
+          vehicles = vehiclesData as unknown as Vehicle[];
+        }
+      } else {
+        vehicles = vehiclesData as unknown as Vehicle[];
+      }
+      
       // Find the vehicle to update
-      const vehicleIndex = (vehiclesData as unknown as Vehicle[]).findIndex((v: any) => v.id === id);
+      const vehicleIndex = vehicles.findIndex((v: Vehicle) => v.id === id);
       
       if (vehicleIndex === -1) {
         return {
@@ -106,9 +120,19 @@ class StaticVehicleService {
       
       // Update the vehicle status
       const updatedVehicle = {
-        ...((vehiclesData as unknown as Vehicle[])[vehicleIndex] as Vehicle),
+        ...vehicles[vehicleIndex],
         status
       };
+      
+      // Update the vehicle in the array
+      vehicles[vehicleIndex] = updatedVehicle;
+      
+      // Update localStorage cache
+      try {
+        localStorage.setItem('vehicles_cache', JSON.stringify(vehicles));
+      } catch (e) {
+        console.log('Failed to update localStorage cache');
+      }
       
       return {
         success: true,

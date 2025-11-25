@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Static Data Loading Test</title>
+    <script type="module">
+        // Test script to verify static data loading
+        console.log('Testing static data loading configuration...');
+
+        // Check if environment variable is set correctly
+        console.log('VITE_USE_STATIC_DATA:', import.meta.env.VITE_USE_STATIC_DATA);
+        console.log('VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
+
+        // Try to import the static data
+        import('./src/data/vehicles.json')
+          .then(data => {
+            console.log('Successfully loaded static vehicle data');
+            console.log('Number of vehicles:', data.default.length);
+            console.log('First vehicle name:', data.default[0]?.name);
+            document.getElementById('result').innerHTML += `<p>Successfully loaded ${data.default.length} vehicles from static data</p>`;
+          })
+          .catch(error => {
+            console.error('Failed to load static vehicle data:', error);
+            document.getElementById('result').innerHTML += `<p>Error loading static data: ${error.message}</p>`;
+          });
+
+        // Try to import and test the static vehicle service
+        import('./src/services/staticVehicleService.ts')
+          .then(module => {
+            console.log('Successfully imported static vehicle service');
+            const service = module.staticVehicleService;
+            
+            // Test getting vehicles
+            service.getVehicles()
+              .then(response => {
+                console.log('Static service getVehicles response:', {
+                  success: response.success,
+                  vehicleCount: response.vehicles?.length,
+                  message: response.message
+                });
+                document.getElementById('result').innerHTML += `<p>Static service returned ${response.vehicles?.length} vehicles: ${response.message}</p>`;
+              })
+              .catch(error => {
+                console.error('Error calling static service getVehicles:', error);
+                document.getElementById('result').innerHTML += `<p>Error calling static service: ${error.message}</p>`;
+              });
+          })
+          .catch(error => {
+            console.error('Failed to import static vehicle service:', error);
+            document.getElementById('result').innerHTML += `<p>Error importing static service: ${error.message}</p>`;
+          });
+    </script>
+</head>
+<body>
+    <h1>Static Data Loading Test</h1>
+    <div id="result">
+        <p>Testing static data loading...</p>
+    </div>
+</body>
+</html>

@@ -4,9 +4,9 @@ import { VehicleCard } from '../components/VehicleCard';
 import { UserManagement } from '../components/UserManagement';
 import { CSVImport } from '../components/CSVImport';
 import { PerformanceDashboard } from '../components/PerformanceDashboard';
-import { getVehicles, refreshVehicles, deleteVehicle, Vehicle, clearVehicleCache } from '../utils/vehicleStorage';
+import { getVehicles, refreshVehicles, deleteVehicle, Vehicle, clearVehicleCache, updateVehicleStatus } from '../utils/vehicleStorage';
 import { useAuth } from '../contexts/AuthContext';
-import { PlusIcon, EyeIcon, EditIcon, TrashIcon, UserIcon, LogOutIcon, UploadIcon, BarChartIcon, X } from 'lucide-react';
+import { PlusIcon, EyeIcon, EditIcon, TrashIcon, UserIcon, LogOutIcon, UploadIcon, BarChartIcon, X, ShoppingCartIcon, CheckIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function Admin() {
@@ -63,6 +63,13 @@ export function Admin() {
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this vehicle?')) {
       await deleteVehicle(id);
+      loadVehicles();
+    }
+  };
+
+  const handleStatusChange = async (id: string, status: 'available' | 'sold') => {
+    if (window.confirm(`Are you sure you want to mark this vehicle as ${status}?`)) {
+      await updateVehicleStatus(id, status);
       loadVehicles();
     }
   };
@@ -335,6 +342,9 @@ export function Admin() {
                       Popular
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -378,25 +388,69 @@ export function Admin() {
                             </span>
                           )}
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {vehicle.type === 'sale' ? (
+                            vehicle.status === 'sold' ? (
+                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                Sold
+                              </span>
+                            ) : (
+                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                Available
+                              </span>
+                            )
+                          ) : (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                              For Hire
+                            </span>
+                          )}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button
-                            onClick={() => handleEdit(vehicle)}
-                            className="text-indigo-600 hover:text-indigo-900 mr-3"
-                          >
-                            <EditIcon className="h-5 w-5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(vehicle.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            <TrashIcon className="h-5 w-5" />
-                          </button>
+                          <div className="flex space-x-2 mb-2">
+                            {vehicle.type === 'sale' ? (
+                              vehicle.status !== 'sold' ? (
+                                <button
+                                  onClick={() => handleStatusChange(vehicle.id, 'sold')}
+                                  className="text-red-600 hover:text-red-900 flex items-center"
+                                  title="Mark as Sold"
+                                >
+                                  <ShoppingCartIcon className="h-4 w-4 mr-1" />
+                                  <span className="hidden sm:inline">Sold</span>
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleStatusChange(vehicle.id, 'available')}
+                                  className="text-green-600 hover:text-green-900 flex items-center"
+                                  title="Mark as Available"
+                                >
+                                  <CheckIcon className="h-4 w-4 mr-1" />
+                                  <span className="hidden sm:inline">Available</span>
+                                </button>
+                              )
+                            ) : (
+                              <span className="text-gray-500 text-sm">Not applicable</span>
+                            )}
+                          </div>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleEdit(vehicle)}
+                              className="text-indigo-600 hover:text-indigo-900 mr-3"
+                            >
+                              <EditIcon className="h-5 w-5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(vehicle.id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              <TrashIcon className="h-5 w-5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                      <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">
                         {searchTerm ? 'No vehicles match your search criteria.' : 'No vehicles found.'}
                       </td>
                     </tr>
