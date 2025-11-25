@@ -19,7 +19,7 @@ class StaticVehicleService {
       // Return the vehicles data from the JSON file
       return {
         success: true,
-        vehicles: vehiclesData as Vehicle[],
+        vehicles: vehiclesData as unknown as Vehicle[],
         message: 'Vehicles retrieved successfully'
       };
     } catch (error: any) {
@@ -37,7 +37,7 @@ class StaticVehicleService {
   async addVehicle(vehicleData: Omit<Vehicle, 'id'>): Promise<VehicleResponse> {
     try {
       // Generate a new ID (in a real implementation, you might want to use a more robust method)
-      const newId = (vehiclesData.length + 1).toString();
+      const newId = ((vehiclesData as unknown as Vehicle[]).length + 1).toString();
       
       const newVehicle: Vehicle = {
         ...vehicleData,
@@ -64,7 +64,7 @@ class StaticVehicleService {
   async updateVehicle(id: string, updates: Partial<Vehicle>): Promise<VehicleResponse> {
     try {
       // Find the vehicle to update
-      const vehicleIndex = vehiclesData.findIndex((v: any) => v.id === id);
+      const vehicleIndex = (vehiclesData as unknown as Vehicle[]).findIndex((v: any) => v.id === id);
       
       if (vehicleIndex === -1) {
         return {
@@ -75,7 +75,7 @@ class StaticVehicleService {
       
       // Update the vehicle (this is temporary and won't persist)
       const updatedVehicle = {
-        ...(vehiclesData[vehicleIndex] as Vehicle),
+        ...((vehiclesData as unknown as Vehicle[])[vehicleIndex] as Vehicle),
         ...updates
       };
       
@@ -92,10 +92,41 @@ class StaticVehicleService {
     }
   }
 
+  async updateVehicleStatus(id: string, status: 'available' | 'sold'): Promise<VehicleResponse> {
+    try {
+      // Find the vehicle to update
+      const vehicleIndex = (vehiclesData as unknown as Vehicle[]).findIndex((v: any) => v.id === id);
+      
+      if (vehicleIndex === -1) {
+        return {
+          success: false,
+          message: 'Vehicle not found'
+        };
+      }
+      
+      // Update the vehicle status
+      const updatedVehicle = {
+        ...((vehiclesData as unknown as Vehicle[])[vehicleIndex] as Vehicle),
+        status
+      };
+      
+      return {
+        success: true,
+        vehicle: updatedVehicle,
+        message: `Vehicle status updated to ${status}`
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.message || 'Failed to update vehicle status'
+      };
+    }
+  }
+
   async deleteVehicle(id: string): Promise<VehicleResponse> {
     try {
       // Find the vehicle to delete
-      const vehicleIndex = vehiclesData.findIndex((v: any) => v.id === id);
+      const vehicleIndex = (vehiclesData as unknown as Vehicle[]).findIndex((v: any) => v.id === id);
       
       if (vehicleIndex === -1) {
         return {

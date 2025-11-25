@@ -579,46 +579,79 @@ export async function deleteVehicle(id: string): Promise<boolean> {
 
 export async function updateVehicleStatus(vehicleId: string, status: 'available' | 'sold'): Promise<Vehicle | null> {
   try {
-    const token = getAuthToken();
-    if (!token) {
-      console.error('Authentication required to update vehicle status');
-      alert('Authentication required. Please log in again.');
-      // Redirect to login page
-      window.location.href = '/login';
-      return null;
-    }
+    // Check if we're using static data
+    const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
     
-    // Show a loading message to the user
-    alert('Updating vehicle status... This may take a moment as the server wakes up from sleep mode.');
-    
-    const response = await vehicleService.updateVehicle(vehicleId, { status }, token);
-    if (response.success && response.vehicle) {
-      // Clear cache to force refresh on next getVehicles call
-      vehiclesCache = null;
-      lastUpdateTimestamp = 0;
+    if (useStaticData) {
+      // For static data, we'll update the status in localStorage
+      // This is a simplified approach for static sites
+      const vehiclesCache = JSON.parse(localStorage.getItem('vehicles_cache') || '[]');
+      const vehicleIndex = vehiclesCache.findIndex((v: Vehicle) => v.id === vehicleId);
       
-      // Dispatch event to notify other parts of the app that vehicles have been updated
-      window.dispatchEvent(new Event('vehiclesUpdated'));
-      
-      // Show success message
-      alert(`Vehicle marked as ${status} successfully!`);
-      
-      return response.vehicle;
+      if (vehicleIndex !== -1) {
+        // Update the vehicle status
+        vehiclesCache[vehicleIndex] = {
+          ...vehiclesCache[vehicleIndex],
+          status
+        };
+        
+        // Save back to localStorage
+        localStorage.setItem('vehicles_cache', JSON.stringify(vehiclesCache));
+        
+        // Dispatch event to notify other parts of the app that vehicles have been updated
+        window.dispatchEvent(new Event('vehiclesUpdated'));
+        
+        // Show success message
+        alert(`Vehicle marked as ${status} successfully!`);
+        
+        return vehiclesCache[vehicleIndex];
+      } else {
+        alert('Vehicle not found');
+        return null;
+      }
     } else {
-      console.error('Failed to update vehicle status:', response.message);
-      
-      // Check if it's a token expiration issue
-      if (response.message && response.message.includes('Invalid or expired token')) {
-        alert('Your session has expired. Please log in again.');
-        // Clear the expired token
-        localStorage.removeItem('authToken');
+      // Original API-based implementation
+      const token = getAuthToken();
+      if (!token) {
+        console.error('Authentication required to update vehicle status');
+        alert('Authentication required. Please log in again.');
         // Redirect to login page
         window.location.href = '/login';
-      } else {
-        alert(`Failed to update vehicle status: ${response.message}`);
+        return null;
       }
       
-      return null;
+      // Show a loading message to the user
+      alert('Updating vehicle status... This may take a moment as the server wakes up from sleep mode.');
+      
+      const response = await vehicleService.updateVehicle(vehicleId, { status }, token);
+      if (response.success && response.vehicle) {
+        // Clear cache to force refresh on next getVehicles call
+        vehiclesCache = null;
+        lastUpdateTimestamp = 0;
+        
+        // Dispatch event to notify other parts of the app that vehicles have been updated
+        window.dispatchEvent(new Event('vehiclesUpdated'));
+        
+        // Show success message
+        alert(`Vehicle marked as ${status} successfully!`);
+        
+        return response.vehicle;
+      } else {
+        console.error('Failed to update vehicle status:', response.message);
+        
+        // Check if it's a token expiration issue
+        if (response.message && response.message.includes('Invalid or expired token')) {
+          alert('Your session has expired. Please log in again.');
+          // Clear the expired token
+          localStorage.removeItem('authToken');
+          // Redirect to login page
+          window.location.href = '/login';
+        } else {
+          alert(`Failed to update vehicle status: ${response.message}`);
+        }
+        
+        return null;
+      }
     }
   } catch (error: any) {
     console.error('Failed to update vehicle status:', error);

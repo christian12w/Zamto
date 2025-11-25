@@ -29,8 +29,20 @@ interface AuthResponse {
 }
 
 // Backend API configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+const API_BASE_URL = (import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 const API_TIMEOUT = 10000; // 10 seconds
+
+// Hardcoded admin credentials for static site
+const STATIC_ADMIN_USER = {
+  id: 'admin-1',
+  username: 'admin',
+  email: 'admin@zamtoafrica.com',
+  role: 'admin' as const,
+  createdAt: new Date().toISOString(),
+  lastLogin: new Date().toISOString()
+};
+
+const STATIC_ADMIN_PASSWORD = 'admin123';
 
 class AuthService {
   // Helper function to make API requests with timeout
@@ -56,7 +68,7 @@ class AuthService {
       }
       
       return await response.json();
-    } catch (error) {
+    } catch (error: any) {
       clearTimeout(timeoutId);
       if (error.name === 'AbortError') {
         throw new Error('Request timeout');
@@ -68,25 +80,49 @@ class AuthService {
   // Login user
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      // Input validation
-      if (!credentials.username || !credentials.password) {
+      // Check if we're using static data
+      const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+      
+      if (useStaticData) {
+        // Static authentication for demo purposes
+        if (credentials.username === STATIC_ADMIN_USER.username && 
+            credentials.password === STATIC_ADMIN_PASSWORD) {
+          // Generate a simple token for static mode
+          const token = btoa(`${STATIC_ADMIN_USER.username}:${STATIC_ADMIN_PASSWORD}:${Date.now()}`);
+          
+          return {
+            success: true,
+            user: STATIC_ADMIN_USER,
+            token,
+            message: 'Login successful'
+          };
+        } else {
+          return {
+            success: false,
+            message: 'Invalid username or password'
+          };
+        }
+      } else {
+        // Input validation
+        if (!credentials.username || !credentials.password) {
+          return {
+            success: false,
+            message: 'Username and password are required'
+          };
+        }
+        
+        const response = await this.apiRequest('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify(credentials),
+        });
+        
         return {
-          success: false,
-          message: 'Username and password are required'
+          success: true,
+          user: response.user,
+          token: response.token,
+          message: response.message || 'Login successful'
         };
       }
-      
-      const response = await this.apiRequest('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify(credentials),
-      });
-      
-      return {
-        success: true,
-        user: response.user,
-        token: response.token,
-        message: response.message || 'Login successful'
-      };
     } catch (error: any) {
       return {
         success: false,
@@ -98,42 +134,53 @@ class AuthService {
   // Register new user
   async register(data: RegisterData): Promise<AuthResponse> {
     try {
-      // Input validation
-      if (!data.username || !data.email || !data.password) {
+      // Check if we're using static data
+      const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+      
+      if (useStaticData) {
+        // Static mode - registration not supported
         return {
           success: false,
-          message: 'Username, email, and password are required'
+          message: 'Registration not available in static mode'
         };
-      }
-      
-      // Email validation
-      if (!validateEmail(data.email)) {
+      } else {
+        // Input validation
+        if (!data.username || !data.email || !data.password) {
+          return {
+            success: false,
+            message: 'Username, email, and password are required'
+          };
+        }
+        
+        // Email validation
+        if (!validateEmail(data.email)) {
+          return {
+            success: false,
+            message: 'Invalid email format'
+          };
+        }
+        
+        // Password validation
+        const passwordValidation = validatePassword(data.password);
+        if (!passwordValidation.valid) {
+          return {
+            success: false,
+            message: passwordValidation.message
+          };
+        }
+        
+        const response = await this.apiRequest('/auth/register', {
+          method: 'POST',
+          body: JSON.stringify(data),
+        });
+        
         return {
-          success: false,
-          message: 'Invalid email format'
+          success: true,
+          user: response.user,
+          token: response.token,
+          message: response.message || 'User registered successfully'
         };
       }
-      
-      // Password validation
-      const passwordValidation = validatePassword(data.password);
-      if (!passwordValidation.valid) {
-        return {
-          success: false,
-          message: passwordValidation.message
-        };
-      }
-      
-      const response = await this.apiRequest('/auth/register', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
-      
-      return {
-        success: true,
-        user: response.user,
-        token: response.token,
-        message: response.message || 'User registered successfully'
-      };
     } catch (error: any) {
       return {
         success: false,
@@ -145,26 +192,38 @@ class AuthService {
   // Get all users (admin only)
   async getUsers(token: string): Promise<{ success: boolean; users?: User[]; message?: string }> {
     try {
-      // Validate token format
-      if (!token) {
+      // Check if we're using static data
+      const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+      
+      if (useStaticData) {
+        // Static mode - only return the admin user
         return {
-          success: false,
-          message: 'Authentication required'
+          success: true,
+          users: [STATIC_ADMIN_USER],
+          message: 'Users retrieved successfully'
+        };
+      } else {
+        // Validate token format
+        if (!token) {
+          return {
+            success: false,
+            message: 'Authentication required'
+          };
+        }
+        
+        const response = await this.apiRequest('/users', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        return {
+          success: true,
+          users: response.users,
+          message: response.message || 'Users retrieved successfully'
         };
       }
-      
-      const response = await this.apiRequest('/users', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      return {
-        success: true,
-        users: response.users,
-        message: response.message || 'Users retrieved successfully'
-      };
     } catch (error: any) {
       return {
         success: false,
@@ -176,25 +235,36 @@ class AuthService {
   // Delete user (admin only)
   async deleteUser(token: string, userId: string): Promise<{ success: boolean; message?: string }> {
     try {
-      // Validate inputs
-      if (!token || !userId) {
+      // Check if we're using static data
+      const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+      
+      if (useStaticData) {
+        // Static mode - deletion not supported
         return {
           success: false,
-          message: 'Token and user ID are required'
+          message: 'User deletion not available in static mode'
+        };
+      } else {
+        // Validate inputs
+        if (!token || !userId) {
+          return {
+            success: false,
+            message: 'Token and user ID are required'
+          };
+        }
+        
+        const response = await this.apiRequest(`/users/${userId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        return {
+          success: true,
+          message: response.message || 'User deleted successfully'
         };
       }
-      
-      const response = await this.apiRequest(`/users/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      return {
-        success: true,
-        message: response.message || 'User deleted successfully'
-      };
     } catch (error: any) {
       return {
         success: false,
@@ -206,24 +276,35 @@ class AuthService {
   // Logout user
   async logout(token: string): Promise<{ success: boolean; message?: string }> {
     try {
-      if (!token) {
+      // Check if we're using static data
+      const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+      
+      if (useStaticData) {
+        // Static mode - just clear local storage
         return {
-          success: false,
-          message: 'Authentication required'
+          success: true,
+          message: 'Logged out successfully'
+        };
+      } else {
+        if (!token) {
+          return {
+            success: false,
+            message: 'Authentication required'
+          };
+        }
+        
+        await this.apiRequest('/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        return {
+          success: true,
+          message: 'Logged out successfully'
         };
       }
-      
-      await this.apiRequest('/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      return {
-        success: true,
-        message: 'Logged out successfully'
-      };
     } catch (error: any) {
       // Even if logout fails on the backend, we should clear local state
       return {
@@ -240,35 +321,46 @@ class AuthService {
     newPassword: string
   ): Promise<{ success: boolean; message?: string }> {
     try {
-      // Validate inputs
-      if (!token || !currentPassword || !newPassword) {
+      // Check if we're using static data
+      const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+      
+      if (useStaticData) {
+        // Static mode - password change not supported
         return {
           success: false,
-          message: 'All fields are required'
+          message: 'Password change not available in static mode'
         };
-      }
-      
-      // Password validation for new password
-      const passwordValidation = validatePassword(newPassword);
-      if (!passwordValidation.valid) {
+      } else {
+        // Validate inputs
+        if (!token || !currentPassword || !newPassword) {
+          return {
+            success: false,
+            message: 'All fields are required'
+          };
+        }
+        
+        // Password validation for new password
+        const passwordValidation = validatePassword(newPassword);
+        if (!passwordValidation.valid) {
+          return {
+            success: false,
+            message: passwordValidation.message
+          };
+        }
+        
+        const response = await this.apiRequest('/auth/change-password', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ currentPassword, newPassword }),
+        });
+        
         return {
-          success: false,
-          message: passwordValidation.message
+          success: true,
+          message: response.message || 'Password changed successfully'
         };
       }
-      
-      const response = await this.apiRequest('/auth/change-password', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ currentPassword, newPassword }),
-      });
-      
-      return {
-        success: true,
-        message: response.message || 'Password changed successfully'
-      };
     } catch (error: any) {
       return {
         success: false,
