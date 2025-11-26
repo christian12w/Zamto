@@ -153,51 +153,92 @@ import { staticVehicleService } from '../services/staticVehicleService';
 // Fetch vehicles from API with better error handling and offline fallback
 async function fetchVehicles(): Promise<Vehicle[]> {
   try {
-    console.log('Fetching vehicles from API...');
+    console.log('Fetching vehicles...');
     const startTime = Date.now();
     
     // Check if we should use static data instead of API
     const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
     
-    let response;
+    // If using static data, first check if we have modified vehicles in localStorage
     if (useStaticData) {
-      console.log('Using static vehicle data');
-      response = await staticVehicleService.getVehicles();
-    } else {
-      response = await vehicleService.getVehicles();
-    }
-    
-    const endTime = Date.now();
-    console.log(`API call completed in ${endTime - startTime}ms`);
-    console.log('Vehicle service response:', response);
-    
-    if (response.success && response.vehicles) {
-      console.log(`Received ${response.vehicles.length} vehicles from API`);
-      // Ensure all vehicles have proper IDs
-      const vehiclesWithIds = response.vehicles.map(vehicle => {
-        // Handle case where vehicle might come from MongoDB with _id instead of id
-        const vehicleWithId = vehicle as Vehicle & { _id?: string };
-        return {
-          ...vehicle,
-          id: vehicle.id || vehicleWithId._id || Math.random().toString(36).substr(2, 9)
-        };
-      });
-      
-      // Update localStorage cache immediately
-      try {
-        localStorage.setItem('vehicles_cache', JSON.stringify(vehiclesWithIds));
-        localStorage.setItem('vehicles_cache_timestamp', Date.now().toString());
-      } catch (storageError) {
-        console.error('Failed to update localStorage cache:', storageError);
+      const cachedVehicles = localStorage.getItem('vehicles_cache');
+      if (cachedVehicles) {
+        try {
+          const parsedVehicles = JSON.parse(cachedVehicles);
+          if (parsedVehicles && parsedVehicles.length > 0) {
+            console.log(`Using ${parsedVehicles.length} vehicles from localStorage cache`);
+            return parsedVehicles;
+          }
+        } catch (parseError) {
+          console.error('Failed to parse localStorage cache:', parseError);
+        }
       }
       
-      return vehiclesWithIds;
+      // If no cached vehicles, fall back to static data
+      console.log('Using static vehicle data');
+      const response = await staticVehicleService.getVehicles();
+      
+      if (response.success && response.vehicles) {
+        console.log(`Received ${response.vehicles.length} vehicles from static data`);
+        // Ensure all vehicles have proper IDs
+        const vehiclesWithIds = response.vehicles.map(vehicle => {
+          // Handle case where vehicle might come from MongoDB with _id instead of id
+          const vehicleWithId = vehicle as Vehicle & { _id?: string };
+          return {
+            ...vehicle,
+            id: vehicle.id || vehicleWithId._id || Math.random().toString(36).substr(2, 9)
+          };
+        });
+        
+        // Update localStorage cache immediately
+        try {
+          localStorage.setItem('vehicles_cache', JSON.stringify(vehiclesWithIds));
+          localStorage.setItem('vehicles_cache_timestamp', Date.now().toString());
+        } catch (storageError) {
+          console.error('Failed to update localStorage cache:', storageError);
+        }
+        
+        return vehiclesWithIds;
+      } else {
+        console.error('Failed to fetch vehicles from static data:', response.message);
+        throw new Error(response.message || 'Failed to fetch vehicles from static data');
+      }
     } else {
-      console.error('Failed to fetch vehicles:', response.message);
-      throw new Error(response.message || 'Failed to fetch vehicles from API');
+      // API-based implementation
+      const response = await vehicleService.getVehicles();
+      
+      const endTime = Date.now();
+      console.log(`API call completed in ${endTime - startTime}ms`);
+      console.log('Vehicle service response:', response);
+      
+      if (response.success && response.vehicles) {
+        console.log(`Received ${response.vehicles.length} vehicles from API`);
+        // Ensure all vehicles have proper IDs
+        const vehiclesWithIds = response.vehicles.map(vehicle => {
+          // Handle case where vehicle might come from MongoDB with _id instead of id
+          const vehicleWithId = vehicle as Vehicle & { _id?: string };
+          return {
+            ...vehicle,
+            id: vehicle.id || vehicleWithId._id || Math.random().toString(36).substr(2, 9)
+          };
+        });
+        
+        // Update localStorage cache immediately
+        try {
+          localStorage.setItem('vehicles_cache', JSON.stringify(vehiclesWithIds));
+          localStorage.setItem('vehicles_cache_timestamp', Date.now().toString());
+        } catch (storageError) {
+          console.error('Failed to update localStorage cache:', storageError);
+        }
+        
+        return vehiclesWithIds;
+      } else {
+        console.error('Failed to fetch vehicles:', response.message);
+        throw new Error(response.message || 'Failed to fetch vehicles from API');
+      }
     }
   } catch (error: any) {
-    console.error('Failed to fetch vehicles from API:', error);
+    console.error('Failed to fetch vehicles:', error);
     
     // If we have cached vehicles, return them as fallback for offline use
     if (vehiclesCache && vehiclesCache.length > 0) {
@@ -228,6 +269,20 @@ async function fetchVehicles(): Promise<Vehicle[]> {
         const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
         let retryResponse;
         if (useStaticData) {
+          // Check localStorage first even on retry
+          const cachedVehicles = localStorage.getItem('vehicles_cache');
+          if (cachedVehicles) {
+            try {
+              const parsedVehicles = JSON.parse(cachedVehicles);
+              if (parsedVehicles && parsedVehicles.length > 0) {
+                console.log(`Using ${parsedVehicles.length} vehicles from localStorage cache on retry`);
+                return parsedVehicles;
+              }
+            } catch (parseError) {
+              console.error('Failed to parse localStorage cache on retry:', parseError);
+            }
+          }
+          
           retryResponse = await staticVehicleService.getVehicles();
         } else {
           retryResponse = await vehicleService.getVehicles();
