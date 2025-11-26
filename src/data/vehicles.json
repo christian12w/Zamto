@@ -84,5 +84,650 @@
     "insuranceStatus": "Current",
     "whatsappContact": "+260572213038",
     "status": "available"
+  },
+  {
+    "id": "3",
+    "name": "Nissan X-Trail",
+    "category": "SUV",
+    "price": "ZMW 280,000",
+    "dailyRate": "ZMW 700/day",
+    "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+        "label": "exterior"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+        "label": "interior"
+      }
+    ],
+    "description": "Comfortable family SUV with excellent fuel economy and modern features.",
+    "features": [
+      "All-Wheel Drive",
+      "Panoramic Sunroof",
+      "Apple CarPlay",
+      "Blind Spot Monitoring"
+    ],
+    "type": "sale",
+    "popular": true,
+    "year": 2021,
+    "mileage": "15,000 km",
+    "transmission": "Automatic",
+    "fuelType": "Petrol",
+    "engineSize": "2.0L",
+    "doors": 5,
+    "seats": 5,
+    "color": "Pearl White",
+    "condition": "Excellent",
+    "serviceHistory": "Full Nissan service history",
+    "accidentHistory": "No accident history",
+    "warranty": "12 months",
+    "registrationStatus": "Valid",
+    "insuranceStatus": "Current",
+    "whatsappContact": "+260572213038",
+    "status": "available"
+  },
+  {
+    "id": "4",
+    "name": "Toyota Hilux",
+    "category": "PICKUP TRUCKS",
+    "price": "ZMW 350,000",
+    "dailyRate": "ZMW 900/day",
+    "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+        "label": "exterior"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+        "label": "interior"
+      }
+    ],
+    "description": "Legendary durability and reliability make this Hilux perfect for work and play.",
+    "features": [
+      "4WD System",
+      "Payload Capacity 1000kg",
+      "Towing Capacity 3500kg",
+      "Differential Lock"
+    ],
+    "type": "sale",
+    "popular": true,
+    "year": 2018,
+    "mileage": "65,000 km",
+    "transmission": "Manual",
+    "fuelType": "Diesel",
+    "engineSize": "2.8L",
+    "doors": 4,
+    "seats": 5,
+    "color": "White",
+    "condition": "Good",
+    "serviceHistory": "Regular maintenance",
+    "accidentHistory": "No accident history",
+    "warranty": "6 months",
+    "registrationStatus": "Valid",
+    "insuranceStatus": "Current",
+    "whatsappContact": "+260572213038",
+    "status": "available"
+  },
+  {
+    "id": "5",
+    "name": "Mazda CX-5",
+    "category": "SUV",
+    "price": "ZMW 295,000",
+    "dailyRate": "ZMW 750/day",
+    "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+        "label": "exterior"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+        "label": "interior"
+      }
+    ],
+    "description": "Sporty and stylish SUV with premium interior and advanced safety features.",
+    "features": [
+      "i-Activ AWD",
+      "Leather Seats",
+      "BOSE Sound System",
+      "Adaptive Cruise Control"
+    ],
+    "type": "sale",
+    "popular": false,
+    "year": 2020,
+    "mileage": "30,000 km",
+    "transmission": "Automatic",
+    "fuelType": "Petrol",
+    "engineSize": "2.5L",
+    "doors": 5,
+    "seats": 5,
+    "color": "Soul Red Crystal",
+    "condition": "Excellent",
+    "serviceHistory": "Full Mazda service history",
+    "accidentHistory": "No accident history",
+    "warranty": "12 months",
+    "registrationStatus": "Valid",
+    "insuranceStatus": "Current",
+    "whatsappContact": "+260572213038",
+    "status": "available"
+  },
+  {
+    "id": "6",
+    "name": "Isuzu D-Max",
+    "category": "PICKUP TRUCKS",
+    "price": "ZMW 310,000",
+    "dailyRate": "ZMW 850/day",
+    "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+        "label": "exterior"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+        "label": "interior"
+      }
+    ],
+    "description": "Tough and capable pickup with excellent off-road performance and comfort.",
+    "features": [
+      "4WD System",
+      "Hi-Lift Suspension",
+      "Multi-Mode 4WD",
+      "Hill Descent Control"
+    ],
+    "type": "sale",
+    "popular": false,
+    "year": 2019,
+    "mileage": "50,000 km",
+    "transmission": "Automatic",
+    "fuelType": "Diesel",
+    "engineSize": "3.0L",
+    "doors": 4,
+    "seats": 5,
+    "color": "Cosmic Black",
+    "condition": "Good",
+    "serviceHistory": "Regular maintenance",
+    "accidentHistory": "No accident history",
+    "warranty": "12 months",
+    "registrationStatus": "Valid",
+    "insuranceStatus": "Current",
+    "whatsappContact": "+260572213038",
+    "status": "available"
+  },
+  {
+    "id": "7",
+    "name": "Volkswagen Touareg",
+    "category": "SUV",
+    "price": "ZMW 420,000",
+    "dailyRate": "ZMW 1,100/day",
+    "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+        "label": "exterior"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+        "label": "interior"
+      }
+    ],
+    "description": "Luxury SUV with premium German engineering and advanced technology features.",
+    "features": [
+      "Air Suspension",
+      "Full Leather Interior",
+      "Panoramic Sunroof",
+      "Night Vision Assist"
+    ],
+    "type": "sale",
+    "popular": true,
+    "year": 2017,
+    "mileage": "75,000 km",
+    "transmission": "Automatic",
+    "fuelType": "Diesel",
+    "engineSize": "3.0L V6",
+    "doors": 5,
+    "seats": 5,
+    "color": "Deep Black Pearl",
+    "condition": "Good",
+    "serviceHistory": "Full VW service history",
+    "accidentHistory": "Minor scratch on rear bumper",
+    "warranty": "6 months",
+    "registrationStatus": "Valid",
+    "insuranceStatus": "Current",
+    "whatsappContact": "+260572213038",
+    "status": "available"
+  },
+  {
+    "id": "8",
+    "name": "Suzuki Vitara",
+    "category": "SUV",
+    "price": "ZMW 180,000",
+    "dailyRate": "ZMW 500/day",
+    "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+        "label": "exterior"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+        "label": "interior"
+      }
+    ],
+    "description": "Compact SUV perfect for city driving with excellent fuel economy.",
+    "features": [
+      "All-Wheel Drive",
+      "Apple CarPlay",
+      "Bluetooth",
+      "Keyless Entry"
+    ],
+    "type": "sale",
+    "popular": false,
+    "year": 2018,
+    "mileage": "40,000 km",
+    "transmission": "Automatic",
+    "fuelType": "Petrol",
+    "engineSize": "1.6L",
+    "doors": 5,
+    "seats": 5,
+    "color": "Pearl White",
+    "condition": "Good",
+    "serviceHistory": "Regular maintenance",
+    "accidentHistory": "No accident history",
+    "warranty": "12 months",
+    "registrationStatus": "Valid",
+    "insuranceStatus": "Current",
+    "whatsappContact": "+260572213038",
+    "status": "available"
+  },
+  {
+    "id": "9",
+    "name": "Mitsubishi Pajero",
+    "category": "SUV",
+    "price": "ZMW 250,000",
+    "dailyRate": "ZMW 650/day",
+    "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+        "label": "exterior"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+        "label": "interior"
+      }
+    ],
+    "description": "Rugged off-road vehicle with proven reliability and capability.",
+    "features": [
+      "Full-Time 4WD",
+      "Super Select 4WD",
+      "Traction Control",
+      "Hill Start Assist"
+    ],
+    "type": "sale",
+    "popular": false,
+    "year": 2016,
+    "mileage": "90,000 km",
+    "transmission": "Automatic",
+    "fuelType": "Diesel",
+    "engineSize": "3.2L",
+    "doors": 5,
+    "seats": 7,
+    "color": "White",
+    "condition": "Good",
+    "serviceHistory": "Regular maintenance",
+    "accidentHistory": "No accident history",
+    "warranty": "6 months",
+    "registrationStatus": "Valid",
+    "insuranceStatus": "Current",
+    "whatsappContact": "+260572213038",
+    "status": "available"
+  },
+  {
+    "id": "10",
+    "name": "Toyota Corolla",
+    "category": "SMALL CARS",
+    "price": "ZMW 120,000",
+    "dailyRate": "ZMW 300/day",
+    "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+        "label": "exterior"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+        "label": "interior"
+      }
+    ],
+    "description": "Reliable and fuel-efficient compact car perfect for daily commuting.",
+    "features": [
+      "Automatic Transmission",
+      "Bluetooth",
+      "Air Conditioning",
+      "Power Windows"
+    ],
+    "type": "sale",
+    "popular": false,
+    "year": 2019,
+    "mileage": "35,000 km",
+    "transmission": "Automatic",
+    "fuelType": "Petrol",
+    "engineSize": "1.8L",
+    "doors": 4,
+    "seats": 5,
+    "color": "Silver",
+    "condition": "Good",
+    "serviceHistory": "Regular maintenance",
+    "accidentHistory": "No accident history",
+    "warranty": "12 months",
+    "registrationStatus": "Valid",
+    "insuranceStatus": "Current",
+    "whatsappContact": "+260572213038",
+    "status": "available"
+  },
+  {
+    "id": "11",
+    "name": "Nissan Sunny",
+    "category": "SMALL CARS",
+    "price": "ZMW 95,000",
+    "dailyRate": "ZMW 250/day",
+    "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+        "label": "exterior"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+        "label": "interior"
+      }
+    ],
+    "description": "Affordable and practical sedan with good fuel economy.",
+    "features": [
+      "Manual Transmission",
+      "Air Conditioning",
+      "Power Steering",
+      "AM/FM Radio"
+    ],
+    "type": "sale",
+    "popular": false,
+    "year": 2017,
+    "mileage": "55,000 km",
+    "transmission": "Manual",
+    "fuelType": "Petrol",
+    "engineSize": "1.5L",
+    "doors": 4,
+    "seats": 5,
+    "color": "White",
+    "condition": "Good",
+    "serviceHistory": "Regular maintenance",
+    "accidentHistory": "No accident history",
+    "warranty": "6 months",
+    "registrationStatus": "Valid",
+    "insuranceStatus": "Current",
+    "whatsappContact": "+260572213038",
+    "status": "available"
+  },
+  {
+    "id": "12",
+    "name": "Honda Civic",
+    "category": "SMALL CARS",
+    "price": "ZMW 140,000",
+    "dailyRate": "ZMW 350/day",
+    "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+        "label": "exterior"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+        "label": "interior"
+      }
+    ],
+    "description": "Sporty and reliable compact car with modern features.",
+    "features": [
+      "Automatic Transmission",
+      "Apple CarPlay",
+      "Bluetooth",
+      "Cruise Control"
+    ],
+    "type": "sale",
+    "popular": false,
+    "year": 2018,
+    "mileage": "45,000 km",
+    "transmission": "Automatic",
+    "fuelType": "Petrol",
+    "engineSize": "1.8L",
+    "doors": 4,
+    "seats": 5,
+    "color": "Red",
+    "condition": "Good",
+    "serviceHistory": "Regular maintenance",
+    "accidentHistory": "No accident history",
+    "warranty": "12 months",
+    "registrationStatus": "Valid",
+    "insuranceStatus": "Current",
+    "whatsappContact": "+260572213038",
+    "status": "available"
+  },
+  {
+    "id": "13",
+    "name": "Toyota Camry",
+    "category": "GROUPS & FAMILY CARS",
+    "price": "ZMW 220,000",
+    "dailyRate": "ZMW 550/day",
+    "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+        "label": "exterior"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+        "label": "interior"
+      }
+    ],
+    "description": "Comfortable mid-size sedan perfect for business or family use.",
+    "features": [
+      "Automatic Transmission",
+      "Leather Seats",
+      "Sunroof",
+      "Navigation System"
+    ],
+    "type": "sale",
+    "popular": false,
+    "year": 2017,
+    "mileage": "65,000 km",
+    "transmission": "Automatic",
+    "fuelType": "Petrol",
+    "engineSize": "2.5L",
+    "doors": 4,
+    "seats": 5,
+    "color": "White",
+    "condition": "Good",
+    "serviceHistory": "Full Toyota service history",
+    "accidentHistory": "No accident history",
+    "warranty": "12 months",
+    "registrationStatus": "Valid",
+    "insuranceStatus": "Current",
+    "whatsappContact": "+260572213038",
+    "status": "available"
+  },
+  {
+    "id": "14",
+    "name": "Nissan Teana",
+    "category": "GROUPS & FAMILY CARS",
+    "price": "ZMW 180,000",
+    "dailyRate": "ZMW 500/day",
+    "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+        "label": "exterior"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+        "label": "interior"
+      }
+    ],
+    "description": "Spacious and comfortable family sedan with modern amenities.",
+    "features": [
+      "Automatic Transmission",
+      "Leather Seats",
+      "Climate Control",
+      "Power Windows"
+    ],
+    "type": "sale",
+    "popular": false,
+    "year": 2016,
+    "mileage": "75,000 km",
+    "transmission": "Automatic",
+    "fuelType": "Petrol",
+    "engineSize": "2.5L",
+    "doors": 4,
+    "seats": 5,
+    "color": "Black",
+    "condition": "Good",
+    "serviceHistory": "Regular maintenance",
+    "accidentHistory": "No accident history",
+    "warranty": "6 months",
+    "registrationStatus": "Valid",
+    "insuranceStatus": "Current",
+    "whatsappContact": "+260572213038",
+    "status": "available"
+  },
+  {
+    "id": "15",
+    "name": "Mazda Premacy",
+    "category": "GROUPS & FAMILY CARS",
+    "price": "ZMW 150,000",
+    "dailyRate": "ZMW 400/day",
+    "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+        "label": "exterior"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+        "label": "interior"
+      }
+    ],
+    "description": "Practical 7-seater MPV perfect for family outings and group travel.",
+    "features": [
+      "Automatic Transmission",
+      "7 Seats",
+      "Air Conditioning",
+      "Power Steering"
+    ],
+    "type": "sale",
+    "popular": false,
+    "year": 2015,
+    "mileage": "85,000 km",
+    "transmission": "Automatic",
+    "fuelType": "Petrol",
+    "engineSize": "2.0L",
+    "doors": 5,
+    "seats": 7,
+    "color": "Silver",
+    "condition": "Good",
+    "serviceHistory": "Regular maintenance",
+    "accidentHistory": "No accident history",
+    "warranty": "6 months",
+    "registrationStatus": "Valid",
+    "insuranceStatus": "Current",
+    "whatsappContact": "+260572213038",
+    "status": "available"
+  },
+  {
+    "id": "16",
+    "name": "Toyota Hiace",
+    "category": "GROUPS & FAMILY CARS",
+    "price": "ZMW 280,000",
+    "dailyRate": "ZMW 700/day",
+    "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+        "label": "exterior"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+        "label": "interior"
+      }
+    ],
+    "description": "Spacious 12-seater minibus perfect for group travel and business transport.",
+    "features": [
+      "12 Seats",
+      "Air Conditioning",
+      "Diesel Engine",
+      "High Roof"
+    ],
+    "type": "sale",
+    "popular": true,
+    "year": 2018,
+    "mileage": "55,000 km",
+    "transmission": "Manual",
+    "fuelType": "Diesel",
+    "engineSize": "2.8L",
+    "doors": 3,
+    "seats": 12,
+    "color": "White",
+    "condition": "Good",
+    "serviceHistory": "Regular maintenance",
+    "accidentHistory": "No accident history",
+    "warranty": "12 months",
+    "registrationStatus": "Valid",
+    "insuranceStatus": "Current",
+    "whatsappContact": "+260572213038",
+    "status": "available"
+  },
+  {
+    "id": "17",
+    "name": "Mercedes-Benz Vito",
+    "category": "GROUPS & FAMILY CARS",
+    "price": "ZMW 350,000",
+    "dailyRate": "ZMW 850/day",
+    "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
+        "label": "exterior"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+        "label": "interior"
+      }
+    ],
+    "description": "Premium 9-seater van with luxury features and excellent build quality.",
+    "features": [
+      "9 Seats",
+      "Leather Seats",
+      "Climate Control",
+      "Bluetooth"
+    ],
+    "type": "sale",
+    "popular": true,
+    "year": 2019,
+    "mileage": "40,000 km",
+    "transmission": "Automatic",
+    "fuelType": "Diesel",
+    "engineSize": "2.2L",
+    "doors": 4,
+    "seats": 9,
+    "color": "White",
+    "condition": "Excellent",
+    "serviceHistory": "Full Mercedes service history",
+    "accidentHistory": "No accident history",
+    "warranty": "12 months",
+    "registrationStatus": "Valid",
+    "insuranceStatus": "Current",
+    "whatsappContact": "+260572213038",
+    "status": "available"
   }
 ]
