@@ -61,18 +61,58 @@ export function Inventory() {
     label: 'For Hire'
   }];
 
-  // Memoized function to load vehicles
+  // Memoized function to load vehicles with enhanced error handling
   const loadVehicles = useCallback(async () => {
     try {
       setLoading(true);
       setLoadError(null); // Clear any previous errors
+      
+      // Attempt to load vehicles
       const vehicleData = await getVehicles();
-      setVehicles(vehicleData);
-      if (vehicleData.length === 0) {
+      
+      // If we got vehicles, display them
+      if (vehicleData && vehicleData.length > 0) {
+        setVehicles(vehicleData);
+      } else {
+        // Try to load from localStorage cache as backup
+        const cachedVehicles = localStorage.getItem('vehicles_cache');
+        if (cachedVehicles) {
+          try {
+            const parsedVehicles = JSON.parse(cachedVehicles);
+            if (parsedVehicles && parsedVehicles.length > 0) {
+              setVehicles(parsedVehicles);
+              setLoadError(null);
+              console.log('Loaded vehicles from localStorage cache');
+              return;
+            }
+          } catch (parseError) {
+            console.error('Failed to parse cached vehicles:', parseError);
+          }
+        }
+        
+        // If we still have no vehicles, show appropriate message
         setLoadError('No vehicles found in the database. Please add some vehicles through the admin panel.');
       }
     } catch (error: any) {
       console.error('Failed to load vehicles:', error);
+      
+      // Try to load from localStorage cache as emergency backup
+      try {
+        const cachedVehicles = localStorage.getItem('vehicles_cache');
+        if (cachedVehicles) {
+          const parsedVehicles = JSON.parse(cachedVehicles);
+          if (parsedVehicles && parsedVehicles.length > 0) {
+            setVehicles(parsedVehicles);
+            setLoadError('Showing cached vehicles due to network issues.');
+            console.log('Loaded vehicles from localStorage cache after API error');
+            return;
+          }
+        }
+      } catch (parseError) {
+        console.error('Failed to parse cached vehicles:', parseError);
+      }
+      
+      // If all else fails, show error message
       setLoadError(error.message || 'Failed to load vehicles. Please check your network connection and API configuration.');
     } finally {
       setLoading(false);

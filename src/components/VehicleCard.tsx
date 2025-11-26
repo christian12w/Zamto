@@ -13,10 +13,38 @@ export function VehicleCard({
   onShowDetails
 }: VehicleCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const images = vehicle.images && vehicle.images.length > 0 ? vehicle.images : [{
-    url: vehicle.image,
-    label: 'exterior' as const
-  }];
+  
+  // Ensure vehicle has required properties
+  if (!vehicle) {
+    return (
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden h-full flex flex-col items-center justify-center p-6 text-center">
+        <div className="text-4xl mb-2">⚠️</div>
+        <p className="text-gray-600">Invalid vehicle data</p>
+      </div>
+    );
+  }
+  
+  // Fallback for missing vehicle properties
+  const safeVehicle = {
+    id: vehicle.id || 'unknown',
+    name: vehicle.name || 'Unnamed Vehicle',
+    category: vehicle.category || 'Uncategorized',
+    price: vehicle.price || 'Price not available',
+    image: vehicle.image || '/placeholder.jpg',
+    images: vehicle.images && vehicle.images.length > 0 ? vehicle.images : [{
+      url: vehicle.image || '/placeholder.jpg',
+      label: 'exterior' as const
+    }],
+    description: vehicle.description || 'No description available',
+    features: vehicle.features && Array.isArray(vehicle.features) ? vehicle.features : [],
+    popular: vehicle.popular || false,
+    type: vehicle.type || 'sale',
+    status: vehicle.status || 'available',
+    whatsappContact: vehicle.whatsappContact || '+260572213038',
+    dailyRate: vehicle.dailyRate || undefined
+  };
+  
+  const images = safeVehicle.images;
   
   const nextImage = () => {
     setCurrentImageIndex(prev => (prev + 1) % images.length);
@@ -50,13 +78,13 @@ export function VehicleCard({
   }, [currentImageIndex, images]);
 
   return <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-transparent hover:border-[#FF6600] h-full flex flex-col">
-      {vehicle.popular && <div className="bg-gradient-to-r from-[#FF6600] to-[#e55a00] text-white text-sm font-bold px-4 py-2 flex items-center">
+      {safeVehicle.popular && <div className="bg-gradient-to-r from-[#FF6600] to-[#e55a00] text-white text-sm font-bold px-4 py-2 flex items-center">
           <SparklesIcon className="h-4 w-4 mr-2" />
           POPULAR CHOICE
         </div>}
       
       {/* Status indicator */}
-      {vehicle.status === 'sold' && (
+      {safeVehicle.status === 'sold' && (
         <div className="bg-red-600 text-white text-sm font-bold px-4 py-2 flex items-center justify-center">
           <ShoppingCartIcon className="h-4 w-4 mr-2" />
           SOLD
@@ -64,8 +92,8 @@ export function VehicleCard({
       )}
       
       {/* Type indicator */}
-      <div className={`flex items-center px-4 py-2 ${vehicle.type === 'sale' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}`}>
-        {vehicle.type === 'sale' ? (
+      <div className={`flex items-center px-4 py-2 ${safeVehicle.type === 'sale' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}`}>
+        {safeVehicle.type === 'sale' ? (
           <>
             <TagIcon className="h-4 w-4 mr-2" />
             <span className="font-semibold">FOR SALE</span>
@@ -82,7 +110,7 @@ export function VehicleCard({
       <div className="h-48 sm:h-56 md:h-64 overflow-hidden relative group flex-grow">
         <img 
           src={images[currentImageIndex].url} 
-          alt={`${vehicle.name} - ${images[currentImageIndex].label}`} 
+          alt={`${safeVehicle.name} - ${images[currentImageIndex].label}`} 
           className="w-full h-full object-contain transform transition-transform duration-500 group-hover:scale-110" 
           loading="lazy"
         />
@@ -128,14 +156,14 @@ export function VehicleCard({
       
       <div className="p-4 sm:p-6 flex-grow flex flex-col">
         <div className="flex justify-between items-start mb-2 sm:mb-3">
-          <h3 className="text-xl sm:text-2xl font-bold text-[#003366]">{vehicle.name}</h3>
+          <h3 className="text-xl sm:text-2xl font-bold text-[#003366]">{safeVehicle.name}</h3>
           <span className="text-xs sm:text-sm bg-gradient-to-r from-blue-500 to-blue-600 text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full font-semibold whitespace-nowrap">
-            {vehicle.category}
+            {safeVehicle.category}
           </span>
         </div>
-        <p className="text-gray-600 mb-4 text-sm sm:text-base line-clamp-2 flex-grow">{vehicle.description}</p>
+        <p className="text-gray-600 mb-4 text-sm sm:text-base line-clamp-2 flex-grow">{safeVehicle.description}</p>
         <ul className="space-y-2 mb-4">
-          {vehicle.features.slice(0, 3).map((feature, index) => (
+          {safeVehicle.features.slice(0, 3).map((feature, index) => (
             <li key={index} className="flex items-start text-xs sm:text-sm text-gray-700">
               <CheckCircleIcon className="h-4 w-4 text-[#228B22] mr-2 flex-shrink-0 mt-0.5" />
               <span>{feature}</span>
@@ -145,15 +173,15 @@ export function VehicleCard({
         
         <div className="border-t border-gray-100 pt-4 mt-auto">
           {/* Display price or daily rate based on vehicle type */}
-          {vehicle.type === 'sale' ? (
+          {safeVehicle.type === 'sale' ? (
             <div className="flex justify-between items-center mb-3">
               <div>
                 <span className="text-xs text-gray-500 block">Price</span>
                 <span className="text-lg sm:text-xl font-bold text-[#003366]">
-                  {vehicle.price}
+                  {safeVehicle.price}
                 </span>
               </div>
-              {vehicle.status === 'sold' && (
+              {safeVehicle.status === 'sold' && (
                 <div className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-semibold">
                   SOLD
                 </div>
@@ -164,16 +192,16 @@ export function VehicleCard({
               <div>
                 <span className="text-xs text-gray-500 block">Daily Rate</span>
                 <span className="text-lg sm:text-xl font-bold text-[#003366]">
-                  {vehicle.dailyRate ? vehicle.dailyRate : 'Contact for rates'}
+                  {safeVehicle.dailyRate ? safeVehicle.dailyRate : 'Contact for rates'}
                 </span>
               </div>
             </div>
           )}
           
           {/* Admin controls for marking vehicle as sold/available */}
-          {isAdmin && vehicle.type === 'sale' && (
+          {isAdmin && safeVehicle.type === 'sale' && (
             <div className="mb-3 flex gap-2">
-              {vehicle.status !== 'sold' ? (
+              {safeVehicle.status !== 'sold' ? (
                 <button
                   onClick={() => handleStatusChange('sold')}
                   className="flex-1 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
@@ -196,7 +224,7 @@ export function VehicleCard({
           {/* Improved button layout for better fit on mobile and web */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <button 
-              onClick={() => onShowDetails(vehicle)}
+              onClick={() => onShowDetails(safeVehicle)}
               className="flex items-center justify-center bg-gradient-to-r from-[#003366] to-[#004080] hover:from-[#004080] hover:to-[#003366] text-white px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md w-full"
             >
               <EyeIcon className="h-4 w-4 mr-1.5 sm:mr-2 flex-shrink-0" />
@@ -205,7 +233,7 @@ export function VehicleCard({
             
             {/* WhatsApp button */}
             <a 
-              href={`https://wa.me/${vehicle.whatsappContact?.replace(/\D/g, '') || '260572213038'}?text=Hello,%20I'm%20interested%20in%20the%20${encodeURIComponent(vehicle.name)}`} 
+              href={`https://wa.me/${safeVehicle.whatsappContact?.replace(/\D/g, '') || '260572213038'}?text=Hello,%20I'm%20interested%20in%20the%20${encodeURIComponent(safeVehicle.name)}`} 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md w-full"
@@ -221,7 +249,7 @@ export function VehicleCard({
               className="flex items-center justify-center bg-gradient-to-r from-[#FF6600] to-[#e55a00] hover:from-[#e55a00] hover:to-[#FF6600] text-white px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md w-full"
             >
               <PhoneIcon className="h-4 w-4 mr-1.5 sm:mr-2 flex-shrink-0" />
-              <span className="truncate text-sm sm:text-base">{vehicle.type === 'sale' ? 'Inquire' : 'Book'}</span>
+              <span className="truncate text-sm sm:text-base">{safeVehicle.type === 'sale' ? 'Inquire' : 'Book'}</span>
             </a>
           </div>
         </div>

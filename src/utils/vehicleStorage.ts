@@ -138,7 +138,7 @@ async function fetchVehicles(): Promise<Vehicle[]> {
     if (response.success && response.vehicles) {
       console.log(`Received ${response.vehicles.length} vehicles from API`);
       // Ensure all vehicles have proper IDs
-      return response.vehicles.map(vehicle => {
+      const vehiclesWithIds = response.vehicles.map(vehicle => {
         // Handle case where vehicle might come from MongoDB with _id instead of id
         const vehicleWithId = vehicle as Vehicle & { _id?: string };
         return {
@@ -146,6 +146,16 @@ async function fetchVehicles(): Promise<Vehicle[]> {
           id: vehicle.id || vehicleWithId._id || Math.random().toString(36).substr(2, 9)
         };
       });
+      
+      // Update localStorage cache immediately
+      try {
+        localStorage.setItem('vehicles_cache', JSON.stringify(vehiclesWithIds));
+        localStorage.setItem('vehicles_cache_timestamp', Date.now().toString());
+      } catch (storageError) {
+        console.error('Failed to update localStorage cache:', storageError);
+      }
+      
+      return vehiclesWithIds;
     } else {
       console.error('Failed to fetch vehicles:', response.message);
       throw new Error(response.message || 'Failed to fetch vehicles from API');
@@ -157,6 +167,20 @@ async function fetchVehicles(): Promise<Vehicle[]> {
     if (vehiclesCache && vehiclesCache.length > 0) {
       console.log('Returning cached vehicles due to network error');
       return vehiclesCache;
+    }
+    
+    // Try to load from localStorage as emergency backup
+    try {
+      const cachedVehicles = localStorage.getItem('vehicles_cache');
+      if (cachedVehicles) {
+        const parsedVehicles = JSON.parse(cachedVehicles);
+        if (parsedVehicles && parsedVehicles.length > 0) {
+          console.log('Loaded vehicles from localStorage emergency backup');
+          return parsedVehicles;
+        }
+      }
+    } catch (parseError) {
+      console.error('Failed to parse localStorage backup:', parseError);
     }
     
     // If it's a timeout or network error, try one more time
@@ -173,13 +197,23 @@ async function fetchVehicles(): Promise<Vehicle[]> {
           retryResponse = await vehicleService.getVehicles();
         }
         if (retryResponse.success && retryResponse.vehicles) {
-          return retryResponse.vehicles.map(vehicle => {
+          const vehiclesWithIds = retryResponse.vehicles.map(vehicle => {
             const vehicleWithId = vehicle as Vehicle & { _id?: string };
             return {
               ...vehicle,
               id: vehicle.id || vehicleWithId._id || Math.random().toString(36).substr(2, 9)
             };
           });
+          
+          // Update localStorage cache
+          try {
+            localStorage.setItem('vehicles_cache', JSON.stringify(vehiclesWithIds));
+            localStorage.setItem('vehicles_cache_timestamp', Date.now().toString());
+          } catch (storageError) {
+            console.error('Failed to update localStorage cache:', storageError);
+          }
+          
+          return vehiclesWithIds;
         }
       } catch (retryError) {
         console.error('Retry failed:', retryError);
@@ -187,6 +221,20 @@ async function fetchVehicles(): Promise<Vehicle[]> {
         if (vehiclesCache && vehiclesCache.length > 0) {
           console.log('Returning cached vehicles after retry failure');
           return vehiclesCache;
+        }
+        
+        // Try to load from localStorage as final emergency backup
+        try {
+          const cachedVehicles = localStorage.getItem('vehicles_cache');
+          if (cachedVehicles) {
+            const parsedVehicles = JSON.parse(cachedVehicles);
+            if (parsedVehicles && parsedVehicles.length > 0) {
+              console.log('Loaded vehicles from localStorage emergency backup after retry');
+              return parsedVehicles;
+            }
+          }
+        } catch (parseError) {
+          console.error('Failed to parse localStorage backup:', parseError);
         }
       }
     }
@@ -202,7 +250,7 @@ async function saveVehicles(vehicles: Vehicle[]): Promise<void> {
   return Promise.resolve();
 }
 
-// Get all vehicles with caching
+// Get all vehicles with caching and enhanced fallback mechanisms
 export async function getVehicles(forceRefresh: boolean = false): Promise<Vehicle[]> {
   const now = Date.now();
   
@@ -218,16 +266,43 @@ export async function getVehicles(forceRefresh: boolean = false): Promise<Vehicl
   try {
     const vehicles = await fetchVehicles();
     
-    // Update cache
-    vehiclesCache = vehicles;
-    lastUpdateTimestamp = now;
-    
-    // Save to localStorage for offline use
-    if (vehicles.length > 0) {
+    // If we got vehicles, update cache
+    if (vehicles && vehicles.length > 0) {
+      // Update cache
+      vehiclesCache = vehicles;
+      lastUpdateTimestamp = now;
+      
+      // Save to localStorage for offline use
       saveCacheToStorage(vehicles);
+      
+      return vehicles;
+    } else {
+      // If fetchVehicles returned empty array but we have cached vehicles, return them
+      if (vehiclesCache && vehiclesCache.length > 0) {
+        console.log('Returning cached vehicles as fetchVehicles returned empty');
+        return vehiclesCache;
+      }
+      
+      // Try to load from localStorage as last resort
+      try {
+        const cachedVehicles = localStorage.getItem('vehicles_cache');
+        if (cachedVehicles) {
+          const parsedVehicles = JSON.parse(cachedVehicles);
+          if (parsedVehicles && parsedVehicles.length > 0) {
+            console.log('Loaded vehicles from localStorage as last resort');
+            // Update in-memory cache
+            vehiclesCache = parsedVehicles;
+            lastUpdateTimestamp = now;
+            return parsedVehicles;
+          }
+        }
+      } catch (parseError) {
+        console.error('Failed to parse localStorage backup:', parseError);
+      }
+      
+      // Return whatever we have (could be empty array)
+      return vehicles || [];
     }
-    
-    return vehicles;
   } catch (error) {
     console.error('Error in getVehicles:', error);
     
@@ -235,6 +310,23 @@ export async function getVehicles(forceRefresh: boolean = false): Promise<Vehicl
     if (vehiclesCache && vehiclesCache.length > 0) {
       console.log('Returning cached vehicles due to error');
       return vehiclesCache;
+    }
+    
+    // Try to load from localStorage as emergency backup
+    try {
+      const cachedVehicles = localStorage.getItem('vehicles_cache');
+      if (cachedVehicles) {
+        const parsedVehicles = JSON.parse(cachedVehicles);
+        if (parsedVehicles && parsedVehicles.length > 0) {
+          console.log('Loaded vehicles from localStorage emergency backup in getVehicles');
+          // Update in-memory cache
+          vehiclesCache = parsedVehicles;
+          lastUpdateTimestamp = now;
+          return parsedVehicles;
+        }
+      }
+    } catch (parseError) {
+      console.error('Failed to parse localStorage backup:', parseError);
     }
     
     // Return empty array if all else fails

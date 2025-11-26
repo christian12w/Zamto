@@ -10,22 +10,41 @@ interface VehicleResponse {
 }
 
 class StaticVehicleService {
-  // Get all vehicles from static JSON data
+  // Get all vehicles from static JSON data with enhanced error handling
   async getVehicles(): Promise<VehicleResponse> {
     try {
       // Simulate network delay for realistic loading experience
       await new Promise(resolve => setTimeout(resolve, 300));
       
+      // Ensure we have valid vehicle data
+      if (!vehiclesData || !Array.isArray(vehiclesData)) {
+        throw new Error('Invalid vehicle data format');
+      }
+      
       // Return the vehicles data from the JSON file
+      const vehicles = vehiclesData as unknown as Vehicle[];
+      
+      // Validate that we have vehicles
+      if (vehicles.length === 0) {
+        console.warn('No vehicles found in static data');
+        return {
+          success: true,
+          vehicles: [],
+          message: 'No vehicles available'
+        };
+      }
+      
+      console.log(`Successfully loaded ${vehicles.length} vehicles from static data`);
       return {
         success: true,
-        vehicles: vehiclesData as unknown as Vehicle[],
+        vehicles: vehicles,
         message: 'Vehicles retrieved successfully'
       };
     } catch (error: any) {
+      console.error('Failed to retrieve vehicles from static data:', error);
       return {
         success: false,
-        message: error.message || 'Failed to retrieve vehicles'
+        message: error.message || 'Failed to retrieve vehicles from static data'
       };
     }
   }
@@ -102,10 +121,16 @@ class StaticVehicleService {
         try {
           vehicles = JSON.parse(cachedVehicles);
         } catch (e) {
+          console.error('Failed to parse cached vehicles:', e);
           vehicles = vehiclesData as unknown as Vehicle[];
         }
       } else {
         vehicles = vehiclesData as unknown as Vehicle[];
+      }
+      
+      // Validate vehicles array
+      if (!Array.isArray(vehicles)) {
+        throw new Error('Invalid vehicles data');
       }
       
       // Find the vehicle to update
@@ -130,8 +155,10 @@ class StaticVehicleService {
       // Update localStorage cache
       try {
         localStorage.setItem('vehicles_cache', JSON.stringify(vehicles));
+        // Also update the timestamp
+        localStorage.setItem('vehicles_cache_timestamp', Date.now().toString());
       } catch (e) {
-        console.log('Failed to update localStorage cache');
+        console.error('Failed to update localStorage cache:', e);
       }
       
       return {
@@ -140,6 +167,7 @@ class StaticVehicleService {
         message: `Vehicle status updated to ${status}`
       };
     } catch (error: any) {
+      console.error('Failed to update vehicle status:', error);
       return {
         success: false,
         message: error.message || 'Failed to update vehicle status'
