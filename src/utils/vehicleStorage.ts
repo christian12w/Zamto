@@ -111,6 +111,42 @@ function getAuthToken(): string | null {
   return localStorage.getItem('authToken');
 }
 
+// Get vehicle cache information for diagnostic purposes
+export function getVehicleCacheInfo(): any {
+  try {
+    const cachedVehicles = localStorage.getItem('vehicles_cache');
+    const cachedTimestamp = localStorage.getItem('vehicles_cache_timestamp');
+    
+    const now = Date.now();
+    const cacheAge = cachedTimestamp ? now - parseInt(cachedTimestamp, 10) : 0;
+    
+    let cacheSize = 0;
+    if (cachedVehicles) {
+      try {
+        const parsedVehicles = JSON.parse(cachedVehicles);
+        cacheSize = Array.isArray(parsedVehicles) ? parsedVehicles.length : 0;
+      } catch (e) {
+        // If parsing fails, cacheSize remains 0
+      }
+    }
+    
+    return {
+      isCached: !!cachedVehicles,
+      cacheAge,
+      cacheSize,
+      cacheDuration: 30 * 60 * 1000 // 30 minutes in milliseconds
+    };
+  } catch (error) {
+    console.error('Failed to get vehicle cache info:', error);
+    return {
+      isCached: false,
+      cacheAge: 0,
+      cacheSize: 0,
+      cacheDuration: 30 * 60 * 1000
+    };
+  }
+}
+
 // Import the static vehicle service
 import { staticVehicleService } from '../services/staticVehicleService';
 
