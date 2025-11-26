@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { VehicleCard } from '../components/VehicleCard';
 import { VehicleDetailsModal } from '../components/VehicleDetailsModal';
-import { getVehiclesWithOfflineSupport, Vehicle, getCurrentVehicleCache } from '../utils/vehicleStorage';
+import { getVehicles as getVehiclesWithOfflineSupport, Vehicle } from '../utils/vehicleStorage';
+import { getCurrentVehicles as getCurrentVehicleCache } from '../utils/resetVehicles';
 import { LayoutGridIcon, StarIcon, TruckIcon, CarIcon, Users2Icon, PickaxeIcon } from 'lucide-react';
 
 export function VehiclesForSale() {
