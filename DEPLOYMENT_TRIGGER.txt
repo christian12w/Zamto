@@ -1,0 +1,3 @@
+Deployment trigger file - created to force Netlify redeployment
+Timestamp: 2025-11-25 18:45:00
+Commit: 425a3d5
