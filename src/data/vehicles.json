@@ -3,7 +3,7 @@
     "id": "1",
     "name": "Toyota Land Cruiser",
     "category": "SUV",
-    "price": "ZMW 450,000",
+    "price": "K1170000",
     "dailyRate": "ZMW 1,200/day",
     "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
     "images": [
@@ -16,20 +16,19 @@
         "label": "interior"
       }
     ],
-    "description": "Experience unmatched off-road capability and luxury with this pristine Toyota Land Cruiser. Perfect for both city driving and adventurous expeditions.",
+    "description": "2023 model with 4WD and duty registration. Located at Lusaka Great East Road.",
     "features": [
-      "4WD System",
-      "Leather Seats",
-      "Climate Control",
-      "Navigation System"
+      "4WD",
+      "Duty and registration",
+      "2800cc Diesel"
     ],
     "type": "sale",
     "popular": true,
-    "year": 2020,
-    "mileage": "25,000 km",
+    "year": 2023,
+    "mileage": "59480 km",
     "transmission": "Automatic",
     "fuelType": "Diesel",
-    "engineSize": "4.5L",
+    "engineSize": "2800cc",
     "doors": 5,
     "seats": 7,
     "color": "White",
@@ -132,7 +131,7 @@
     "id": "4",
     "name": "Toyota Hilux",
     "category": "PICKUP TRUCKS",
-    "price": "ZMW 350,000",
+    "price": "K752000",
     "dailyRate": "ZMW 900/day",
     "image": "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800",
     "images": [
@@ -145,23 +144,22 @@
         "label": "interior"
       }
     ],
-    "description": "Legendary durability and reliability make this Hilux perfect for work and play.",
+    "description": "4WD with duty and registration. Located at Lusaka Great East Road.",
     "features": [
-      "4WD System",
-      "Payload Capacity 1000kg",
-      "Towing Capacity 3500kg",
-      "Differential Lock"
+      "4WD",
+      "Duty and registration",
+      "2400cc Diesel"
     ],
     "type": "sale",
     "popular": true,
     "year": 2018,
-    "mileage": "65,000 km",
+    "mileage": "97300 km",
     "transmission": "Manual",
     "fuelType": "Diesel",
-    "engineSize": "2.8L",
+    "engineSize": "2400cc",
     "doors": 4,
     "seats": 5,
-    "color": "White",
+    "color": "Black",
     "condition": "Good",
     "serviceHistory": "Regular maintenance",
     "accidentHistory": "No accident history",
