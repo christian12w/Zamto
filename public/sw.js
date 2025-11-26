@@ -102,7 +102,7 @@ self.addEventListener('fetch', (event) => {
           return response;
         });
       })
-    );
+  );
 });
 
 // Activate event - clean up old caches
@@ -129,7 +129,7 @@ self.addEventListener('message', (event) => {
     caches.open(VEHICLE_CACHE_NAME)
       .then((cache) => {
         const vehiclesResponse = new Response(JSON.stringify(event.data.vehicles), {
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'max-age=1800' }
         });
         cache.put('/api/vehicles', vehiclesResponse);
         console.log('Vehicles cached from main app message');

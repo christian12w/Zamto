@@ -150,7 +150,6 @@ async function fetchVehicles(): Promise<Vehicle[]> {
       console.error('Failed to fetch vehicles:', response.message);
       throw new Error(response.message || 'Failed to fetch vehicles from API');
     }
-    return [];
   } catch (error: any) {
     console.error('Failed to fetch vehicles from API:', error);
     

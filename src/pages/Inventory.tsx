@@ -92,7 +92,7 @@ export function Inventory() {
     
     // Also listen for storage events (when localStorage changes in another tab)
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'zamto_vehicles') {
+      if (e.key === 'zamto_vehicles' || e.key === 'vehicles_cache') {
         loadVehicles();
       }
     };
@@ -264,29 +264,32 @@ export function Inventory() {
           ) : (
             <>
               {/* Fixed the grid classes to ensure proper mobile display */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                {searchFilteredVehicles.map(vehicle => (
-                  <VehicleCard 
-                    key={vehicle.id} 
-                    vehicle={vehicle} 
-                    onShowDetails={handleShowDetails} 
-                  />
-                ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 sm:gap-8">
+                {searchFilteredVehicles.length > 0 ? (
+                  searchFilteredVehicles.map(vehicle => (
+                    <VehicleCard 
+                      key={vehicle.id} 
+                      vehicle={vehicle} 
+                      onShowDetails={handleShowDetails} 
+                    />
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-12 sm:py-16">
+                    <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🚗</div>
+                    <p className="text-gray-600 text-lg sm:text-xl font-medium">
+                      No vehicles found matching your criteria.
+                    </p>
+                    <p className="text-gray-500 mt-2 text-sm sm:text-base">Try selecting different filters or check back soon!</p>
+                    {/* Show debug button when no vehicles are found */}
+                    <button 
+                      onClick={() => setShowDebug(true)}
+                      className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      Show Debug Info
+                    </button>
+                  </div>
+                )}
               </div>
-              {searchFilteredVehicles.length === 0 && <div className="text-center py-12 sm:py-16">
-                  <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🚗</div>
-                  <p className="text-gray-600 text-lg sm:text-xl font-medium">
-                    No vehicles found matching your criteria.
-                  </p>
-                  <p className="text-gray-500 mt-2 text-sm sm:text-base">Try selecting different filters or check back soon!</p>
-                  {/* Show debug button when no vehicles are found */}
-                  <button 
-                    onClick={() => setShowDebug(true)}
-                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                  >
-                    Show Debug Info
-                  </button>
-                </div>}
             </>
           )}
         </div>
