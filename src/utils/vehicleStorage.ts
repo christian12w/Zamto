@@ -198,94 +198,167 @@ async function fetchVehicles(): Promise<Vehicle[]> {
 // Save vehicles to API (admin only)
 async function saveVehicles(vehicles: Vehicle[]): Promise<void> {
   // For API-based storage, we don't need to save the entire list
-  // Individual add/update/delete operations are handled separately
-  // This function is kept for compatibility with existing code
-  vehiclesCache = null;
-  lastUpdateTimestamp = 0;
+  // The API handles persistence
+  return Promise.resolve();
 }
 
-// Function to get vehicles with caching and offline support
-export async function getVehicles(): Promise<Vehicle[]> {
+// Get all vehicles with caching
+export async function getVehicles(forceRefresh: boolean = false): Promise<Vehicle[]> {
   const now = Date.now();
   
-  // Check if cache is valid (less than 30 minutes old)
-  if (vehiclesCache && (now - lastUpdateTimestamp) < CACHE_DURATION) {
-    return vehiclesCache;
-  }
-  
-  // Fetch from API
-  const vehicles = await fetchVehicles();
-  
-  // Update cache
-  vehiclesCache = vehicles;
-  lastUpdateTimestamp = now;
-  
-  // Save to persistent storage
-  saveCacheToStorage(vehicles);
-  
-  // Send to service worker for offline caching
-  try {
-    // Dynamically import to avoid circular dependency
-    const indexModule = await import('../index');
-    if (indexModule && typeof indexModule.cacheVehiclesInServiceWorker === 'function') {
-      indexModule.cacheVehiclesInServiceWorker(vehicles);
-    }
-  } catch (error) {
-    console.log('Service worker caching not available');
-  }
-  
-  return vehicles;
-}
-
-// Synchronous version for backward compatibility (uses cache or fetches if needed)
-export function getVehiclesSync(): Vehicle[] {
-  if (vehiclesCache) {
-    return vehiclesCache;
-  }
-  
-  // This is not ideal, but maintains backward compatibility
-  // In a real app, you'd want to use the async version
-  getVehicles(); // Trigger fetch
-  return []; // Return empty array for now
-}
-
-// Function to force refresh vehicles (bypass cache)
-export async function refreshVehicles(): Promise<Vehicle[]> {
-  // Clear cache
-  vehiclesCache = null;
-  lastUpdateTimestamp = 0;
-  
-  // Get fresh data
-  return await getVehicles();
-}
-
-// Function to get vehicles with offline fallback
-export async function getVehiclesWithOfflineSupport(): Promise<Vehicle[]> {
-  try {
-    const vehicles = await getVehicles();
-    return vehicles;
-  } catch (error) {
-    console.error('Error getting vehicles:', error);
-    
-    // Try to get from localStorage cache as fallback
-    if (vehiclesCache && vehiclesCache.length > 0) {
-      console.log('Returning vehicles from memory cache');
+  // Check if we have a valid cache
+  if (!forceRefresh && vehiclesCache && lastUpdateTimestamp) {
+    const cacheAge = now - lastUpdateTimestamp;
+    if (cacheAge < CACHE_DURATION) {
+      console.log('Returning vehicles from cache');
       return vehiclesCache;
     }
+  }
+  
+  try {
+    const vehicles = await fetchVehicles();
     
-    try {
-      const cachedVehicles = localStorage.getItem(VEHICLE_CACHE_KEY);
-      if (cachedVehicles) {
-        const vehicles = JSON.parse(cachedVehicles);
-        console.log('Returning vehicles from localStorage cache');
-        return vehicles;
-      }
-    } catch (storageError) {
-      console.error('Error reading from localStorage:', storageError);
+    // Update cache
+    vehiclesCache = vehicles;
+    lastUpdateTimestamp = now;
+    
+    // Save to localStorage for offline use
+    if (vehicles.length > 0) {
+      saveCacheToStorage(vehicles);
+    }
+    
+    return vehicles;
+  } catch (error) {
+    console.error('Error in getVehicles:', error);
+    
+    // If we have cached vehicles, return them as fallback
+    if (vehiclesCache && vehiclesCache.length > 0) {
+      console.log('Returning cached vehicles due to error');
+      return vehiclesCache;
     }
     
     // Return empty array if all else fails
     return [];
+  }
+}
+
+// Refresh vehicles cache
+export async function refreshVehicles(): Promise<Vehicle[]> {
+  vehiclesCache = null;
+  lastUpdateTimestamp = 0;
+  return getVehicles(true);
+}
+
+// Clear vehicles cache
+export function clearVehicleCache(): void {
+  vehiclesCache = null;
+  lastUpdateTimestamp = 0;
+  localStorage.removeItem(VEHICLE_CACHE_KEY);
+  localStorage.removeItem(VEHICLE_CACHE_TIMESTAMP_KEY);
+}
+
+// Create a test vehicle
+export async function createTestVehicle(): Promise<Vehicle | null> {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      console.error('Authentication required to create test vehicle');
+      alert('Authentication required. Please log in again.');
+      return null;
+    }
+    
+    // Validate token before proceeding
+    const validation = await authService.validateToken(token);
+    if (!validation.valid) {
+      console.error('Invalid or expired token');
+      alert('Your session has expired. Please log in again.');
+      localStorage.removeItem('authToken');
+      window.location.href = '/login';
+      return null;
+    }
+    
+    const testVehicleData: Omit<Vehicle, 'id'> = {
+      name: 'Test Vehicle',
+      category: 'SUV',
+      price: 'K500,000',
+      image: '/placeholder.jpg',
+      images: [
+        { url: '/placeholder.jpg', label: 'exterior' }
+      ],
+      description: 'This is a test vehicle for demonstration purposes.',
+      features: ['Air Conditioning', 'Bluetooth', 'Backup Camera'],
+      popular: true,
+      type: 'sale',
+      year: new Date().getFullYear(),
+      mileage: '0 km',
+      transmission: 'Automatic',
+      fuelType: 'Petrol'
+    };
+    
+    const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+    
+    if (useStaticData) {
+      // For static data, we'll add to localStorage cache
+      let vehicles: Vehicle[] = [];
+      const cachedVehicles = localStorage.getItem('vehicles_cache');
+      
+      if (cachedVehicles) {
+        try {
+          vehicles = JSON.parse(cachedVehicles);
+        } catch (e) {
+          // If parsing fails, get fresh data
+          vehicles = await getVehicles();
+        }
+      } else {
+        // If no cache exists, get fresh data
+        vehicles = await getVehicles();
+      }
+      
+      // Add the new vehicle
+      const newVehicle: Vehicle = {
+        ...testVehicleData,
+        id: `test-${Date.now()}`
+      };
+      
+      vehicles.push(newVehicle);
+      
+      // Update localStorage
+      localStorage.setItem('vehicles_cache', JSON.stringify(vehicles));
+      
+      // Update cache
+      vehiclesCache = vehicles;
+      lastUpdateTimestamp = Date.now();
+      
+      // Dispatch event to notify other parts of the app that vehicles have been updated
+      window.dispatchEvent(new Event('vehiclesUpdated'));
+      
+      alert('Test vehicle created successfully!');
+      
+      return newVehicle;
+    } else {
+      // API-based implementation
+      const response = await vehicleService.addVehicle(testVehicleData, token);
+      if (response.success && response.vehicle) {
+        // Clear cache to force refresh on next getVehicles call
+        vehiclesCache = null;
+        lastUpdateTimestamp = 0;
+        
+        // Dispatch event to notify other parts of the app that vehicles have been updated
+        window.dispatchEvent(new Event('vehiclesUpdated'));
+        
+        alert('Test vehicle created successfully!');
+        
+        return response.vehicle;
+      } else {
+        console.error('Failed to create test vehicle:', response.message);
+        alert(`Failed to create test vehicle: ${response.message}`);
+        return null;
+      }
+    }
+  } catch (error: any) {
+    console.error('Failed to create test vehicle:', error);
+    alert('An error occurred while creating the test vehicle. Please try again.');
+    return null;
   }
 }
 
@@ -296,6 +369,16 @@ export async function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Promise<Vehi
       console.error('Authentication required to add vehicle');
       alert('Authentication required. Please log in again.');
       // Redirect to login page
+      window.location.href = '/login';
+      return null;
+    }
+    
+    // Validate token before proceeding
+    const validation = await authService.validateToken(token);
+    if (!validation.valid) {
+      console.error('Invalid or expired token');
+      alert('Your session has expired. Please log in again.');
+      localStorage.removeItem('authToken');
       window.location.href = '/login';
       return null;
     }
@@ -367,37 +450,78 @@ export async function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Promise<Vehi
       ...(fixedData.registrationStatus && { registrationStatus: sanitizeInput(fixedData.registrationStatus) }),
       ...(fixedData.insuranceStatus && { insuranceStatus: sanitizeInput(fixedData.insuranceStatus) }),
       ...(fixedData.whatsappContact && { whatsappContact: sanitizeInput(fixedData.whatsappContact) })
-
     };
     
-    const response = await vehicleService.addVehicle(sanitizedData as Omit<Vehicle, 'id'>, token);
-    if (response.success && response.vehicle) {
-      // Clear cache to force refresh on next getVehicles call
-      vehiclesCache = null;
-      lastUpdateTimestamp = 0;
+    const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+    
+    if (useStaticData) {
+      // For static data, we'll add to localStorage cache
+      let vehicles: Vehicle[] = [];
+      const cachedVehicles = localStorage.getItem('vehicles_cache');
+      
+      if (cachedVehicles) {
+        try {
+          vehicles = JSON.parse(cachedVehicles);
+        } catch (e) {
+          // If parsing fails, get fresh data
+          vehicles = await getVehicles();
+        }
+      } else {
+        // If no cache exists, get fresh data
+        vehicles = await getVehicles();
+      }
+      
+      // Add the new vehicle
+      const newVehicle: Vehicle = {
+        ...sanitizedData as Omit<Vehicle, 'id'>,
+        id: `veh-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      };
+      
+      vehicles.push(newVehicle);
+      
+      // Update localStorage
+      localStorage.setItem('vehicles_cache', JSON.stringify(vehicles));
+      
+      // Update cache
+      vehiclesCache = vehicles;
+      lastUpdateTimestamp = Date.now();
       
       // Dispatch event to notify other parts of the app that vehicles have been updated
       window.dispatchEvent(new Event('vehiclesUpdated'));
       
-      // Show success message
       alert('Vehicle added successfully!');
       
-      return response.vehicle;
+      return newVehicle;
     } else {
-      console.error('Failed to add vehicle:', response.message);
-      
-      // Check if it's a token expiration issue
-      if (response.message && response.message.includes('Invalid or expired token')) {
-        alert('Your session has expired. Please log in again.');
-        // Clear the expired token
-        localStorage.removeItem('authToken');
-        // Redirect to login page
-        window.location.href = '/login';
+      const response = await vehicleService.addVehicle(sanitizedData as Omit<Vehicle, 'id'>, token);
+      if (response.success && response.vehicle) {
+        // Clear cache to force refresh on next getVehicles call
+        vehiclesCache = null;
+        lastUpdateTimestamp = 0;
+        
+        // Dispatch event to notify other parts of the app that vehicles have been updated
+        window.dispatchEvent(new Event('vehiclesUpdated'));
+        
+        // Show success message
+        alert('Vehicle added successfully!');
+        
+        return response.vehicle;
       } else {
-        alert(`Failed to add vehicle: ${response.message}`);
+        console.error('Failed to add vehicle:', response.message);
+        
+        // Check if it's a token expiration issue
+        if (response.message && response.message.includes('Invalid or expired token')) {
+          alert('Your session has expired. Please log in again.');
+          // Clear the expired token
+          localStorage.removeItem('authToken');
+          // Redirect to login page
+          window.location.href = '/login';
+        } else {
+          alert(`Failed to add vehicle: ${response.message}`);
+        }
+        
+        return null;
       }
-      
-      return null;
     }
   } catch (error: any) {
     console.error('Failed to add vehicle:', error);
@@ -413,6 +537,16 @@ export async function updateVehicle(vehicleId: string, vehicleData: Partial<Vehi
       console.error('Authentication required to update vehicle');
       alert('Authentication required. Please log in again.');
       // Redirect to login page
+      window.location.href = '/login';
+      return null;
+    }
+    
+    // Validate token before proceeding
+    const validation = await authService.validateToken(token);
+    if (!validation.valid) {
+      console.error('Invalid or expired token');
+      alert('Your session has expired. Please log in again.');
+      localStorage.removeItem('authToken');
       window.location.href = '/login';
       return null;
     }
@@ -494,34 +628,85 @@ export async function updateVehicle(vehicleId: string, vehicleData: Partial<Vehi
       ...(fixedData.whatsappContact && { whatsappContact: sanitizeInput(fixedData.whatsappContact) })
     };
     
-    const response = await vehicleService.updateVehicle(vehicleId, sanitizedData as Partial<Vehicle>, token);
-    if (response.success && response.vehicle) {
-      // Clear cache to force refresh on next getVehicles call
-      vehiclesCache = null;
-      lastUpdateTimestamp = 0;
+    const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+    
+    if (useStaticData) {
+      // For static data, we'll update in localStorage cache
+      let vehicles: Vehicle[] = [];
+      const cachedVehicles = localStorage.getItem('vehicles_cache');
       
-      // Dispatch event to notify other parts of the app that vehicles have been updated
-      window.dispatchEvent(new Event('vehiclesUpdated'));
-      
-      // Show success message
-      alert('Vehicle updated successfully!');
-      
-      return response.vehicle;
-    } else {
-      console.error('Failed to update vehicle:', response.message);
-      
-      // Check if it's a token expiration issue
-      if (response.message && response.message.includes('Invalid or expired token')) {
-        alert('Your session has expired. Please log in again.');
-        // Clear the expired token
-        localStorage.removeItem('authToken');
-        // Redirect to login page
-        window.location.href = '/login';
+      if (cachedVehicles) {
+        try {
+          vehicles = JSON.parse(cachedVehicles);
+        } catch (e) {
+          // If parsing fails, get fresh data
+          vehicles = await getVehicles();
+        }
       } else {
-        alert(`Failed to update vehicle: ${response.message}`);
+        // If no cache exists, get fresh data
+        vehicles = await getVehicles();
       }
       
-      return null;
+      // Find the vehicle to update
+      const vehicleIndex = vehicles.findIndex((v: Vehicle) => v.id === vehicleId);
+      
+      if (vehicleIndex !== -1) {
+        // Update the vehicle
+        const updatedVehicle = {
+          ...vehicles[vehicleIndex],
+          ...sanitizedData
+        };
+        
+        // Update the vehicle in the array
+        vehicles[vehicleIndex] = updatedVehicle;
+        
+        // Update localStorage
+        localStorage.setItem('vehicles_cache', JSON.stringify(vehicles));
+        
+        // Update cache
+        vehiclesCache = vehicles;
+        lastUpdateTimestamp = Date.now();
+        
+        // Dispatch event to notify other parts of the app that vehicles have been updated
+        window.dispatchEvent(new Event('vehiclesUpdated'));
+        
+        alert('Vehicle updated successfully!');
+        
+        return updatedVehicle;
+      } else {
+        alert('Vehicle not found');
+        return null;
+      }
+    } else {
+      const response = await vehicleService.updateVehicle(vehicleId, sanitizedData as Partial<Vehicle>, token);
+      if (response.success && response.vehicle) {
+        // Clear cache to force refresh on next getVehicles call
+        vehiclesCache = null;
+        lastUpdateTimestamp = 0;
+        
+        // Dispatch event to notify other parts of the app that vehicles have been updated
+        window.dispatchEvent(new Event('vehiclesUpdated'));
+        
+        // Show success message
+        alert('Vehicle updated successfully!');
+        
+        return response.vehicle;
+      } else {
+        console.error('Failed to update vehicle:', response.message);
+        
+        // Check if it's a token expiration issue
+        if (response.message && response.message.includes('Invalid or expired token')) {
+          alert('Your session has expired. Please log in again.');
+          // Clear the expired token
+          localStorage.removeItem('authToken');
+          // Redirect to login page
+          window.location.href = '/login';
+        } else {
+          alert(`Failed to update vehicle: ${response.message}`);
+        }
+        
+        return null;
+      }
     }
   } catch (error: any) {
     console.error('Failed to update vehicle:', error);
@@ -539,36 +724,91 @@ export async function deleteVehicle(id: string): Promise<boolean> {
       return false;
     }
     
+    // Validate token before proceeding
+    const validation = await authService.validateToken(token);
+    if (!validation.valid) {
+      console.error('Invalid or expired token');
+      alert('Your session has expired. Please log in again.');
+      localStorage.removeItem('authToken');
+      window.location.href = '/login';
+      return false;
+    }
+    
     // Show a loading message to the user
     alert('Deleting vehicle... This may take a moment as the server wakes up from sleep mode.');
     
-    const response = await vehicleService.deleteVehicle(id, token);
-    if (response.success) {
-      // Clear cache to force refresh on next getVehicles call
-      vehiclesCache = null;
-      lastUpdateTimestamp = 0;
-      
-      // Dispatch event to notify other parts of the app that vehicles have been updated
-      window.dispatchEvent(new Event('vehiclesUpdated'));
-      
-      // Show success message
-      alert('Vehicle deleted successfully!');
-      
-      return true;
-    }
+    const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
     
-    // Check if it's a token expiration issue
-    if (response.message && response.message.includes('Invalid or expired token')) {
-      alert('Your session has expired. Please log in again.');
-      // Clear the expired token
-      localStorage.removeItem('authToken');
-      // Redirect to login page
-      window.location.href = '/login';
+    if (useStaticData) {
+      // For static data, we'll delete from localStorage cache
+      let vehicles: Vehicle[] = [];
+      const cachedVehicles = localStorage.getItem('vehicles_cache');
+      
+      if (cachedVehicles) {
+        try {
+          vehicles = JSON.parse(cachedVehicles);
+        } catch (e) {
+          // If parsing fails, get fresh data
+          vehicles = await getVehicles();
+        }
+      } else {
+        // If no cache exists, get fresh data
+        vehicles = await getVehicles();
+      }
+      
+      // Find the vehicle to delete
+      const vehicleIndex = vehicles.findIndex((v: Vehicle) => v.id === id);
+      
+      if (vehicleIndex !== -1) {
+        // Remove the vehicle
+        vehicles.splice(vehicleIndex, 1);
+        
+        // Update localStorage
+        localStorage.setItem('vehicles_cache', JSON.stringify(vehicles));
+        
+        // Update cache
+        vehiclesCache = vehicles;
+        lastUpdateTimestamp = Date.now();
+        
+        // Dispatch event to notify other parts of the app that vehicles have been updated
+        window.dispatchEvent(new Event('vehiclesUpdated'));
+        
+        alert('Vehicle deleted successfully!');
+        
+        return true;
+      } else {
+        alert('Vehicle not found');
+        return false;
+      }
     } else {
-      alert(`Failed to delete vehicle: ${response.message}`);
+      const response = await vehicleService.deleteVehicle(id, token);
+      if (response.success) {
+        // Clear cache to force refresh on next getVehicles call
+        vehiclesCache = null;
+        lastUpdateTimestamp = 0;
+        
+        // Dispatch event to notify other parts of the app that vehicles have been updated
+        window.dispatchEvent(new Event('vehiclesUpdated'));
+        
+        // Show success message
+        alert('Vehicle deleted successfully!');
+        
+        return true;
+      }
+      
+      // Check if it's a token expiration issue
+      if (response.message && response.message.includes('Invalid or expired token')) {
+        alert('Your session has expired. Please log in again.');
+        // Clear the expired token
+        localStorage.removeItem('authToken');
+        // Redirect to login page
+        window.location.href = '/login';
+      } else {
+        alert(`Failed to delete vehicle: ${response.message}`);
+      }
+      
+      return false;
     }
-    
-    return false;
   } catch (error) {
     console.error('Failed to delete vehicle:', error);
     alert('An error occurred while deleting the vehicle. Please try again.');
@@ -617,6 +857,10 @@ export async function updateVehicleStatus(vehicleId: string, status: 'available'
         // Save back to localStorage
         localStorage.setItem('vehicles_cache', JSON.stringify(vehicles));
         
+        // Update cache
+        vehiclesCache = vehicles;
+        lastUpdateTimestamp = Date.now();
+        
         // Dispatch event to notify other parts of the app that vehicles have been updated
         window.dispatchEvent(new Event('vehiclesUpdated'));
         
@@ -629,12 +873,21 @@ export async function updateVehicleStatus(vehicleId: string, status: 'available'
         return null;
       }
     } else {
-      // Original API-based implementation
       const token = getAuthToken();
       if (!token) {
         console.error('Authentication required to update vehicle status');
         alert('Authentication required. Please log in again.');
         // Redirect to login page
+        window.location.href = '/login';
+        return null;
+      }
+      
+      // Validate token before proceeding
+      const validation = await authService.validateToken(token);
+      if (!validation.valid) {
+        console.error('Invalid or expired token');
+        alert('Your session has expired. Please log in again.');
+        localStorage.removeItem('authToken');
         window.location.href = '/login';
         return null;
       }
@@ -677,171 +930,4 @@ export async function updateVehicleStatus(vehicleId: string, status: 'available'
     alert('An error occurred while updating the vehicle status. Please try again.');
     return null;
   }
-}
-
-export function clearVehicleCache(): void {
-  vehiclesCache = null;
-  lastUpdateTimestamp = 0;
-  console.log('Vehicle cache cleared');
-}
-
-// Export function to get current cache for debugging
-export function getCurrentVehicleCache(): Vehicle[] | null {
-  return vehiclesCache;
-}
-
-export function getVehicleCacheInfo(): { 
-  isCached: boolean; 
-  cacheAge: number; 
-  cacheSize: number;
-  cacheDuration: number;
-} {
-  const now = Date.now();
-  const cacheAge = vehiclesCache ? now - lastUpdateTimestamp : 0;
-  return {
-    isCached: vehiclesCache !== null,
-    cacheAge,
-    cacheSize: vehiclesCache ? vehiclesCache.length : 0,
-    cacheDuration: CACHE_DURATION
-  };
-}
-
-// Background refresh function to update cache without blocking UI
-let backgroundRefreshTimeout: NodeJS.Timeout | null = null;
-let keepAliveInterval: NodeJS.Timeout | null = null;
-
-// Function to send keep-alive ping to server
-async function sendKeepAlivePing() {
-  try {
-    // Only ping if we have vehicles in cache (meaning user has visited the site)
-    if (vehiclesCache && vehiclesCache.length > 0) {
-      const response = await fetch(`${(import.meta as any).env.VITE_API_BASE_URL}/keep-alive`);
-      if (response.ok) {
-        console.log('Keep-alive ping sent successfully');
-      }
-    }
-  } catch (error) {
-    console.log('Keep-alive ping failed (server might be sleeping):', error);
-    // This is expected when server is asleep, we'll wake it up with the next real request
-  }
-}
-
-function scheduleBackgroundRefresh() {
-  // Clear any existing scheduled refresh
-  if (backgroundRefreshTimeout) {
-    clearTimeout(backgroundRefreshTimeout);
-  }
-  
-  // Schedule refresh for 5 minutes from now
-  backgroundRefreshTimeout = setTimeout(async () => {
-    try {
-      console.log('Performing background vehicle cache refresh');
-      const freshVehicles = await fetchVehicles();
-      
-      // Update cache
-      vehiclesCache = freshVehicles;
-      lastUpdateTimestamp = Date.now();
-      
-      // Save to persistent storage
-      saveCacheToStorage(freshVehicles);
-      
-      // Dispatch event to notify UI of updated data
-      window.dispatchEvent(new Event('vehiclesCacheUpdated'));
-      
-      // Schedule next refresh
-      scheduleBackgroundRefresh();
-    } catch (error) {
-      console.error('Background refresh failed:', error);
-      // Try again in 1 minute if failed
-      backgroundRefreshTimeout = setTimeout(scheduleBackgroundRefresh, 60 * 1000);
-    }
-  }, 5 * 60 * 1000); // 5 minutes
-}
-
-// Start keep-alive pings every 10 minutes
-function startKeepAlivePings() {
-  // Clear any existing keep-alive interval
-  if (keepAliveInterval) {
-    clearInterval(keepAliveInterval);
-  }
-  
-  // Send a ping every 10 minutes to keep server awake
-  keepAliveInterval = setInterval(sendKeepAlivePing, 10 * 60 * 1000); // 10 minutes
-}
-
-// Function to create a test vehicle with WhatsApp number
-export async function createTestVehicle(): Promise<Vehicle | null> {
-  try {
-    // For development testing, we'll bypass the service and directly add to localStorage
-    const vehiclesCache = JSON.parse(localStorage.getItem('vehicles_cache') || '[]');
-    const newVehicle: Vehicle = {
-      id: 'test-' + Date.now(),
-      name: 'Test Vehicle',
-      category: 'SUV',
-      price: 'ZMW 250,000',
-      dailyRate: 'ZMW 500/day', // Add daily rate for testing
-      image: 'https://images.unsplash.com/photo-1542362567-b07e54358753?w=800',
-      images: [{
-        url: 'https://images.unsplash.com/photo-1542362567-b07e54358753?w=800',
-        label: 'exterior'
-      }],
-      description: 'Test vehicle to verify frontend display functionality with WhatsApp icon and improved buttons',
-      features: ['Air Conditioning', 'Bluetooth', 'Backup Camera', 'Leather Seats'],
-      type: 'hire', // Set to hire to test daily rate display
-      popular: true,
-      year: 2020,
-      mileage: '30,000 km',
-      transmission: 'Automatic',
-      fuelType: 'Petrol',
-      engineSize: '2.0L',
-      doors: 4,
-      seats: 5,
-      color: 'White',
-      condition: 'Good',
-      serviceHistory: 'Full service history',
-      accidentHistory: 'No accident history',
-      warranty: '12 months',
-      registrationStatus: 'Valid',
-      whatsappContact: '+260572213038'
-    };
-    vehiclesCache.push(newVehicle);
-    localStorage.setItem('vehicles_cache', JSON.stringify(vehiclesCache));
-    console.log('Test vehicle created successfully:', newVehicle);
-    
-    // Dispatch event to notify UI of vehicle update
-    window.dispatchEvent(new Event('vehiclesUpdated'));
-    
-    return newVehicle;
-  } catch (error: any) {
-    console.error('Failed to create test vehicle:', error);
-    return null;
-  }
-}
-
-// Function to clear test vehicles
-export async function clearTestVehicles(): Promise<void> {
-  try {
-    const vehiclesCache = JSON.parse(localStorage.getItem('vehicles_cache') || '[]');
-    const filteredVehicles = vehiclesCache.filter((vehicle: Vehicle) => !vehicle.id?.startsWith('test-'));
-    localStorage.setItem('vehicles_cache', JSON.stringify(filteredVehicles));
-    console.log('Test vehicles cleared');
-  } catch (error) {
-    console.error('Failed to clear test vehicles:', error);
-  }
-}
-
-// Start background refresh and keep-alive when module loads
-scheduleBackgroundRefresh();
-startKeepAlivePings();
-
-// Clear intervals on module unload
-if (typeof window !== 'undefined') {
-  window.addEventListener('beforeunload', () => {
-    if (backgroundRefreshTimeout) {
-      clearTimeout(backgroundRefreshTimeout);
-    }
-    if (keepAliveInterval) {
-      clearInterval(keepAliveInterval);
-    }
-  });
 }

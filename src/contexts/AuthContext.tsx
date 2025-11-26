@@ -28,29 +28,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check if user is already logged in on app start
   useEffect(() => {
-    const storedToken = localStorage.getItem('authToken');
-    const storedUser = localStorage.getItem('authUser');
-    
-    if (storedToken && storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        // Additional security check - validate token format
-        if (storedToken && storedToken.length > 10) {
-          setUser(parsedUser);
-          setToken(storedToken);
-        } else {
-          // Clear invalid data
+    const initializeAuth = async () => {
+      const storedToken = localStorage.getItem('authToken');
+      const storedUser = localStorage.getItem('authUser');
+      
+      if (storedToken && storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          // Validate the token
+          const validation = await authService.validateToken(storedToken);
+          if (validation.valid && validation.user) {
+            setUser(validation.user);
+            setToken(storedToken);
+          } else {
+            // Clear invalid data
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('authUser');
+          }
+        } catch (e) {
+          // If parsing fails, clear the stored data
           localStorage.removeItem('authToken');
           localStorage.removeItem('authUser');
         }
-      } catch (e) {
-        // If parsing fails, clear the stored data
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('authUser');
       }
-    }
+      
+      setIsLoading(false);
+    };
     
-    setIsLoading(false);
+    initializeAuth();
   }, []);
 
   const login = async (username: string, password: string) => {

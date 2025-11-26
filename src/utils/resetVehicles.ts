@@ -1,49 +1,60 @@
+import vehiclesData from '../data/vehicles.json';
 import { Vehicle } from './vehicleStorage';
 
-const STORAGE_KEY = 'zamto_vehicles';
-
 /**
- * Reset vehicle data in localStorage to default values
- * This function clears all existing vehicle data and restores the default vehicles
+ * Reset vehicles data to original 17 vehicles
+ * This function will reset the localStorage cache to the original vehicle data
  */
-export function resetVehicles(): void {
-  // Clear the cache
-  localStorage.removeItem(STORAGE_KEY);
-  
-  // Dispatch event to notify other parts of the app
-  window.dispatchEvent(new Event('vehiclesUpdated'));
-  
-  console.log('Vehicle data has been reset to defaults');
+export async function resetVehiclesToOriginal(): Promise<boolean> {
+  try {
+    // Update localStorage cache with original vehicle data
+    localStorage.setItem('vehicles_cache', JSON.stringify(vehiclesData));
+    localStorage.setItem('vehicles_cache_timestamp', Date.now().toString());
+    
+    // Also update the old storage key if it exists
+    localStorage.setItem('zamto_vehicles', JSON.stringify(vehiclesData));
+    
+    console.log(`Successfully reset vehicles cache with ${vehiclesData.length} original vehicles`);
+    
+    // Dispatch event to notify other parts of the app that vehicles have been updated
+    window.dispatchEvent(new Event('vehiclesUpdated'));
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to reset vehicles cache:', error);
+    return false;
+  }
 }
 
 /**
- * Clear all vehicle data from localStorage
- * This function removes all vehicle data completely
+ * Get current vehicles from cache
  */
-export function clearAllVehicles(): void {
-  // Clear the cache
-  localStorage.removeItem(STORAGE_KEY);
-  
-  // Dispatch event to notify other parts of the app
-  window.dispatchEvent(new Event('vehiclesUpdated'));
-  
-  console.log('All vehicle data has been cleared');
+export function getCurrentVehicles(): Vehicle[] {
+  try {
+    const cachedVehicles = localStorage.getItem('vehicles_cache');
+    if (cachedVehicles) {
+      return JSON.parse(cachedVehicles);
+    }
+    return [];
+  } catch (error) {
+    console.error('Failed to get current vehicles:', error);
+    return [];
+  }
 }
 
 /**
- * Get the current number of vehicles in localStorage
+ * Get vehicle count in cache
  */
 export function getVehicleCount(): number {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) {
-    return 0;
-  }
-  
   try {
-    const vehicles: Vehicle[] = JSON.parse(stored);
-    return vehicles.length;
+    const cachedVehicles = localStorage.getItem('vehicles_cache');
+    if (cachedVehicles) {
+      const vehicles = JSON.parse(cachedVehicles);
+      return vehicles.length;
+    }
+    return 0;
   } catch (error) {
-    console.error('Error parsing vehicle data:', error);
+    console.error('Failed to get vehicle count:', error);
     return 0;
   }
 }

@@ -87,8 +87,8 @@ class AuthService {
         // Static authentication for demo purposes
         if (credentials.username === STATIC_ADMIN_USER.username && 
             credentials.password === STATIC_ADMIN_PASSWORD) {
-          // Generate a simple token for static mode
-          const token = btoa(`${STATIC_ADMIN_USER.username}:${STATIC_ADMIN_PASSWORD}:${Date.now()}`);
+          // Generate a token that doesn't expire quickly
+          const token = btoa(`${STATIC_ADMIN_USER.username}:${STATIC_ADMIN_PASSWORD}:${Date.now() + 86400000}`); // Expires in 24 hours
           
           return {
             success: true,
@@ -325,11 +325,19 @@ class AuthService {
       const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
       
       if (useStaticData) {
-        // Static mode - password change not supported
-        return {
-          success: false,
-          message: 'Password change not available in static mode'
-        };
+        // Static mode - password change simulation
+        if (currentPassword === STATIC_ADMIN_PASSWORD) {
+          // In static mode, we'll just simulate success
+          return {
+            success: true,
+            message: 'Password changed successfully (simulated in static mode)'
+          };
+        } else {
+          return {
+            success: false,
+            message: 'Current password is incorrect'
+          };
+        }
       } else {
         // Validate inputs
         if (!token || !currentPassword || !newPassword) {
@@ -365,6 +373,59 @@ class AuthService {
       return {
         success: false,
         message: error.message || 'Failed to change password'
+      };
+    }
+  }
+  
+  // Validate token
+  async validateToken(token: string): Promise<{ valid: boolean; user?: User }> {
+    try {
+      // Check if we're using static data
+      const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+      
+      if (useStaticData) {
+        // Decode the token and check if it's still valid
+        try {
+          const decoded = atob(token);
+          const parts = decoded.split(':');
+          const expiry = parseInt(parts[2]);
+          
+          if (Date.now() < expiry) {
+            return {
+              valid: true,
+              user: STATIC_ADMIN_USER
+            };
+          } else {
+            return {
+              valid: false
+            };
+          }
+        } catch (e) {
+          return {
+            valid: false
+          };
+        }
+      } else {
+        // For API mode, validate with the backend
+        if (!token) {
+          return { valid: false };
+        }
+        
+        const response = await this.apiRequest('/auth/validate', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        return {
+          valid: response.valid,
+          user: response.user
+        };
+      }
+    } catch (error) {
+      return {
+        valid: false
       };
     }
   }
