@@ -6,7 +6,7 @@ import { CSVImport } from '../components/CSVImport';
 import { PerformanceDashboard } from '../components/PerformanceDashboard';
 import { getVehicles, refreshVehicles, deleteVehicle, Vehicle, clearVehicleCache, updateVehicleStatus } from '../utils/vehicleStorage';
 import { useAuth } from '../contexts/AuthContext';
-import { PlusIcon, EyeIcon, EditIcon, TrashIcon, UserIcon, LogOutIcon, UploadIcon, BarChartIcon, X, ShoppingCartIcon, CheckIcon } from 'lucide-react';
+import { PlusIcon, EyeIcon, EditIcon, TrashIcon, UserIcon, LogOutIcon, UploadIcon, BarChartIcon, X, ShoppingCartIcon, CheckIcon, RefreshCwIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function Admin() {
@@ -19,14 +19,23 @@ export function Admin() {
   const [showUserManagement, setShowUserManagement] = useState(false);
   const [showPerformanceDashboard, setShowPerformanceDashboard] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState<number>(Date.now());
 
   // Load vehicles with useCallback for performance
-  const loadVehicles = useCallback(async () => {
+  const loadVehicles = useCallback(async (forceRefresh = false) => {
     try {
       setLoading(true);
-      // Use refreshVehicles to bypass cache and get fresh data
-      const freshVehicles = await refreshVehicles();
-      setVehicles(freshVehicles);
+      let vehicleData;
+      
+      if (forceRefresh) {
+        // Use refreshVehicles to bypass cache and get fresh data
+        vehicleData = await refreshVehicles();
+      } else {
+        // Use getVehicles which respects cache
+        vehicleData = await getVehicles();
+      }
+      
+      setVehicles(vehicleData);
     } catch (error) {
       console.error('Failed to load vehicles:', error);
     } finally {
@@ -37,12 +46,20 @@ export function Admin() {
   useEffect(() => {
     loadVehicles();
     
-    // Listen for vehicle updates
+    // Listen for vehicle updates with debouncing
+    let updateTimeout: NodeJS.Timeout;
+    
     const handleVehiclesUpdate = () => {
+      // Clear any existing timeout
+      if (updateTimeout) {
+        clearTimeout(updateTimeout);
+      }
+      
       // Debounce the update to prevent excessive re-renders
-      setTimeout(() => {
+      updateTimeout = setTimeout(() => {
         loadVehicles();
-      }, 100);
+        setLastUpdate(Date.now());
+      }, 300); // 300ms debounce
     };
     
     window.addEventListener('vehiclesUpdated', handleVehiclesUpdate);
@@ -51,6 +68,9 @@ export function Admin() {
     return () => {
       window.removeEventListener('vehiclesUpdated', handleVehiclesUpdate);
       window.removeEventListener('storage', handleVehiclesUpdate);
+      if (updateTimeout) {
+        clearTimeout(updateTimeout);
+      }
     };
   }, [loadVehicles]);
 
@@ -63,14 +83,14 @@ export function Admin() {
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this vehicle?')) {
       await deleteVehicle(id);
-      loadVehicles();
+      loadVehicles(true); // Force refresh after delete
     }
   };
 
   const handleStatusChange = async (id: string, status: 'available' | 'sold') => {
     if (window.confirm(`Are you sure you want to mark this vehicle as ${status}?`)) {
       await updateVehicleStatus(id, status);
-      loadVehicles();
+      loadVehicles(true); // Force refresh after status change
     }
   };
 
@@ -82,28 +102,26 @@ export function Admin() {
   const handleFormClose = () => {
     setShowForm(false);
     setEditingVehicle(null);
-    // Clear vehicle cache and reload vehicles to reflect any changes
-    clearVehicleCache();
-    loadVehicles();
+    // Only refresh if there might have been changes
+    // Don't clear cache unnecessarily
+    loadVehicles(true); // Force refresh to show any changes
   };
 
   const handleUserManagementClose = () => {
     setShowUserManagement(false);
-    // Refresh users list
+    // Refresh users list only if needed
     loadVehicles();
   };
 
   const handleCSVImportClose = () => {
     setShowCSVImport(false);
     // Refresh vehicle list after CSV import
-    clearVehicleCache();
-    loadVehicles();
+    loadVehicles(true); // Force refresh after import
   };
 
   const handleImportSuccess = () => {
     // Refresh vehicle list after successful import
-    clearVehicleCache();
-    loadVehicles();
+    loadVehicles(true); // Force refresh after import
   };
 
   // Filter vehicles based on search term
@@ -125,8 +143,9 @@ export function Admin() {
           <div>
             <h1 className="text-3xl font-bold text-[#003366]">Admin Dashboard</h1>
             <p className="text-gray-600 mt-2">Welcome, {user.username}!</p>
+            <p className="text-sm text-gray-500">Last updated: {new Date(lastUpdate).toLocaleTimeString()}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button 
               onClick={() => {
                 // Import the createTestVehicle function
@@ -139,6 +158,54 @@ export function Admin() {
             >
               <PlusIcon className="h-5 w-5 mr-2" />
               Create Test Vehicle
+            </button>
+            <button 
+              onClick={() => {
+                // Import the resetVehiclesToOriginal function
+                import('../utils/resetVehicles').then(module => {
+                  module.resetVehiclesToOriginal().then(success => {
+                    if (success) {
+                      alert('Vehicles reset to original 17 vehicles successfully!');
+                      // Refresh the vehicle list
+                      loadVehicles(true); // Force refresh
+                    } else {
+                      alert('Failed to reset vehicles. Check console for details.');
+                    }
+                  });
+                });
+              }}
+              className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold transition-colors"
+              disabled={loading}
+            >
+              <RefreshCwIcon className="h-5 w-5 mr-2" />
+              Reset to Original Vehicles
+            </button>
+            <button 
+              onClick={() => {
+                // Restore original vehicles from CSV
+                if (window.confirm('This will restore the original vehicle data from CSV files and overwrite current data. Are you sure?')) {
+                  try {
+                    // Dynamically import and run the restore function
+                    import('../../restore-original-vehicles.js').then((module: any) => {
+                      module.restoreOriginalVehicles().then(() => {
+                        alert('Original vehicles restored successfully! The page will reload to show the changes.');
+                        window.location.reload();
+                      }).catch((error: any) => {
+                        console.error('Restore failed:', error);
+                        alert('Failed to restore vehicles. Check console for details.');
+                      });
+                    });
+                  } catch (error: any) {
+                    console.error('Failed to import restore script:', error);
+                    alert('Failed to restore vehicles. Check console for details.');
+                  }
+                }
+              }}
+              className="flex items-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold transition-colors"
+              disabled={loading}
+            >
+              <RefreshCwIcon className="h-5 w-5 mr-2" />
+              Restore Original Data
             </button>
             <button 
               onClick={() => {
@@ -189,7 +256,7 @@ export function Admin() {
                 import('../utils/vehicleStorage').then(module => {
                   module.clearTestVehicles();
                   // Refresh the vehicle list
-                  loadVehicles();
+                  loadVehicles(true); // Force refresh
                 });
               }}
               className="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold transition-colors"
@@ -264,6 +331,13 @@ export function Admin() {
             >
               <BarChartIcon className="h-5 w-5 mr-2" />
               Performance
+            </button>
+            <button 
+              onClick={() => loadVehicles(true)} // Force refresh
+              className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+            >
+              <RefreshCwIcon className="h-5 w-5 mr-2" />
+              Refresh Data
             </button>
           </div>
         </div>
