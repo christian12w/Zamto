@@ -216,15 +216,47 @@ export function Admin() {
             </button>
             <button 
               onClick={() => {
-                // Clear all caches and reload
-                localStorage.removeItem('vehicles_cache');
-                localStorage.removeItem('vehicles_cache_timestamp');
-                window.location.reload();
+                // More comprehensive cache clearing
+                try {
+                  // Clear localStorage
+                  localStorage.clear();
+                  
+                  // Clear sessionStorage
+                  sessionStorage.clear();
+                  
+                  // Clear service worker caches
+                  if ('caches' in window) {
+                    caches.keys().then(names => {
+                      names.forEach(name => {
+                        caches.delete(name);
+                      });
+                    });
+                  }
+                  
+                  // Unregister service worker
+                  if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(registrations => {
+                      registrations.forEach(registration => {
+                        registration.unregister();
+                      });
+                    });
+                  }
+                  
+                  // Show success message and reload
+                  alert('All caches cleared successfully! The page will now reload with fresh data.');
+                  window.location.reload();
+                } catch (error) {
+                  console.error('Failed to clear all caches:', error);
+                  // Fallback to basic cache clearing
+                  localStorage.removeItem('vehicles_cache');
+                  localStorage.removeItem('vehicles_cache_timestamp');
+                  window.location.reload();
+                }
               }}
               className="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
             >
               <TrashIcon className="h-5 w-5 mr-2" />
-              Clear Cache & Reload
+              Clear All Cache & Reload
             </button>
             <button 
               onClick={() => setShowPerformanceDashboard(true)}
@@ -247,6 +279,13 @@ export function Admin() {
             >
               <EyeIcon className="h-5 w-5 mr-2" />
               Debug
+            </Link>
+            <Link 
+              to="/cache-diagnostic" 
+              className="flex items-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition-colors"
+            >
+              <EyeIcon className="h-5 w-5 mr-2" />
+              Cache Diagnostic
             </Link>
             <Link 
               to="/test" 

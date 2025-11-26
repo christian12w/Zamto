@@ -13,6 +13,7 @@ import { VehiclesForSale } from './pages/VehiclesForSale';
 import { VehiclesForHire } from './pages/VehiclesForHire';
 import { TestCategories } from './pages/TestCategories';
 import { Login } from './pages/Login';
+import { CacheDiagnostic } from './pages/CacheDiagnostic';
 
 // Protected route component
 function ProtectedRoute({ children }: { children: JSX.Element }) {
@@ -57,6 +58,14 @@ export function AppRouter() {
         element={
           <ProtectedRoute>
             <Debug />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/cache-diagnostic" 
+        element={
+          <ProtectedRoute>
+            <CacheDiagnostic />
           </ProtectedRoute>
         } 
       />
