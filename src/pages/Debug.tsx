@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getVehicles } from '../utils/vehicleStorage';
-import { resetVehicles, clearAllVehicles, getVehicleCount } from '../utils/resetVehicles';
+import { resetVehiclesToOriginal as resetVehicles, getCurrentVehicles as clearAllVehicles, getVehicleCount } from '../utils/resetVehicles';
 import { diagnoseVehicles, repairVehicles } from '../utils/diagnoseVehicles';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -13,9 +13,9 @@ export function Debug() {
   const [repairResult, setRepairResult] = useState<any>(null);
 
   // Load vehicles
-  const loadVehicles = () => {
+  const loadVehicles = async () => {
     try {
-      const vehiclesData = getVehicles();
+      const vehiclesData = await getVehicles();
       setVehicles(vehiclesData);
       setVehicleCount(vehiclesData.length);
       
@@ -66,7 +66,7 @@ export function Debug() {
     
     // Listen for vehicle updates
     const handleVehiclesUpdate = () => {
-      setTimeout(loadVehicles, 100);
+      setTimeout(() => loadVehicles(), 100);
     };
     
     window.addEventListener('vehiclesUpdated', handleVehiclesUpdate);
