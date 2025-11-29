@@ -30,23 +30,8 @@ export default function AdminPage() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [refreshLoading, setRefreshLoading] = useState(false);
 
-  // Check if user is authenticated and is admin
-  if (!user || user.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
-          <p className="text-gray-600 mb-6">You need to be logged in as an admin to access this page.</p>
-          <Link href="/login" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-semibold">
-            Login
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  // Debounce function for vehicle updates
-  const debounce = (func: (...args: any[]) => void, wait: number) => {
+  // Debounce function
+  const debounce = (func: Function, wait: number) => {
     let timeout: NodeJS.Timeout;
     return (...args: any[]) => {
       clearTimeout(timeout);
@@ -71,6 +56,21 @@ export default function AdminPage() {
   useEffect(() => {
     loadVehicles();
   }, [loadVehicles]);
+
+  // Check if user is authenticated and is admin
+  if (!user || user.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <p className="text-gray-600 mb-6">You need to be logged in as an admin to access this page.</p>
+          <Link href="/login" className="text-blue-600 hover:text-blue-800">
+            Go to Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const handleAddVehicle = () => {
     setEditingVehicle(null);
