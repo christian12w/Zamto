@@ -1,1 +1,3 @@
-{"DocumentConnection":{"type":"DocumentConnection","resolveType":"multiCollectionDocumentList","collections":["vehicle"]},"Node":{"type":"Node","resolveType":"nodeDocument"},"DocumentNode":{"type":"DocumentNode","resolveType":"multiCollectionDocument","createDocument":"create","updateDocument":"update"},"Vehicle":{"type":"Vehicle","resolveType":"collectionDocument","collection":"vehicle","createVehicle":"create","updateVehicle":"update"},"VehicleConnection":{"type":"VehicleConnection","resolveType":"collectionDocumentList","collection":"vehicle"}}
+version https://git-lfs.github.com/spec/v1
+oid sha256:bf0ec8e631d33194688ba9abc83f40ddb5467cf0b7fd67b2eb4b558afd5a8b6b
+size 553
