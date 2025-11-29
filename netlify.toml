@@ -19,7 +19,13 @@
   NEXT_PUBLIC_USE_STATIC_DATA = "false"
   GITHUB_OWNER = "christian12w"
   GITHUB_REPO = "zamto-vehicles-data"
+  NEXT_PUBLIC_EMAILJS_SERVICE_ID = "service_tsgs1az"
+  NEXT_PUBLIC_EMAILJS_TEMPLATE_ID = "template_d03hddw"
+  NEXT_PUBLIC_EMAILJS_PUBLIC_KEY = "gf6jUi7eA0maA9rzH"
 
 [context.deploy-preview.environment]
   NEXT_PUBLIC_USE_GITHUB_STORAGE = "true"
   NEXT_PUBLIC_USE_STATIC_DATA = "false"
+  NEXT_PUBLIC_EMAILJS_SERVICE_ID = "service_tsgs1az"
+  NEXT_PUBLIC_EMAILJS_TEMPLATE_ID = "template_d03hddw"
+  NEXT_PUBLIC_EMAILJS_PUBLIC_KEY = "gf6jUi7eA0maA9rzH"

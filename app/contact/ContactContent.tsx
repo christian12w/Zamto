@@ -15,9 +15,9 @@ import {
 import EmailSetupGuide from '@/app/components/EmailSetupGuide'
 
 const EMAILJS_CONFIG = {
-  serviceId: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID ?? 'YOUR_SERVICE_ID',
-  templateId: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ?? 'YOUR_TEMPLATE_ID',
-  publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY ?? 'YOUR_PUBLIC_KEY',
+  serviceId: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID ?? 'service_tsgs1az',
+  templateId: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ?? 'template_d03hddw',
+  publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY ?? 'gf6jUi7eA0maA9rzH',
 }
 
 const isPlaceholder = (value: string) =>
@@ -368,14 +368,14 @@ export default function ContactContent() {
                 </p>
                 <div className="aspect-video rounded-lg overflow-hidden shadow-md">
                   <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3846.3376!2d28.306470268929996!3d-15.397964582006253!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x194083a5a5a5a5a5%3A0x1234567890abcdef!2sH8X3%2B7R%20Lusaka%2C%20Zambia!5e0!3m2!1sen!2szm!4v1234567890"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d61538.20957847388!2d28.26807293163058!3d-15.42309606027558!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x19408b007cc35c85%3A0x90468781b4708abf!2sZAMTO%20AFRICA%20CO.LTD!5e0!3m2!1sen!2szm!4v1764447810528!5m2!1sen!2szm"
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}
                     allowFullScreen
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
-                    title="Zamto Africa Location"
+                    title="ZAMTO AFRICA CO.LTD Location"
                   />
                 </div>
               </div>
