@@ -5,7 +5,7 @@ const branch =
   process.env.NEXT_PUBLIC_TINA_BRANCH ||
   process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF ||
   process.env.HEAD ||
-  'master'  // Changed from 'main' to 'master'
+  'master'
 
 export default defineConfig({
   branch,
