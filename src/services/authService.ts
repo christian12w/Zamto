@@ -29,7 +29,7 @@ interface AuthResponse {
 }
 
 // Backend API configuration
-const API_BASE_URL = (import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
 const API_TIMEOUT = 10000; // 10 seconds
 
 // Hardcoded admin credentials for static site
@@ -81,7 +81,7 @@ class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
       // Check if we're using static data
-      const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+      const useStaticData = process.env.NEXT_PUBLIC_USE_STATIC_DATA === 'true';
       
       if (useStaticData) {
         // Static authentication for demo purposes
@@ -135,7 +135,7 @@ class AuthService {
   async register(data: RegisterData): Promise<AuthResponse> {
     try {
       // Check if we're using static data
-      const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+      const useStaticData = process.env.NEXT_PUBLIC_USE_STATIC_DATA === 'true';
       
       if (useStaticData) {
         // Static mode - registration not supported
@@ -193,7 +193,7 @@ class AuthService {
   async getUsers(token: string): Promise<{ success: boolean; users?: User[]; message?: string }> {
     try {
       // Check if we're using static data
-      const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+      const useStaticData = process.env.NEXT_PUBLIC_USE_STATIC_DATA === 'true';
       
       if (useStaticData) {
         // Static mode - only return the admin user
@@ -236,7 +236,7 @@ class AuthService {
   async deleteUser(token: string, userId: string): Promise<{ success: boolean; message?: string }> {
     try {
       // Check if we're using static data
-      const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+      const useStaticData = process.env.NEXT_PUBLIC_USE_STATIC_DATA === 'true';
       
       if (useStaticData) {
         // Static mode - deletion not supported
@@ -277,7 +277,7 @@ class AuthService {
   async logout(token: string): Promise<{ success: boolean; message?: string }> {
     try {
       // Check if we're using static data
-      const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+      const useStaticData = process.env.NEXT_PUBLIC_USE_STATIC_DATA === 'true';
       
       if (useStaticData) {
         // Static mode - just clear local storage
@@ -322,7 +322,7 @@ class AuthService {
   ): Promise<{ success: boolean; message?: string }> {
     try {
       // Check if we're using static data
-      const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+      const useStaticData = process.env.NEXT_PUBLIC_USE_STATIC_DATA === 'true';
       
       if (useStaticData) {
         // Static mode - password change simulation
@@ -381,7 +381,7 @@ class AuthService {
   async validateToken(token: string): Promise<{ valid: boolean; user?: User }> {
     try {
       // Check if we're using static data
-      const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+      const useStaticData = process.env.NEXT_PUBLIC_USE_STATIC_DATA === 'true';
       
       if (useStaticData) {
         // Decode the token and check if it's still valid

@@ -301,3 +301,5 @@ export function Home() {
       </section>
     </div>;
 }
+
+export default Home;

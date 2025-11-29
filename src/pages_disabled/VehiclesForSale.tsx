@@ -209,3 +209,5 @@ export function VehiclesForSale() {
       )}
     </div>;
 }
+
+export default VehiclesForSale;

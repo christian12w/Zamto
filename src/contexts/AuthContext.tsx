@@ -1,3 +1,5 @@
+'use client';
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService } from '../services/authService';
 
@@ -16,6 +18,7 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   register: (username: string, email: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; message?: string }>;
   isLoading: boolean;
 }
 
@@ -131,12 +134,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    if (!token) {
+      return { success: false, message: 'Authentication required' };
+    }
+    
+    setIsLoading(true);
+    try {
+      const response = await authService.changePassword(token, currentPassword, newPassword);
+      return response;
+    } catch (error) {
+      return { success: false, message: 'An error occurred while changing password' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const value = {
     user,
     token,
     login,
     logout,
     register,
+    changePassword,
     isLoading
   };
 

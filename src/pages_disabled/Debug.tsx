@@ -209,3 +209,5 @@ export function Debug() {
     </div>
   );
 }
+
+export default Debug;

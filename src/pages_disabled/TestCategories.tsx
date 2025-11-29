@@ -5,7 +5,11 @@ export function TestCategories() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   
   useEffect(() => {
-    setVehicles(getVehicles());
+    const loadVehicles = async () => {
+      const vehiclesData = await getVehicles();
+      setVehicles(vehiclesData);
+    };
+    loadVehicles();
   }, []);
   
   // Group vehicles by category
@@ -83,3 +87,5 @@ export function TestCategories() {
     </div>
   );
 }
+
+export default TestCategories;

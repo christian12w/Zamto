@@ -88,6 +88,11 @@ class VehicleDataStorage {
 
   // Save to localStorage (simulating GitHub file storage)
   private static saveToStorage() {
+    // Only run in browser environment
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return;
+    }
+    
     try {
       const dataToSave = {
         vehicles: this.vehicles,
@@ -103,6 +108,11 @@ class VehicleDataStorage {
 
   // Load from localStorage
   static loadFromStorage() {
+    // Only run in browser environment
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return false;
+    }
+    
     try {
       this.startLoadTimer();
       const data = localStorage.getItem(this.DATA_FILE);
@@ -175,6 +185,10 @@ class VehicleDataStorage {
   // Clear all data
   static clearData() {
     this.vehicles = [];
+    // Only run in browser environment
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return;
+    }
     localStorage.removeItem(this.DATA_FILE);
     console.log('Cleared all vehicle data');
   }

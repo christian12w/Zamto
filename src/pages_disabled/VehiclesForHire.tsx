@@ -210,3 +210,5 @@ export function VehiclesForHire() {
       )}
     </div>;
 }
+
+export default VehiclesForHire;

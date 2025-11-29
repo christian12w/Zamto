@@ -2,6 +2,7 @@ import { sanitizeInput } from './security';
 import { fixVehicleStorage, fixDoubleEncodedAmpersands } from './fixVehicleStorage';
 import { vehicleService } from '../services/vehicleService';
 import { authService } from '../services/authService';
+import { gitHubVehicleService } from '../services/gitHubVehicleService';
 
 // Run the fix function when the module loads
 fixVehicleStorage();
@@ -60,8 +61,13 @@ const VEHICLE_CACHE_KEY = 'vehicles_cache';
 const VEHICLE_CACHE_TIMESTAMP_KEY = 'vehicles_cache_timestamp';
 const MAX_CACHED_VEHICLES = 100; // Limit to 100 vehicles for storage efficiency
 
-// Initialize cache from localStorage on module load
+// Initialize cache from localStorage on module load (only in browser)
 function initializeCacheFromStorage() {
+  // Only run in browser environment
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return;
+  }
+  
   try {
     const cachedVehicles = localStorage.getItem(VEHICLE_CACHE_KEY);
     const cachedTimestamp = localStorage.getItem(VEHICLE_CACHE_TIMESTAMP_KEY);
@@ -90,6 +96,11 @@ initializeCacheFromStorage();
 
 // Save cache to localStorage with size limit
 function saveCacheToStorage(vehicles: Vehicle[]) {
+  // Only run in browser environment
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return;
+  }
+  
   try {
     // Limit to MAX_CACHED_VEHICLES to prevent storage issues
     const vehiclesToCache = vehicles.slice(0, MAX_CACHED_VEHICLES);
@@ -108,11 +119,25 @@ function saveCacheToStorage(vehicles: Vehicle[]) {
 
 // Get auth token from localStorage (for admin operations)
 function getAuthToken(): string | null {
+  // Only run in browser environment
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return null;
+  }
   return localStorage.getItem('authToken');
 }
 
 // Get vehicle cache information for diagnostic purposes
 export function getVehicleCacheInfo(): any {
+  // Only run in browser environment
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return {
+      isCached: false,
+      cacheAge: 0,
+      cacheSize: 0,
+      cacheDuration: 30 * 60 * 1000
+    };
+  }
+  
   try {
     const cachedVehicles = localStorage.getItem('vehicles_cache');
     const cachedTimestamp = localStorage.getItem('vehicles_cache_timestamp');
@@ -147,6 +172,28 @@ export function getVehicleCacheInfo(): any {
   }
 }
 
+// Helper function for safe localStorage access
+function safeLocalStorageGet(key: string): string | null {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return null;
+  }
+  return localStorage.getItem(key);
+}
+
+function safeLocalStorageSet(key: string, value: string): void {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return;
+  }
+  localStorage.setItem(key, value);
+}
+
+function safeLocalStorageRemove(key: string): void {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return;
+  }
+  localStorage.removeItem(key);
+}
+
 // Import the static vehicle service
 import { staticVehicleService } from '../services/staticVehicleService';
 
@@ -157,15 +204,15 @@ async function fetchVehicles(): Promise<Vehicle[]> {
     const startTime = Date.now();
     
     // Check if we should use static data instead of API
-    const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+    const useStaticData = process.env.NEXT_PUBLIC_USE_STATIC_DATA === 'true';
     
     // If using static data, first check if we have modified vehicles in localStorage
     if (useStaticData) {
       // Check if we should bypass cache
-      const bypassCache = localStorage.getItem('bypass_vehicle_cache') === 'true';
+      const bypassCache = safeLocalStorageGet('bypass_vehicle_cache') === 'true';
       
       if (!bypassCache) {
-        const cachedVehicles = localStorage.getItem('vehicles_cache');
+        const cachedVehicles = safeLocalStorageGet('vehicles_cache');
         if (cachedVehicles) {
           try {
             const parsedVehicles = JSON.parse(cachedVehicles);
@@ -197,8 +244,8 @@ async function fetchVehicles(): Promise<Vehicle[]> {
         
         // Update localStorage cache immediately
         try {
-          localStorage.setItem('vehicles_cache', JSON.stringify(vehiclesWithIds));
-          localStorage.setItem('vehicles_cache_timestamp', Date.now().toString());
+          safeLocalStorageSet('vehicles_cache', JSON.stringify(vehiclesWithIds));
+          safeLocalStorageSet('vehicles_cache_timestamp', Date.now().toString());
         } catch (storageError) {
           console.error('Failed to update localStorage cache:', storageError);
         }
@@ -230,8 +277,8 @@ async function fetchVehicles(): Promise<Vehicle[]> {
         
         // Update localStorage cache immediately
         try {
-          localStorage.setItem('vehicles_cache', JSON.stringify(vehiclesWithIds));
-          localStorage.setItem('vehicles_cache_timestamp', Date.now().toString());
+          safeLocalStorageSet('vehicles_cache', JSON.stringify(vehiclesWithIds));
+          safeLocalStorageSet('vehicles_cache_timestamp', Date.now().toString());
         } catch (storageError) {
           console.error('Failed to update localStorage cache:', storageError);
         }
@@ -253,7 +300,7 @@ async function fetchVehicles(): Promise<Vehicle[]> {
     
     // Try to load from localStorage as emergency backup
     try {
-      const cachedVehicles = localStorage.getItem('vehicles_cache');
+      const cachedVehicles = safeLocalStorageGet('vehicles_cache');
       if (cachedVehicles) {
         const parsedVehicles = JSON.parse(cachedVehicles);
         if (parsedVehicles && parsedVehicles.length > 0) {
@@ -271,7 +318,7 @@ async function fetchVehicles(): Promise<Vehicle[]> {
       try {
         // Wait 2 seconds and try again
         await new Promise(resolve => setTimeout(resolve, 2000));
-        const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+        const useStaticData = process.env.NEXT_PUBLIC_USE_STATIC_DATA === 'true';
         let retryResponse;
         if (useStaticData) {
           // Check if we should bypass cache
@@ -279,7 +326,7 @@ async function fetchVehicles(): Promise<Vehicle[]> {
           
           if (!bypassCache) {
             // Check localStorage first even on retry
-            const cachedVehicles = localStorage.getItem('vehicles_cache');
+            const cachedVehicles = safeLocalStorageGet('vehicles_cache');
             if (cachedVehicles) {
               try {
                 const parsedVehicles = JSON.parse(cachedVehicles);
@@ -326,7 +373,7 @@ async function fetchVehicles(): Promise<Vehicle[]> {
         
         // Try to load from localStorage as final emergency backup
         try {
-          const cachedVehicles = localStorage.getItem('vehicles_cache');
+          const cachedVehicles = safeLocalStorageGet('vehicles_cache');
           if (cachedVehicles) {
             const parsedVehicles = JSON.parse(cachedVehicles);
             if (parsedVehicles && parsedVehicles.length > 0) {
@@ -350,16 +397,14 @@ async function saveVehicles(vehicles: Vehicle[]): Promise<void> {
   // The API handles persistence
   return Promise.resolve();
 }
-
-// Get all vehicles with caching and enhanced fallback mechanisms
 export async function getVehicles(forceRefresh: boolean = false): Promise<Vehicle[]> {
   const now = Date.now();
   
   // Check if we should bypass cache
-  const bypassCache = localStorage.getItem('bypass_vehicle_cache') === 'true';
+  const bypassCache = safeLocalStorageGet('bypass_vehicle_cache') === 'true';
   if (bypassCache) {
     console.log('Bypassing vehicle cache as requested');
-    localStorage.removeItem('bypass_vehicle_cache'); // Remove the flag after use
+    safeLocalStorageRemove('bypass_vehicle_cache'); // Remove the flag after use
     forceRefresh = true;
   }
   
@@ -394,7 +439,7 @@ export async function getVehicles(forceRefresh: boolean = false): Promise<Vehicl
       
       // Try to load from localStorage as last resort
       try {
-        const cachedVehicles = localStorage.getItem('vehicles_cache');
+        const cachedVehicles = safeLocalStorageGet('vehicles_cache');
         if (cachedVehicles) {
           const parsedVehicles = JSON.parse(cachedVehicles);
           if (parsedVehicles && parsedVehicles.length > 0) {
@@ -423,7 +468,7 @@ export async function getVehicles(forceRefresh: boolean = false): Promise<Vehicl
     
     // Try to load from localStorage as emergency backup
     try {
-      const cachedVehicles = localStorage.getItem('vehicles_cache');
+      const cachedVehicles = safeLocalStorageGet('vehicles_cache');
       if (cachedVehicles) {
         const parsedVehicles = JSON.parse(cachedVehicles);
         if (parsedVehicles && parsedVehicles.length > 0) {
@@ -454,8 +499,8 @@ export async function refreshVehicles(): Promise<Vehicle[]> {
 export function clearVehicleCache(): void {
   vehiclesCache = null;
   lastUpdateTimestamp = 0;
-  localStorage.removeItem(VEHICLE_CACHE_KEY);
-  localStorage.removeItem(VEHICLE_CACHE_TIMESTAMP_KEY);
+  safeLocalStorageRemove(VEHICLE_CACHE_KEY);
+  safeLocalStorageRemove(VEHICLE_CACHE_TIMESTAMP_KEY);
 }
 
 // Create a test vehicle
@@ -501,7 +546,7 @@ export async function createTestVehicle(): Promise<Vehicle | null> {
     if (useStaticData) {
       // For static data, we'll add to localStorage cache
       let vehicles: Vehicle[] = [];
-      const cachedVehicles = localStorage.getItem('vehicles_cache');
+      const cachedVehicles = safeLocalStorageGet('vehicles_cache');
       
       if (cachedVehicles) {
         try {
@@ -658,7 +703,7 @@ export async function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Promise<Vehi
     if (useStaticData) {
       // For static data, we'll add to localStorage cache
       let vehicles: Vehicle[] = [];
-      const cachedVehicles = localStorage.getItem('vehicles_cache');
+      const cachedVehicles = safeLocalStorageGet('vehicles_cache');
       
       if (cachedVehicles) {
         try {
@@ -834,7 +879,7 @@ export async function updateVehicle(vehicleId: string, vehicleData: Partial<Vehi
     if (useStaticData) {
       // For static data, we'll update in localStorage cache
       let vehicles: Vehicle[] = [];
-      const cachedVehicles = localStorage.getItem('vehicles_cache');
+      const cachedVehicles = safeLocalStorageGet('vehicles_cache');
       
       if (cachedVehicles) {
         try {
@@ -943,7 +988,7 @@ export async function deleteVehicle(id: string): Promise<boolean> {
     if (useStaticData) {
       // For static data, we'll delete from localStorage cache
       let vehicles: Vehicle[] = [];
-      const cachedVehicles = localStorage.getItem('vehicles_cache');
+      const cachedVehicles = safeLocalStorageGet('vehicles_cache');
       
       if (cachedVehicles) {
         try {
@@ -1028,7 +1073,7 @@ export async function updateVehicleStatus(vehicleId: string, status: 'available'
       
       // Get vehicles from localStorage cache or initialize from static data
       let vehicles: Vehicle[] = [];
-      const cachedVehicles = localStorage.getItem('vehicles_cache');
+      const cachedVehicles = safeLocalStorageGet('vehicles_cache');
       
       if (cachedVehicles) {
         try {
@@ -1122,13 +1167,109 @@ export async function updateVehicleStatus(vehicleId: string, status: 'available'
         } else {
           alert(`Failed to update vehicle status: ${response.message}`);
         }
-        
         return null;
       }
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to update vehicle status:', error);
     alert('An error occurred while updating the vehicle status. Please try again.');
     return null;
   }
+}
+
+// GitHub-enhanced vehicle management functions
+export async function getVehiclesFromGitHub(): Promise<Vehicle[]> {
+  try {
+    console.log('Fetching vehicles from GitHub...');
+    const vehicles = await gitHubVehicleService.getVehicles();
+    
+    // Update cache
+    vehiclesCache = vehicles;
+    lastUpdateTimestamp = Date.now();
+    saveCacheToStorage(vehicles);
+    
+    return vehicles;
+  } catch (error) {
+    console.error('Failed to fetch vehicles from GitHub, falling back to cache:', error);
+    
+    // Fallback to cache if available
+    if (vehiclesCache && vehiclesCache.length > 0) {
+      return vehiclesCache;
+    }
+    
+    // Final fallback to localStorage
+    const cachedVehicles = safeLocalStorageGet(VEHICLE_CACHE_KEY);
+    if (cachedVehicles) {
+      try {
+        return JSON.parse(cachedVehicles);
+      } catch (e) {
+        console.error('Failed to parse fallback cache:', e);
+      }
+    }
+    
+    // Return empty array if all else fails
+    return [];
+  }
+}
+
+export async function createVehicleInGitHub(vehicleData: Omit<Vehicle, 'id' | 'createdAt'>): Promise<Vehicle> {
+  try {
+    console.log('Creating vehicle in GitHub...');
+    const vehicle = await gitHubVehicleService.createVehicle(vehicleData);
+    
+    // Clear cache to force refresh
+    vehiclesCache = null;
+    lastUpdateTimestamp = 0;
+    
+    return vehicle;
+  } catch (error) {
+    console.error('Failed to create vehicle in GitHub:', error);
+    throw error;
+  }
+}
+
+export async function updateVehicleInGitHub(vehicleId: string, vehicleData: Partial<Vehicle>): Promise<Vehicle> {
+  try {
+    console.log('Updating vehicle in GitHub...');
+    const vehicle = await gitHubVehicleService.updateVehicle(vehicleId, vehicleData);
+    
+    // Clear cache to force refresh
+    vehiclesCache = null;
+    lastUpdateTimestamp = 0;
+    
+    return vehicle;
+  } catch (error) {
+    console.error('Failed to update vehicle in GitHub:', error);
+    throw error;
+  }
+}
+
+export async function deleteVehicleFromGitHub(vehicleId: string): Promise<void> {
+  try {
+    console.log('Deleting vehicle from GitHub...');
+    await gitHubVehicleService.deleteVehicle(vehicleId);
+    
+    // Clear cache to force refresh
+    vehiclesCache = null;
+    lastUpdateTimestamp = 0;
+  } catch (error) {
+    console.error('Failed to delete vehicle from GitHub:', error);
+    throw error;
+  }
+}
+
+// Enhanced getVehicles function that tries GitHub first, then falls back
+export async function getVehiclesEnhanced(forceRefresh: boolean = false): Promise<Vehicle[]> {
+  const useGitHub = process.env.NEXT_PUBLIC_USE_GITHUB_STORAGE === 'true';
+  
+  if (useGitHub || process.env.NODE_ENV === 'production') {
+    try {
+      return await getVehiclesFromGitHub();
+    } catch (error) {
+      console.warn('GitHub storage failed, falling back to local storage:', error);
+    }
+  }
+  
+  // Fallback to original getVehicles function
+  return getVehicles(forceRefresh);
 }

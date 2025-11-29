@@ -8,14 +8,14 @@ const Diagnostic: React.FC = () => {
 
   useEffect(() => {
     // Check the API URL from environment variables
-    const url = import.meta.env.VITE_API_BASE_URL || 'Not set';
+    const url = process.env.NEXT_PUBLIC_API_BASE_URL || 'Not set';
     setApiUrl(url);
   }, []);
 
   const testConnection = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/health`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/health`);
       const data = await response.json();
       setTestResult({
         success: true,

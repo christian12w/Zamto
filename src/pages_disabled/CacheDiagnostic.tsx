@@ -179,3 +179,5 @@ export function CacheDiagnostic() {
     </div>
   );
 }
+
+export default CacheDiagnostic;

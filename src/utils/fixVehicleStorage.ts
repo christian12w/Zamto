@@ -22,6 +22,11 @@ export function fixDoubleEncodedAmpersands(text: string): string {
 }
 
 export function fixVehicleStorage(): void {
+  // Only run in browser environment
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return;
+  }
+  
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return;

@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+'use client';
 
-export function Login() {
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../src/contexts/AuthContext';
+
+export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
   const { login } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +22,7 @@ export function Login() {
       const response = await login(username, password);
       
       if (response.success) {
-        navigate('/admin');
+        router.push('/admin');
       } else {
         setError(response.message || 'Login failed');
       }
@@ -103,6 +105,12 @@ export function Login() {
             </button>
           </div>
         </form>
+        
+        <div className="text-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account? Contact your administrator.
+          </p>
+        </div>
       </div>
     </div>
   );

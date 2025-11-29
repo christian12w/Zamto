@@ -481,3 +481,5 @@ function CarIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+export default Admin;

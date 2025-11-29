@@ -1,0 +1,31 @@
+backend:
+  name: github
+  repo: christian12w/Zamto
+  branch: master
+
+media_folder: "public/vehicles"
+public_folder: "/vehicles"
+
+collections:
+  - name: "vehicles"
+    label: "Vehicles"
+    folder: "content/vehicles"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Name", name: "name", widget: "string" }
+      - { label: "Category", name: "category", widget: "string" }
+      - { label: "Price", name: "price", widget: "string" }
+      - { label: "Daily Rate", name: "dailyRate", widget: "string" }
+      - { label: "Main Image URL", name: "image", widget: "string" }
+      - { label: "Description", name: "description", widget: "text" }
+      - { label: "Features", name: "features", widget: "list" }
+      - { label: "Popular", name: "popular", widget: "boolean", default: false }
+      - { label: "Year", name: "year", widget: "number" }
+      - { label: "Mileage", name: "mileage", widget: "string" }
+      - { label: "Transmission", name: "transmission", widget: "string" }
+      - { label: "Fuel Type", name: "fuelType", widget: "string" }
+      - { label: "Doors", name: "doors", widget: "number" }
+      - { label: "Seats", name: "seats", widget: "number" }
+      - { label: "Engine Size", name: "engineSize", widget: "string" }
+      - { label: "Status", name: "status", widget: "select", options: ["available", "sold"], default: "available" }

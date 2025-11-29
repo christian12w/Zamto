@@ -112,3 +112,5 @@ export function Services() {
       </section>
     </div>;
 }
+
+export default Services;

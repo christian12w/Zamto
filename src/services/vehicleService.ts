@@ -10,7 +10,7 @@ interface VehicleResponse {
 }
 
 // Backend API configuration
-const API_BASE_URL = (import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
 const API_TIMEOUT = 45000; // Increase timeout to 45 seconds for better performance with large datasets
 
 class VehicleService {
@@ -253,7 +253,7 @@ export async function keepServerAlive(): Promise<void> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
     
-    await fetch(`${(import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:3001'}/api/keep-alive`, {
+    await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'}/api/keep-alive`, {
       method: 'GET',
       signal: controller.signal
     });
