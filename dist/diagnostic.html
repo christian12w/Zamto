@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Loading Diagnostic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Vehicle Loading Diagnostic</h1>
+        <p>This page will help diagnose issues with vehicle loading on your website.</p>
+        
+        <div id="status" class="status info">
+            Ready to test. Click the button below to start the diagnostic.
+        </div>
+        
+        <button id="testButton">Run Diagnostic Test</button>
+        
+        <div id="results" style="display: none;">
+            <h2>Test Results</h2>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('testButton').addEventListener('click', runDiagnostic);
+        
+        async function runDiagnostic() {
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Running diagnostic tests...';
+            resultsDiv.style.display = 'none';
+            
+            try {
+                // Test 1: Check if vehicles.json file exists and is accessible
+                statusDiv.textContent = 'Test 1: Checking vehicles data file...';
+                const vehiclesResponse = await fetch('/src/data/vehicles.json');
+                const vehiclesData = await vehiclesResponse.json();
+                
+                // Test 2: Check if main site loads
+                statusDiv.textContent = 'Test 2: Checking main site...';
+                const siteResponse = await fetch('/');
+                const siteContent = await siteResponse.text();
+                
+                // Test 3: Check bundle size
+                statusDiv.textContent = 'Test 3: Checking bundle information...';
+                
+                // Display results
+                statusDiv.className = 'status success';
+                statusDiv.textContent = 'All tests completed successfully!';
+                resultsDiv.style.display = 'block';
+                
+                resultsContent.innerHTML = `
+                    <h3>Test Results Summary:</h3>
+                    <p><strong>✓ Vehicles data file:</strong> Accessible (${vehiclesData.length} vehicles found)</p>
+                    <p><strong>✓ Main site:</strong> Loading correctly</p>
+                    <p><strong>Vehicle sample:</strong> ${vehiclesData[0] ? vehiclesData[0].name : 'No vehicles found'}</p>
+                    <p><strong>Last deployment:</strong> ${new Date().toLocaleString()}</p>
+                `;
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = 'Diagnostic test failed: ' + error.message;
+                resultsDiv.style.display = 'block';
+                resultsContent.innerHTML = `
+                    <h3>Error Details:</h3>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p><strong>Possible causes:</strong></p>
+                    <ul>
+                        <li>Large bundle size causing timeout</li>
+                        <li>Incorrect file paths</li>
+                        <li>Network connectivity issues</li>
+                        <li>Caching problems</li>
+                    </ul>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

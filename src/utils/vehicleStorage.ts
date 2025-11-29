@@ -161,16 +161,21 @@ async function fetchVehicles(): Promise<Vehicle[]> {
     
     // If using static data, first check if we have modified vehicles in localStorage
     if (useStaticData) {
-      const cachedVehicles = localStorage.getItem('vehicles_cache');
-      if (cachedVehicles) {
-        try {
-          const parsedVehicles = JSON.parse(cachedVehicles);
-          if (parsedVehicles && parsedVehicles.length > 0) {
-            console.log(`Using ${parsedVehicles.length} vehicles from localStorage cache`);
-            return parsedVehicles;
+      // Check if we should bypass cache
+      const bypassCache = localStorage.getItem('bypass_vehicle_cache') === 'true';
+      
+      if (!bypassCache) {
+        const cachedVehicles = localStorage.getItem('vehicles_cache');
+        if (cachedVehicles) {
+          try {
+            const parsedVehicles = JSON.parse(cachedVehicles);
+            if (parsedVehicles && parsedVehicles.length > 0) {
+              console.log(`Using ${parsedVehicles.length} vehicles from localStorage cache`);
+              return parsedVehicles;
+            }
+          } catch (parseError) {
+            console.error('Failed to parse localStorage cache:', parseError);
           }
-        } catch (parseError) {
-          console.error('Failed to parse localStorage cache:', parseError);
         }
       }
       
@@ -269,17 +274,22 @@ async function fetchVehicles(): Promise<Vehicle[]> {
         const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
         let retryResponse;
         if (useStaticData) {
-          // Check localStorage first even on retry
-          const cachedVehicles = localStorage.getItem('vehicles_cache');
-          if (cachedVehicles) {
-            try {
-              const parsedVehicles = JSON.parse(cachedVehicles);
-              if (parsedVehicles && parsedVehicles.length > 0) {
-                console.log(`Using ${parsedVehicles.length} vehicles from localStorage cache on retry`);
-                return parsedVehicles;
+          // Check if we should bypass cache
+          const bypassCache = localStorage.getItem('bypass_vehicle_cache') === 'true';
+          
+          if (!bypassCache) {
+            // Check localStorage first even on retry
+            const cachedVehicles = localStorage.getItem('vehicles_cache');
+            if (cachedVehicles) {
+              try {
+                const parsedVehicles = JSON.parse(cachedVehicles);
+                if (parsedVehicles && parsedVehicles.length > 0) {
+                  console.log(`Using ${parsedVehicles.length} vehicles from localStorage cache on retry`);
+                  return parsedVehicles;
+                }
+              } catch (parseError) {
+                console.error('Failed to parse localStorage cache on retry:', parseError);
               }
-            } catch (parseError) {
-              console.error('Failed to parse localStorage cache on retry:', parseError);
             }
           }
           
@@ -344,6 +354,14 @@ async function saveVehicles(vehicles: Vehicle[]): Promise<void> {
 // Get all vehicles with caching and enhanced fallback mechanisms
 export async function getVehicles(forceRefresh: boolean = false): Promise<Vehicle[]> {
   const now = Date.now();
+  
+  // Check if we should bypass cache
+  const bypassCache = localStorage.getItem('bypass_vehicle_cache') === 'true';
+  if (bypassCache) {
+    console.log('Bypassing vehicle cache as requested');
+    localStorage.removeItem('bypass_vehicle_cache'); // Remove the flag after use
+    forceRefresh = true;
+  }
   
   // Check if we have a valid cache
   if (!forceRefresh && vehiclesCache && lastUpdateTimestamp) {

@@ -1,0 +1,32 @@
+fragment VehicleParts on Vehicle {
+  __typename
+  name
+  category
+  price
+  dailyRate
+  image
+  images {
+    __typename
+    label
+    url
+  }
+  description
+  features
+  popular
+  year
+  mileage
+  transmission
+  fuelType
+  type
+  engineSize
+  doors
+  seats
+  color
+  condition
+  serviceHistory
+  accidentHistory
+  warranty
+  registrationStatus
+  insuranceStatus
+  whatsappContact
+}

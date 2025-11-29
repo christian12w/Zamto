@@ -316,6 +316,7 @@ export function Admin() {
             {filteredVehicles.map((vehicle) => (
               <div key={vehicle.id} className="relative">
                 <VehicleCard 
+                  key={vehicle.id}
                   vehicle={vehicle} 
                   onShowDetails={() => handleEditVehicle(vehicle)}
                 />
