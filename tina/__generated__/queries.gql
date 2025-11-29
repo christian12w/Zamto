@@ -4,7 +4,6 @@ query vehicle($relativePath: String!) {
       _sys {
         filename
         basename
-        hasReferences
         breadcrumbs
         path
         relativePath
@@ -39,7 +38,6 @@ query vehicleConnection($before: String, $after: String, $first: Float, $last: F
           _sys {
             filename
             basename
-            hasReferences
             breadcrumbs
             path
             relativePath

@@ -31,6 +31,7 @@ const VehicleSchema = z.object({
   registrationStatus: z.string().optional(),
   insuranceStatus: z.string().optional(),
   whatsappContact: z.string().optional(),
+  status: z.enum(['available', 'sold']).optional(),
 })
 
 export type Vehicle = z.infer<typeof VehicleSchema> & {

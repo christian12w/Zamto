@@ -1,5 +1,4 @@
 fragment VehicleParts on Vehicle {
-  __typename
   name
   category
   price
@@ -29,4 +28,5 @@ fragment VehicleParts on Vehicle {
   registrationStatus
   insuranceStatus
   whatsappContact
+  status
 }

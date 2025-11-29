@@ -8,6 +8,19 @@ interface VehicleCardProps {
 }
 
 const determineAvailability = (vehicle: Vehicle) => {
+  // Use the status field directly if available, otherwise derive from other fields
+  if (vehicle.status === 'sold') {
+    return { label: 'Sold', tone: 'bg-red-600' }
+  }
+  
+  if (vehicle.status === 'available') {
+    if (vehicle.type === 'hire') {
+      return { label: 'Available for Hire', tone: 'bg-zamtoGreen' }
+    }
+    return { label: 'Available', tone: 'bg-zamtoGreen' }
+  }
+
+  // Fallback to original logic if status is not set
   const lowerRegistration = vehicle.registrationStatus?.toLowerCase() || ''
   const lowerCondition = vehicle.condition?.toLowerCase() || ''
 

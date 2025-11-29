@@ -12,72 +12,63 @@ export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
-export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: { input: string; output: string; }
-  String: { input: string; output: string; }
-  Boolean: { input: boolean; output: boolean; }
-  Int: { input: number; output: number; }
-  Float: { input: number; output: number; }
+  ID: string;
+  String: string;
+  Boolean: boolean;
+  Int: number;
+  Float: number;
   /** References another document, used as a foreign key */
-  Reference: { input: any; output: any; }
-  JSON: { input: any; output: any; }
+  Reference: any;
+  JSON: any;
 };
 
 export type SystemInfo = {
   __typename?: 'SystemInfo';
-  filename: Scalars['String']['output'];
-  title?: Maybe<Scalars['String']['output']>;
-  basename: Scalars['String']['output'];
-  hasReferences?: Maybe<Scalars['Boolean']['output']>;
-  breadcrumbs: Array<Scalars['String']['output']>;
-  path: Scalars['String']['output'];
-  relativePath: Scalars['String']['output'];
-  extension: Scalars['String']['output'];
-  template: Scalars['String']['output'];
+  filename: Scalars['String'];
+  title?: Maybe<Scalars['String']>;
+  basename: Scalars['String'];
+  breadcrumbs: Array<Scalars['String']>;
+  path: Scalars['String'];
+  relativePath: Scalars['String'];
+  extension: Scalars['String'];
+  template: Scalars['String'];
   collection: Collection;
 };
 
 
 export type SystemInfoBreadcrumbsArgs = {
-  excludeExtension?: InputMaybe<Scalars['Boolean']['input']>;
-};
-
-export type Folder = {
-  __typename?: 'Folder';
-  name: Scalars['String']['output'];
-  path: Scalars['String']['output'];
+  excludeExtension?: InputMaybe<Scalars['Boolean']>;
 };
 
 export type PageInfo = {
   __typename?: 'PageInfo';
-  hasPreviousPage: Scalars['Boolean']['output'];
-  hasNextPage: Scalars['Boolean']['output'];
-  startCursor: Scalars['String']['output'];
-  endCursor: Scalars['String']['output'];
+  hasPreviousPage: Scalars['Boolean'];
+  hasNextPage: Scalars['Boolean'];
+  startCursor: Scalars['String'];
+  endCursor: Scalars['String'];
 };
 
 export type Node = {
-  id: Scalars['ID']['output'];
+  id: Scalars['ID'];
 };
 
 export type Document = {
-  id: Scalars['ID']['output'];
+  id: Scalars['ID'];
   _sys?: Maybe<SystemInfo>;
-  _values: Scalars['JSON']['output'];
+  _values: Scalars['JSON'];
 };
 
 /** A relay-compliant pagination connection */
 export type Connection = {
-  totalCount: Scalars['Float']['output'];
+  totalCount: Scalars['Float'];
   pageInfo: PageInfo;
 };
 
 export type Query = {
   __typename?: 'Query';
-  getOptimizedQuery?: Maybe<Scalars['String']['output']>;
+  getOptimizedQuery?: Maybe<Scalars['String']>;
   collection: Collection;
   collections: Array<Collection>;
   node: Node;
@@ -88,37 +79,37 @@ export type Query = {
 
 
 export type QueryGetOptimizedQueryArgs = {
-  queryString: Scalars['String']['input'];
+  queryString: Scalars['String'];
 };
 
 
 export type QueryCollectionArgs = {
-  collection?: InputMaybe<Scalars['String']['input']>;
+  collection?: InputMaybe<Scalars['String']>;
 };
 
 
 export type QueryNodeArgs = {
-  id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']>;
 };
 
 
 export type QueryDocumentArgs = {
-  collection?: InputMaybe<Scalars['String']['input']>;
-  relativePath?: InputMaybe<Scalars['String']['input']>;
+  collection?: InputMaybe<Scalars['String']>;
+  relativePath?: InputMaybe<Scalars['String']>;
 };
 
 
 export type QueryVehicleArgs = {
-  relativePath?: InputMaybe<Scalars['String']['input']>;
+  relativePath?: InputMaybe<Scalars['String']>;
 };
 
 
 export type QueryVehicleConnectionArgs = {
-  before?: InputMaybe<Scalars['String']['input']>;
-  after?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Float']['input']>;
-  last?: InputMaybe<Scalars['Float']['input']>;
-  sort?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']>;
+  after?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Float']>;
+  last?: InputMaybe<Scalars['Float']>;
+  sort?: InputMaybe<Scalars['String']>;
   filter?: InputMaybe<VehicleFilter>;
 };
 
@@ -128,86 +119,86 @@ export type DocumentFilter = {
 
 export type DocumentConnectionEdges = {
   __typename?: 'DocumentConnectionEdges';
-  cursor: Scalars['String']['output'];
+  cursor: Scalars['String'];
   node?: Maybe<DocumentNode>;
 };
 
 export type DocumentConnection = Connection & {
   __typename?: 'DocumentConnection';
   pageInfo: PageInfo;
-  totalCount: Scalars['Float']['output'];
+  totalCount: Scalars['Float'];
   edges?: Maybe<Array<Maybe<DocumentConnectionEdges>>>;
 };
 
 export type Collection = {
   __typename?: 'Collection';
-  name: Scalars['String']['output'];
-  slug: Scalars['String']['output'];
-  label?: Maybe<Scalars['String']['output']>;
-  path: Scalars['String']['output'];
-  format?: Maybe<Scalars['String']['output']>;
-  matches?: Maybe<Scalars['String']['output']>;
-  templates?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
-  fields?: Maybe<Array<Maybe<Scalars['JSON']['output']>>>;
+  name: Scalars['String'];
+  slug: Scalars['String'];
+  label?: Maybe<Scalars['String']>;
+  path: Scalars['String'];
+  format?: Maybe<Scalars['String']>;
+  matches?: Maybe<Scalars['String']>;
+  templates?: Maybe<Array<Maybe<Scalars['JSON']>>>;
+  fields?: Maybe<Array<Maybe<Scalars['JSON']>>>;
   documents: DocumentConnection;
 };
 
 
 export type CollectionDocumentsArgs = {
-  before?: InputMaybe<Scalars['String']['input']>;
-  after?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Float']['input']>;
-  last?: InputMaybe<Scalars['Float']['input']>;
-  sort?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']>;
+  after?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Float']>;
+  last?: InputMaybe<Scalars['Float']>;
+  sort?: InputMaybe<Scalars['String']>;
   filter?: InputMaybe<DocumentFilter>;
-  folder?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type DocumentNode = Vehicle | Folder;
+export type DocumentNode = Vehicle;
 
 export type VehicleImages = {
   __typename?: 'VehicleImages';
-  label?: Maybe<Scalars['String']['output']>;
-  url?: Maybe<Scalars['String']['output']>;
+  label?: Maybe<Scalars['String']>;
+  url?: Maybe<Scalars['String']>;
 };
 
 export type Vehicle = Node & Document & {
   __typename?: 'Vehicle';
-  name: Scalars['String']['output'];
-  category?: Maybe<Scalars['String']['output']>;
-  price?: Maybe<Scalars['String']['output']>;
-  dailyRate?: Maybe<Scalars['String']['output']>;
-  image?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String'];
+  category?: Maybe<Scalars['String']>;
+  price?: Maybe<Scalars['String']>;
+  dailyRate?: Maybe<Scalars['String']>;
+  image?: Maybe<Scalars['String']>;
   images?: Maybe<Array<Maybe<VehicleImages>>>;
-  description?: Maybe<Scalars['String']['output']>;
-  features?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  popular?: Maybe<Scalars['Boolean']['output']>;
-  year?: Maybe<Scalars['Float']['output']>;
-  mileage?: Maybe<Scalars['String']['output']>;
-  transmission?: Maybe<Scalars['String']['output']>;
-  fuelType?: Maybe<Scalars['String']['output']>;
-  type?: Maybe<Scalars['String']['output']>;
-  engineSize?: Maybe<Scalars['String']['output']>;
-  doors?: Maybe<Scalars['Float']['output']>;
-  seats?: Maybe<Scalars['Float']['output']>;
-  color?: Maybe<Scalars['String']['output']>;
-  condition?: Maybe<Scalars['String']['output']>;
-  serviceHistory?: Maybe<Scalars['String']['output']>;
-  accidentHistory?: Maybe<Scalars['String']['output']>;
-  warranty?: Maybe<Scalars['String']['output']>;
-  registrationStatus?: Maybe<Scalars['String']['output']>;
-  insuranceStatus?: Maybe<Scalars['String']['output']>;
-  whatsappContact?: Maybe<Scalars['String']['output']>;
-  id: Scalars['ID']['output'];
+  description?: Maybe<Scalars['String']>;
+  features?: Maybe<Array<Maybe<Scalars['String']>>>;
+  popular?: Maybe<Scalars['Boolean']>;
+  year?: Maybe<Scalars['Float']>;
+  mileage?: Maybe<Scalars['String']>;
+  transmission?: Maybe<Scalars['String']>;
+  fuelType?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
+  engineSize?: Maybe<Scalars['String']>;
+  doors?: Maybe<Scalars['Float']>;
+  seats?: Maybe<Scalars['Float']>;
+  color?: Maybe<Scalars['String']>;
+  condition?: Maybe<Scalars['String']>;
+  serviceHistory?: Maybe<Scalars['String']>;
+  accidentHistory?: Maybe<Scalars['String']>;
+  warranty?: Maybe<Scalars['String']>;
+  registrationStatus?: Maybe<Scalars['String']>;
+  insuranceStatus?: Maybe<Scalars['String']>;
+  whatsappContact?: Maybe<Scalars['String']>;
+  status: Scalars['String'];
+  id: Scalars['ID'];
   _sys: SystemInfo;
-  _values: Scalars['JSON']['output'];
+  _values: Scalars['JSON'];
 };
 
 export type StringFilter = {
-  startsWith?: InputMaybe<Scalars['String']['input']>;
-  eq?: InputMaybe<Scalars['String']['input']>;
-  exists?: InputMaybe<Scalars['Boolean']['input']>;
-  in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  startsWith?: InputMaybe<Scalars['String']>;
+  eq?: InputMaybe<Scalars['String']>;
+  exists?: InputMaybe<Scalars['Boolean']>;
+  in?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 export type VehicleImagesFilter = {
@@ -216,18 +207,18 @@ export type VehicleImagesFilter = {
 };
 
 export type BooleanFilter = {
-  eq?: InputMaybe<Scalars['Boolean']['input']>;
-  exists?: InputMaybe<Scalars['Boolean']['input']>;
+  eq?: InputMaybe<Scalars['Boolean']>;
+  exists?: InputMaybe<Scalars['Boolean']>;
 };
 
 export type NumberFilter = {
-  lt?: InputMaybe<Scalars['Float']['input']>;
-  lte?: InputMaybe<Scalars['Float']['input']>;
-  gte?: InputMaybe<Scalars['Float']['input']>;
-  gt?: InputMaybe<Scalars['Float']['input']>;
-  eq?: InputMaybe<Scalars['Float']['input']>;
-  exists?: InputMaybe<Scalars['Boolean']['input']>;
-  in?: InputMaybe<Array<InputMaybe<Scalars['Float']['input']>>>;
+  lt?: InputMaybe<Scalars['Float']>;
+  lte?: InputMaybe<Scalars['Float']>;
+  gte?: InputMaybe<Scalars['Float']>;
+  gt?: InputMaybe<Scalars['Float']>;
+  eq?: InputMaybe<Scalars['Float']>;
+  exists?: InputMaybe<Scalars['Boolean']>;
+  in?: InputMaybe<Array<InputMaybe<Scalars['Float']>>>;
 };
 
 export type VehicleFilter = {
@@ -256,18 +247,19 @@ export type VehicleFilter = {
   registrationStatus?: InputMaybe<StringFilter>;
   insuranceStatus?: InputMaybe<StringFilter>;
   whatsappContact?: InputMaybe<StringFilter>;
+  status?: InputMaybe<StringFilter>;
 };
 
 export type VehicleConnectionEdges = {
   __typename?: 'VehicleConnectionEdges';
-  cursor: Scalars['String']['output'];
+  cursor: Scalars['String'];
   node?: Maybe<Vehicle>;
 };
 
 export type VehicleConnection = Connection & {
   __typename?: 'VehicleConnection';
   pageInfo: PageInfo;
-  totalCount: Scalars['Float']['output'];
+  totalCount: Scalars['Float'];
   edges?: Maybe<Array<Maybe<VehicleConnectionEdges>>>;
 };
 
@@ -277,59 +269,52 @@ export type Mutation = {
   updateDocument: DocumentNode;
   deleteDocument: DocumentNode;
   createDocument: DocumentNode;
-  createFolder: DocumentNode;
   updateVehicle: Vehicle;
   createVehicle: Vehicle;
 };
 
 
 export type MutationAddPendingDocumentArgs = {
-  collection: Scalars['String']['input'];
-  relativePath: Scalars['String']['input'];
-  template?: InputMaybe<Scalars['String']['input']>;
+  collection: Scalars['String'];
+  relativePath: Scalars['String'];
+  template?: InputMaybe<Scalars['String']>;
 };
 
 
 export type MutationUpdateDocumentArgs = {
-  collection?: InputMaybe<Scalars['String']['input']>;
-  relativePath: Scalars['String']['input'];
+  collection?: InputMaybe<Scalars['String']>;
+  relativePath: Scalars['String'];
   params: DocumentUpdateMutation;
 };
 
 
 export type MutationDeleteDocumentArgs = {
-  collection?: InputMaybe<Scalars['String']['input']>;
-  relativePath: Scalars['String']['input'];
+  collection?: InputMaybe<Scalars['String']>;
+  relativePath: Scalars['String'];
 };
 
 
 export type MutationCreateDocumentArgs = {
-  collection?: InputMaybe<Scalars['String']['input']>;
-  relativePath: Scalars['String']['input'];
+  collection?: InputMaybe<Scalars['String']>;
+  relativePath: Scalars['String'];
   params: DocumentMutation;
 };
 
 
-export type MutationCreateFolderArgs = {
-  collection?: InputMaybe<Scalars['String']['input']>;
-  relativePath: Scalars['String']['input'];
-};
-
-
 export type MutationUpdateVehicleArgs = {
-  relativePath: Scalars['String']['input'];
+  relativePath: Scalars['String'];
   params: VehicleMutation;
 };
 
 
 export type MutationCreateVehicleArgs = {
-  relativePath: Scalars['String']['input'];
+  relativePath: Scalars['String'];
   params: VehicleMutation;
 };
 
 export type DocumentUpdateMutation = {
   vehicle?: InputMaybe<VehicleMutation>;
-  relativePath?: InputMaybe<Scalars['String']['input']>;
+  relativePath?: InputMaybe<Scalars['String']>;
 };
 
 export type DocumentMutation = {
@@ -337,62 +322,62 @@ export type DocumentMutation = {
 };
 
 export type VehicleImagesMutation = {
-  label?: InputMaybe<Scalars['String']['input']>;
-  url?: InputMaybe<Scalars['String']['input']>;
+  label?: InputMaybe<Scalars['String']>;
+  url?: InputMaybe<Scalars['String']>;
 };
 
 export type VehicleMutation = {
-  name?: InputMaybe<Scalars['String']['input']>;
-  category?: InputMaybe<Scalars['String']['input']>;
-  price?: InputMaybe<Scalars['String']['input']>;
-  dailyRate?: InputMaybe<Scalars['String']['input']>;
-  image?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']>;
+  category?: InputMaybe<Scalars['String']>;
+  price?: InputMaybe<Scalars['String']>;
+  dailyRate?: InputMaybe<Scalars['String']>;
+  image?: InputMaybe<Scalars['String']>;
   images?: InputMaybe<Array<InputMaybe<VehicleImagesMutation>>>;
-  description?: InputMaybe<Scalars['String']['input']>;
-  features?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  popular?: InputMaybe<Scalars['Boolean']['input']>;
-  year?: InputMaybe<Scalars['Float']['input']>;
-  mileage?: InputMaybe<Scalars['String']['input']>;
-  transmission?: InputMaybe<Scalars['String']['input']>;
-  fuelType?: InputMaybe<Scalars['String']['input']>;
-  type?: InputMaybe<Scalars['String']['input']>;
-  engineSize?: InputMaybe<Scalars['String']['input']>;
-  doors?: InputMaybe<Scalars['Float']['input']>;
-  seats?: InputMaybe<Scalars['Float']['input']>;
-  color?: InputMaybe<Scalars['String']['input']>;
-  condition?: InputMaybe<Scalars['String']['input']>;
-  serviceHistory?: InputMaybe<Scalars['String']['input']>;
-  accidentHistory?: InputMaybe<Scalars['String']['input']>;
-  warranty?: InputMaybe<Scalars['String']['input']>;
-  registrationStatus?: InputMaybe<Scalars['String']['input']>;
-  insuranceStatus?: InputMaybe<Scalars['String']['input']>;
-  whatsappContact?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']>;
+  features?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  popular?: InputMaybe<Scalars['Boolean']>;
+  year?: InputMaybe<Scalars['Float']>;
+  mileage?: InputMaybe<Scalars['String']>;
+  transmission?: InputMaybe<Scalars['String']>;
+  fuelType?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
+  engineSize?: InputMaybe<Scalars['String']>;
+  doors?: InputMaybe<Scalars['Float']>;
+  seats?: InputMaybe<Scalars['Float']>;
+  color?: InputMaybe<Scalars['String']>;
+  condition?: InputMaybe<Scalars['String']>;
+  serviceHistory?: InputMaybe<Scalars['String']>;
+  accidentHistory?: InputMaybe<Scalars['String']>;
+  warranty?: InputMaybe<Scalars['String']>;
+  registrationStatus?: InputMaybe<Scalars['String']>;
+  insuranceStatus?: InputMaybe<Scalars['String']>;
+  whatsappContact?: InputMaybe<Scalars['String']>;
+  status?: InputMaybe<Scalars['String']>;
 };
 
-export type VehiclePartsFragment = { __typename: 'Vehicle', name: string, category?: string | null, price?: string | null, dailyRate?: string | null, image?: string | null, description?: string | null, features?: Array<string | null> | null, popular?: boolean | null, year?: number | null, mileage?: string | null, transmission?: string | null, fuelType?: string | null, type?: string | null, engineSize?: string | null, doors?: number | null, seats?: number | null, color?: string | null, condition?: string | null, serviceHistory?: string | null, accidentHistory?: string | null, warranty?: string | null, registrationStatus?: string | null, insuranceStatus?: string | null, whatsappContact?: string | null, images?: Array<{ __typename: 'VehicleImages', label?: string | null, url?: string | null } | null> | null };
+export type VehiclePartsFragment = { __typename?: 'Vehicle', name: string, category?: string | null, price?: string | null, dailyRate?: string | null, image?: string | null, description?: string | null, features?: Array<string | null> | null, popular?: boolean | null, year?: number | null, mileage?: string | null, transmission?: string | null, fuelType?: string | null, type?: string | null, engineSize?: string | null, doors?: number | null, seats?: number | null, color?: string | null, condition?: string | null, serviceHistory?: string | null, accidentHistory?: string | null, warranty?: string | null, registrationStatus?: string | null, insuranceStatus?: string | null, whatsappContact?: string | null, status: string, images?: Array<{ __typename: 'VehicleImages', label?: string | null, url?: string | null } | null> | null };
 
 export type VehicleQueryVariables = Exact<{
-  relativePath: Scalars['String']['input'];
+  relativePath: Scalars['String'];
 }>;
 
 
-export type VehicleQuery = { __typename?: 'Query', vehicle: { __typename: 'Vehicle', id: string, name: string, category?: string | null, price?: string | null, dailyRate?: string | null, image?: string | null, description?: string | null, features?: Array<string | null> | null, popular?: boolean | null, year?: number | null, mileage?: string | null, transmission?: string | null, fuelType?: string | null, type?: string | null, engineSize?: string | null, doors?: number | null, seats?: number | null, color?: string | null, condition?: string | null, serviceHistory?: string | null, accidentHistory?: string | null, warranty?: string | null, registrationStatus?: string | null, insuranceStatus?: string | null, whatsappContact?: string | null, _sys: { __typename?: 'SystemInfo', filename: string, basename: string, hasReferences?: boolean | null, breadcrumbs: Array<string>, path: string, relativePath: string, extension: string }, images?: Array<{ __typename: 'VehicleImages', label?: string | null, url?: string | null } | null> | null } };
+export type VehicleQuery = { __typename?: 'Query', vehicle: { __typename?: 'Vehicle', id: string, name: string, category?: string | null, price?: string | null, dailyRate?: string | null, image?: string | null, description?: string | null, features?: Array<string | null> | null, popular?: boolean | null, year?: number | null, mileage?: string | null, transmission?: string | null, fuelType?: string | null, type?: string | null, engineSize?: string | null, doors?: number | null, seats?: number | null, color?: string | null, condition?: string | null, serviceHistory?: string | null, accidentHistory?: string | null, warranty?: string | null, registrationStatus?: string | null, insuranceStatus?: string | null, whatsappContact?: string | null, status: string, _sys: { __typename?: 'SystemInfo', filename: string, basename: string, breadcrumbs: Array<string>, path: string, relativePath: string, extension: string }, images?: Array<{ __typename: 'VehicleImages', label?: string | null, url?: string | null } | null> | null } };
 
 export type VehicleConnectionQueryVariables = Exact<{
-  before?: InputMaybe<Scalars['String']['input']>;
-  after?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Float']['input']>;
-  last?: InputMaybe<Scalars['Float']['input']>;
-  sort?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']>;
+  after?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Float']>;
+  last?: InputMaybe<Scalars['Float']>;
+  sort?: InputMaybe<Scalars['String']>;
   filter?: InputMaybe<VehicleFilter>;
 }>;
 
 
-export type VehicleConnectionQuery = { __typename?: 'Query', vehicleConnection: { __typename?: 'VehicleConnection', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasPreviousPage: boolean, hasNextPage: boolean, startCursor: string, endCursor: string }, edges?: Array<{ __typename?: 'VehicleConnectionEdges', cursor: string, node?: { __typename: 'Vehicle', id: string, name: string, category?: string | null, price?: string | null, dailyRate?: string | null, image?: string | null, description?: string | null, features?: Array<string | null> | null, popular?: boolean | null, year?: number | null, mileage?: string | null, transmission?: string | null, fuelType?: string | null, type?: string | null, engineSize?: string | null, doors?: number | null, seats?: number | null, color?: string | null, condition?: string | null, serviceHistory?: string | null, accidentHistory?: string | null, warranty?: string | null, registrationStatus?: string | null, insuranceStatus?: string | null, whatsappContact?: string | null, _sys: { __typename?: 'SystemInfo', filename: string, basename: string, hasReferences?: boolean | null, breadcrumbs: Array<string>, path: string, relativePath: string, extension: string }, images?: Array<{ __typename: 'VehicleImages', label?: string | null, url?: string | null } | null> | null } | null } | null> | null } };
+export type VehicleConnectionQuery = { __typename?: 'Query', vehicleConnection: { __typename?: 'VehicleConnection', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasPreviousPage: boolean, hasNextPage: boolean, startCursor: string, endCursor: string }, edges?: Array<{ __typename?: 'VehicleConnectionEdges', cursor: string, node?: { __typename?: 'Vehicle', id: string, name: string, category?: string | null, price?: string | null, dailyRate?: string | null, image?: string | null, description?: string | null, features?: Array<string | null> | null, popular?: boolean | null, year?: number | null, mileage?: string | null, transmission?: string | null, fuelType?: string | null, type?: string | null, engineSize?: string | null, doors?: number | null, seats?: number | null, color?: string | null, condition?: string | null, serviceHistory?: string | null, accidentHistory?: string | null, warranty?: string | null, registrationStatus?: string | null, insuranceStatus?: string | null, whatsappContact?: string | null, status: string, _sys: { __typename?: 'SystemInfo', filename: string, basename: string, breadcrumbs: Array<string>, path: string, relativePath: string, extension: string }, images?: Array<{ __typename: 'VehicleImages', label?: string | null, url?: string | null } | null> | null } | null } | null> | null } };
 
 export const VehiclePartsFragmentDoc = gql`
     fragment VehicleParts on Vehicle {
-  __typename
   name
   category
   price
@@ -422,6 +407,7 @@ export const VehiclePartsFragmentDoc = gql`
   registrationStatus
   insuranceStatus
   whatsappContact
+  status
 }
     `;
 export const VehicleDocument = gql`
@@ -431,7 +417,6 @@ export const VehicleDocument = gql`
       _sys {
         filename
         basename
-        hasReferences
         breadcrumbs
         path
         relativePath
@@ -467,7 +452,6 @@ export const VehicleConnectionDocument = gql`
           _sys {
             filename
             basename
-            hasReferences
             breadcrumbs
             path
             relativePath
@@ -484,11 +468,11 @@ export const VehicleConnectionDocument = gql`
 export type Requester<C= {}> = <R, V>(doc: DocumentNode, vars?: V, options?: C) => Promise<R>
   export function getSdk<C>(requester: Requester<C>) {
     return {
-      vehicle(variables: VehicleQueryVariables, options?: C): Promise<{data: VehicleQuery, errors?: { message: string, locations: { line: number, column: number }[], path: string[] }[], variables: VehicleQueryVariables, query: string}> {
-        return requester<{data: VehicleQuery, errors?: { message: string, locations: { line: number, column: number }[], path: string[] }[], variables: VehicleQueryVariables, query: string}, VehicleQueryVariables>(VehicleDocument, variables, options);
+      vehicle(variables: VehicleQueryVariables, options?: C): Promise<{data: VehicleQuery, variables: VehicleQueryVariables, query: string}> {
+        return requester<{data: VehicleQuery, variables: VehicleQueryVariables, query: string}, VehicleQueryVariables>(VehicleDocument, variables, options);
       },
-    vehicleConnection(variables?: VehicleConnectionQueryVariables, options?: C): Promise<{data: VehicleConnectionQuery, errors?: { message: string, locations: { line: number, column: number }[], path: string[] }[], variables: VehicleConnectionQueryVariables, query: string}> {
-        return requester<{data: VehicleConnectionQuery, errors?: { message: string, locations: { line: number, column: number }[], path: string[] }[], variables: VehicleConnectionQueryVariables, query: string}, VehicleConnectionQueryVariables>(VehicleConnectionDocument, variables, options);
+    vehicleConnection(variables?: VehicleConnectionQueryVariables, options?: C): Promise<{data: VehicleConnectionQuery, variables: VehicleConnectionQueryVariables, query: string}> {
+        return requester<{data: VehicleConnectionQuery, variables: VehicleConnectionQueryVariables, query: string}, VehicleConnectionQueryVariables>(VehicleConnectionDocument, variables, options);
       }
     };
   }
@@ -497,57 +481,35 @@ export type Requester<C= {}> = <R, V>(doc: DocumentNode, vars?: V, options?: C) 
 // TinaSDK generated code
 import { createClient, TinaClient } from "tinacms/dist/client";
 
-const generateRequester = (
-  client: TinaClient,
-) => {
+const generateRequester = (client: TinaClient) => {
   const requester: (
     doc: any,
     vars?: any,
-    options?: {
-      branch?: string,
-      /**
-       * Aside from `method` and `body`, all fetch options are passed
-       * through to underlying fetch request
-       */
-      fetchOptions?: Omit<Parameters<typeof fetch>[1], 'body' | 'method'>,
-    },
+    options?: any,
     client
-  ) => Promise<any> = async (doc, vars, options) => {
-    let url = client.apiUrl
-    if (options?.branch) {
-      const index = client.apiUrl.lastIndexOf('/')
-      url = client.apiUrl.substring(0, index + 1) + options.branch
-    }
+  ) => Promise<any> = async (doc, vars, _options) => {
     const data = await client.request({
       query: doc,
       variables: vars,
-      url,
-    }, options)
+    });
 
-    return { data: data?.data, errors: data?.errors, query: doc, variables: vars || {} }
-  }
+    return { data: data?.data, query: doc, variables: vars || {} };
+  };
 
-  return requester
-}
+  return requester;
+};
 
 /**
  * @experimental this class can be used but may change in the future
  **/
 export const ExperimentalGetTinaClient = () =>
   getSdk(
-    generateRequester(
-      createClient({
-        url: "http://localhost:4001/graphql",
-        queries,
-      })
-    )
-  )
+    generateRequester(createClient({ url: "http://localhost:4001/graphql", queries }))
+  );
 
-export const queries = (
-  client: TinaClient,
-) => {
-  const requester = generateRequester(client)
-  return getSdk(requester)
-}
+export const queries = (client: TinaClient) => {
+  const requester = generateRequester(client);
+  return getSdk(requester);
+};
 
   

@@ -9,18 +9,12 @@ type SystemInfo {
   filename: String!
   title: String
   basename: String!
-  hasReferences: Boolean
   breadcrumbs(excludeExtension: Boolean): [String!]!
   path: String!
   relativePath: String!
   extension: String!
   template: String!
   collection: Collection!
-}
-
-type Folder {
-  name: String!
-  path: String!
 }
 
 type PageInfo {
@@ -82,10 +76,10 @@ type Collection {
   matches: String
   templates: [JSON]
   fields: [JSON]
-  documents(before: String, after: String, first: Float, last: Float, sort: String, filter: DocumentFilter, folder: String): DocumentConnection!
+  documents(before: String, after: String, first: Float, last: Float, sort: String, filter: DocumentFilter): DocumentConnection!
 }
 
-union DocumentNode = Vehicle | Folder
+union DocumentNode = Vehicle
 
 type VehicleImages {
   label: String
@@ -118,6 +112,7 @@ type Vehicle implements Node & Document {
   registrationStatus: String
   insuranceStatus: String
   whatsappContact: String
+  status: String!
   id: ID!
   _sys: SystemInfo!
   _values: JSON!
@@ -176,6 +171,7 @@ input VehicleFilter {
   registrationStatus: StringFilter
   insuranceStatus: StringFilter
   whatsappContact: StringFilter
+  status: StringFilter
 }
 
 type VehicleConnectionEdges {
@@ -194,7 +190,6 @@ type Mutation {
   updateDocument(collection: String, relativePath: String!, params: DocumentUpdateMutation!): DocumentNode!
   deleteDocument(collection: String, relativePath: String!): DocumentNode!
   createDocument(collection: String, relativePath: String!, params: DocumentMutation!): DocumentNode!
-  createFolder(collection: String, relativePath: String!): DocumentNode!
   updateVehicle(relativePath: String!, params: VehicleMutation!): Vehicle!
   createVehicle(relativePath: String!, params: VehicleMutation!): Vehicle!
 }
@@ -239,6 +234,7 @@ input VehicleMutation {
   registrationStatus: String
   insuranceStatus: String
   whatsappContact: String
+  status: String
 }
 
 schema {
