@@ -23,11 +23,11 @@
   NEXT_PUBLIC_EMAILJS_TEMPLATE_ID = "template_d03hddw"
   NEXT_PUBLIC_EMAILJS_PUBLIC_KEY = "gf6jUi7eA0maA9rzH"
   GITHUB_TOKEN = "your_github_token_here"
-
+  
 [context.deploy-preview.environment]
   NEXT_PUBLIC_USE_GITHUB_STORAGE = "true"
   NEXT_PUBLIC_USE_STATIC_DATA = "true"
   NEXT_PUBLIC_EMAILJS_SERVICE_ID = "service_tsgs1az"
   NEXT_PUBLIC_EMAILJS_TEMPLATE_ID = "template_d03hddw"
   NEXT_PUBLIC_EMAILJS_PUBLIC_KEY = "gf6jUi7eA0maA9rzH"
-  GITHUB_TOKEN = "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"
+  GITHUB_TOKEN = "your_github_token_her "
