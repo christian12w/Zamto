@@ -541,7 +541,7 @@ export async function createTestVehicle(): Promise<Vehicle | null> {
       fuelType: 'Petrol'
     };
     
-    const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+    const useStaticData = process.env.NEXT_PUBLIC_USE_STATIC_DATA === 'true';
     
     if (useStaticData) {
       // For static data, we'll add to localStorage cache
@@ -698,7 +698,7 @@ export async function addVehicle(vehicleData: Omit<Vehicle, 'id'>): Promise<Vehi
       ...(fixedData.whatsappContact && { whatsappContact: sanitizeInput(fixedData.whatsappContact) })
     };
     
-    const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+    const useStaticData = process.env.NEXT_PUBLIC_USE_STATIC_DATA === 'true';
     
     if (useStaticData) {
       // For static data, we'll add to localStorage cache
@@ -874,7 +874,7 @@ export async function updateVehicle(vehicleId: string, vehicleData: Partial<Vehi
       ...(fixedData.whatsappContact && { whatsappContact: sanitizeInput(fixedData.whatsappContact) })
     };
     
-    const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+    const useStaticData = process.env.NEXT_PUBLIC_USE_STATIC_DATA === 'true';
     
     if (useStaticData) {
       // For static data, we'll update in localStorage cache
@@ -983,7 +983,7 @@ export async function deleteVehicle(id: string): Promise<boolean> {
     // Show a loading message to the user
     alert('Deleting vehicle... This may take a moment as the server wakes up from sleep mode.');
     
-    const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+    const useStaticData = process.env.NEXT_PUBLIC_USE_STATIC_DATA === 'true';
     
     if (useStaticData) {
       // For static data, we'll delete from localStorage cache
@@ -1065,7 +1065,7 @@ export async function deleteVehicle(id: string): Promise<boolean> {
 export async function updateVehicleStatus(vehicleId: string, status: 'available' | 'sold'): Promise<Vehicle | null> {
   try {
     // Check if we're using static data
-    const useStaticData = (import.meta as any).env.VITE_USE_STATIC_DATA === 'true';
+    const useStaticData = process.env.NEXT_PUBLIC_USE_STATIC_DATA === 'true';
     
     if (useStaticData) {
       // For static data, we'll update the status in localStorage
